@@ -76,9 +76,6 @@ if ('window' in self) {
 
   self.addEventListener('fetch', function(event) {
     console.log('Intercepted fetch event for ' + event.request.url)
-
-    return requestFromClient(event.clientId, event.request.url).then(function () {
-      event.respondWith(fetch(event.request))
-    })
+    event.respondWith(requestFromClient(event.clientId, event.request.url).then(fetch(event.request)))
   })
 }
