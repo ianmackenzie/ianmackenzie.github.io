@@ -70,7 +70,7 @@ if ('window' in self) {
     var request = event.request
     var url = request.url
     if (url.startsWith('https://kintail/local/')) {
-      return request.json.then(function(body) {      
+      return request.json().then(function(body) {      
         requestParameters = {
           method: request.method,
           path: url.slice(22),
