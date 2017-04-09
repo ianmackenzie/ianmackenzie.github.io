@@ -3,6 +3,10 @@ if ('window' in self) {
     self['Kintail'] = {}
     Kintail['Local'] = {}
     Kintail.Local['init'] = (function(thisFile) {
+      navigator.serviceWorker.addEventListener('message', function(event) {
+        console.log('Received message from service worker', event.data)
+      });
+
       function registerServiceWorker() {
         console.log('Registering service worker')
 
@@ -31,7 +35,27 @@ if ('window' in self) {
     console.log('Service workers are not supported')
   }
 } else if (self instanceof ServiceWorkerGlobalScope) {
+  function requestFromClient(clientId, message) {
+    return clients.get(clientId).then(function(client) {
+      return new Promise(function(resolve, reject) {
+        var messageChannel = new MessageChannel();
+        
+        messageChannel.port1.onmessage = function(event) {
+          if (event.data.error) {
+            reject(event.data.error);
+          } else {
+            resolve(event.data);
+          }
+        };
+
+        client.postMessage(message, [messageChannel.port2]);
+      });
+    })
+  }
+
   self.addEventListener('fetch', function(event) {
     console.log('Intercepted fetch event for ' + event.request.url)
+    
+    requestFromClient(event.clientId, event.request.url)
   })
 }
