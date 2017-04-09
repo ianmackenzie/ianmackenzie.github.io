@@ -8,12 +8,12 @@ if ('window' in self) {
         console.log('Unregistering existing service worker')
         registration.unregister();
       }
-    });
-    console.log('Registering service worker')
-    navigator.serviceWorker.register(document.currentScript.src).then(function(registration) {
-      console.log('ServiceWorker registration successful with scope: ', registration.scope);
-    }).catch(function(err) {
-      console.log('ServiceWorker registration failed: ', err);
+      console.log('Registering service worker')
+      navigator.serviceWorker.register(document.currentScript.src).then(function(registration) {
+        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+      }).catch(function(err) {
+        console.log('ServiceWorker registration failed: ', err);
+      });
     });
   } else {
     console.log('Service workers are not supported')
