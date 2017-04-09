@@ -15,9 +15,9 @@ if ('window' in self) {
         return navigator.serviceWorker.register(thisFile).then(function(registration) {
           navigator.serviceWorker.addEventListener('message', function(event) {
             console.log('Received message from service worker', request)
-            handleRequest(event.data).then(response) {
+            handleRequest(event.data).then(function(response) {
               event.ports[0].postMessage(response)
-            }
+            })
           })
         }).catch(function(err) {
           console.log('ServiceWorker registration failed: ', err)
