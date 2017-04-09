@@ -4,8 +4,6 @@ if ('window' in self) {
     Kintail['Local'] = {}
     Kintail.Local['init'] = (function(thisFile) {
       function registerServiceWorker() {
-        console.log('Registering service worker')
-
         return navigator.serviceWorker.register(thisFile).then(function(registration) {
           console.log('ServiceWorker registration successful with scope: ', registration.scope)
 
@@ -20,12 +18,8 @@ if ('window' in self) {
       return function() {
         return navigator.serviceWorker.getRegistration().then(function(registration) {
           if (registration === undefined) {
-            console.log('No existing service worker')
-
             return registerServiceWorker()
           } else {
-            console.log('Unregistering existing service worker')
-
             return registration.unregister().then(registerServiceWorker)
           }
         })
@@ -44,11 +38,8 @@ if ('window' in self) {
   })
 
   function requestFromClient(clientId, message) {
-    console.log('Looking up client from ID', clientId)
-
     return clients.get(clientId).then(function(client) {
       if (client !== undefined) {
-        console.log('Found client')
         console.log('Posting message to client')
         
         var messageChannel = new MessageChannel()
