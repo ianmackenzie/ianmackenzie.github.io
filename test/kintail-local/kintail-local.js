@@ -2,10 +2,10 @@ if ('window' in self) {
   if ('serviceWorker' in navigator) {
     self['Kintail'] = {}
     Kintail['Local'] = {}
-    Kintail.Local['init'] = (function(thisScript) {
+    Kintail.Local['init'] = (function(thisFile) {
       function registerServiceWorker() {
         console.log('Registering service worker')
-        return navigator.serviceWorker.register(thisScript).then(function(registration) {
+        return navigator.serviceWorker.register(thisFile).then(function(registration) {
           console.log('ServiceWorker registration successful with scope: ', registration.scope);
         }).catch(function(err) {
           console.log('ServiceWorker registration failed: ', err);
