@@ -43,7 +43,7 @@ if ('window' in self) {
       console.log('Posting message to client')
 
       client.postMessage(message, [messageChannel.port2])
-      resolve(true)
+      return true;
 
       // return new Promise(function(resolve, reject) {
       //   var messageChannel = new MessageChannel();
