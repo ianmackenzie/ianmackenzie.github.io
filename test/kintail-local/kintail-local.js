@@ -67,6 +67,9 @@ if ('window' in self) {
     console.log('Intercepted fetch event for ' + event.request.url)
     if (event.request.url.startsWith('https://kintail/local/')) {
       requestFromClient(event.clientId, event.request.url.slice(22))
+      event.respondWith(new Response("<file contents>", {status: 200, statusText: 'OK'}))
+    } else {
+      event.respondWith(fetch(event.request))
     }
   })
 }

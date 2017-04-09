@@ -13,7 +13,7 @@
       Kintail.Local.init().then(function() {
         console.log('init() completed')
         function requestListener() {
-          console.log(this.responseText)
+          console.log('Received response: ', this.responseText)
         }
 
         var request = new XMLHttpRequest()
