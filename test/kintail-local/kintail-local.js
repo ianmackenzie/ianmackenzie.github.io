@@ -65,8 +65,8 @@ if ('window' in self) {
 
   self.addEventListener('fetch', function(event) {
     console.log('Intercepted fetch event for ' + event.request.url)
-    if (event.request.url.startsWith('http://kintail/local/')) {
-      requestFromClient(event.clientId, event.request.url.slice(21))
+    if (event.request.url.startsWith('https://kintail/local/')) {
+      requestFromClient(event.clientId, event.request.url.slice(22))
     }
   })
 }
