@@ -2,9 +2,7 @@ if (self instanceof Window) {
   console.log('Running as main script')
   if ('serviceWorker' in navigator) {
     console.log('Registering service worker')
-    testUrl = new URL('//local')
-    console.log('Test URL:', testUrl.href)
-    navigator.serviceWorker.register(document.currentScript.src, {scope: testUrl.href}).then(function(registration) {
+    navigator.serviceWorker.register(document.currentScript.src).then(function(registration) {
       console.log('ServiceWorker registration successful with scope: ', registration.scope);
     }).catch(function(err) {
       console.log('ServiceWorker registration failed: ', err);
