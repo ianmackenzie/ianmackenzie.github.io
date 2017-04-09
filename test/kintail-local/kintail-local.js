@@ -12,7 +12,7 @@ if (self.window !== undefined) {
   }
 } else if (self instanceof ServiceWorkerGlobalScope) {
   console.log('Running as service worker')
-  // self.addEventListener('fetch', function(event) {
-  //   console.log('Intercepting fetch event for ' + event.request.url)
-  // });
+  self.addEventListener('fetch', function(event) {
+    console.log('Intercepted fetch event for ' + event.request.url)
+  });
 }
