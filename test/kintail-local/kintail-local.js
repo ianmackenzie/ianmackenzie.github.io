@@ -1,4 +1,4 @@
-if (self.window !== undefined) {
+if ('window' in self) {
   console.log('Running as main script')
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistration().then(function(registration) {
