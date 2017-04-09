@@ -70,16 +70,17 @@ if ('window' in self) {
     var request = event.request
     var url = request.url
     if (url.startsWith('https://kintail/local/')) {
-      return request.json().then(function(body) {      
-        requestParameters = {
-          method: request.method,
-          path: url.slice(22),
-          body: body
-        }
-        return requestFromClient(event.clientId, requestParameters).then(function(response) {
-          return new Response(response.body, {status: response.status, statusText: response.statusText})
-        })
-      })
+      event.respondWith(new Response('<temp file contents>', {status: 200, statusText: 'OK'}))
+      // return request.json().then(function(body) {      
+      //   requestParameters = {
+      //     method: request.method,
+      //     path: url.slice(22),
+      //     body: body
+      //   }
+      //   return requestFromClient(event.clientId, requestParameters).then(function(response) {
+      //     return new Response(response.body, {status: response.status, statusText: response.statusText})
+      //   })
+      // })
     } else {
       event.respondWith(fetch(event.request))
     }
