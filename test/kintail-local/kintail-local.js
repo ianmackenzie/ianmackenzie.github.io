@@ -49,13 +49,13 @@ if ('window' in self) {
     return clients.get(clientId).then(function(client) {
       console.log('Found client')
       console.log('Posting message to client')
-
+      
+      var messageChannel = new MessageChannel()
+      
       client.postMessage(message, [messageChannel.port2])
       return true;
 
       // return new Promise(function(resolve, reject) {
-      //   var messageChannel = new MessageChannel();
-        
       //   messageChannel.port1.onmessage = function(event) {
       //     if (event.data.error) {
       //       reject(event.data.error);
