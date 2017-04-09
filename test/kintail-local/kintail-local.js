@@ -48,7 +48,7 @@ if ('window' in self) {
 
   function requestFromClient(clientId, request) {
     return clients.get(clientId).then(function(client) {
-      return new Promise(resolve, reject) {
+      return new Promise(function(resolve, reject) {
         if (client !== undefined) {
           var messageChannel = new MessageChannel()
 
@@ -62,7 +62,7 @@ if ('window' in self) {
         } else {
           reject('Client not found')
         }
-      }
+      })
     })
   }
 
