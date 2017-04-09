@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <title>Main</title>
     <script src="kintail-local.js"></script>
-    <script type="text/javascript">Kintail.Local.init()</script>
+    <script type="text/javascript">
+    	console.log('Calling init()')
+    	Kintail.Local.init().then(function() {
+    		console.log('init() completed')
+    	})
+    </script>
   </head>
   <body>
     <h1>Test page</h1>
