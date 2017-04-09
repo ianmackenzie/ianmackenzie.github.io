@@ -16,6 +16,7 @@ if ('window' in self) {
           navigator.serviceWorker.addEventListener('message', function(event) {
             console.log('Received message from service worker', event.data)
             handleRequest(event.data).then(function(response) {
+              console.log('Sending message back to service worker', response)
               event.ports[0].postMessage(response)
             })
           })
