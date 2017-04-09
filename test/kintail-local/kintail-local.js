@@ -1,4 +1,4 @@
-if (Window !== undefined && self instanceof Window) {
+if (self.window !== undefined) {
   console.log('Running as main script')
   if ('serviceWorker' in navigator) {
     console.log('Registering service worker')
