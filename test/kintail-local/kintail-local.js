@@ -40,28 +40,33 @@ if ('window' in self) {
 
     return clients.get(clientId).then(function(client) {
       console.log('Found client')
+      console.log('Posting message to client')
 
-      return new Promise(function(resolve, reject) {
-        var messageChannel = new MessageChannel();
-        
-        messageChannel.port1.onmessage = function(event) {
-          if (event.data.error) {
-            reject(event.data.error);
-          } else {
-            resolve(event.data);
-          }
-        };
+      client.postMessage(message, [messageChannel.port2])
+      resolve(true)
 
-        console.log('Posting message to client')
+      // return new Promise(function(resolve, reject) {
+      //   var messageChannel = new MessageChannel();
         
-        client.postMessage(message, [messageChannel.port2]);
-      });
+      //   messageChannel.port1.onmessage = function(event) {
+      //     if (event.data.error) {
+      //       reject(event.data.error);
+      //     } else {
+      //       resolve(event.data);
+      //     }
+      //   };
+
+
+      //   client.postMessage(message, [messageChannel.port2]);
+      // });
     })
   }
 
   self.addEventListener('fetch', function(event) {
     console.log('Intercepted fetch event for ' + event.request.url)
 
-    requestFromClient(event.clientId, event.request.url)
+    requestFromClient(event.clientId, event.request.url).then(function () {
+      event.respondWith(fetch(event.request))
+    })
   })
 }
