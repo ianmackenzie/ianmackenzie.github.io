@@ -3,10 +3,21 @@ if ('window' in self) {
     self['Kintail'] = {}
     Kintail['Local'] = {}
     Kintail.Local['init'] = (function(thisFile) {
+      function handleRequest(request) {
+        if (request.method == 'GET' && request.path == 'local/file/read') {
+          return Promise.resolve({status: 200, statusText: 'OK', body: "<file contents>"})
+        } else {
+          return Promise.resolve({status: 400, statusText: "Unrecognized request", body: ""})
+        }
+      }
+
       function registerServiceWorker() {
         return navigator.serviceWorker.register(thisFile).then(function(registration) {
           navigator.serviceWorker.addEventListener('message', function(event) {
-            console.log('Received message from service worker', event.data)
+            console.log('Received message from service worker', request)
+            handleRequest(event.data).then(response) {
+              event.ports[0].postMessage(response)
+            }
           })
         }).catch(function(err) {
           console.log('ServiceWorker registration failed: ', err)
@@ -35,39 +46,40 @@ if ('window' in self) {
     event.waitUntil(self.clients.claim())
   })
 
-  function requestFromClient(clientId, message) {
+  function requestFromClient(clientId, request) {
     return clients.get(clientId).then(function(client) {
-      if (client !== undefined) {
-        console.log('Posting message to client')
-        
-        var messageChannel = new MessageChannel()
-        
-        client.postMessage(message, [messageChannel.port2])
-        return true
-      } else {
-        return false
+      return new Promise(resolve, reject) {
+        if (client !== undefined) {
+          var messageChannel = new MessageChannel()
+
+          messageChannel.port1.onmessage = function(event) {
+            resolve(event.data)
+          }
+          
+          console.log('Posting request to client', request)
+
+          client.postMessage(request, [messageChannel.port2])
+        } else {
+          reject('Client not found')
+        }
       }
-
-      // return new Promise(function(resolve, reject) {
-      //   messageChannel.port1.onmessage = function(event) {
-      //     if (event.data.error) {
-      //       reject(event.data.error)
-      //     } else {
-      //       resolve(event.data)
-      //     }
-      //   }
-
-
-      //   client.postMessage(message, [messageChannel.port2])
-      // })
     })
   }
 
   self.addEventListener('fetch', function(event) {
-    console.log('Intercepted fetch event for ' + event.request.url)
-    if (event.request.url.startsWith('https://kintail/local/')) {
-      requestFromClient(event.clientId, event.request.url.slice(22))
-      event.respondWith(new Response("<file contents>", {status: 200, statusText: 'OK'}))
+    var request = event.request
+    var url = request.url
+    if (url.startsWith('https://kintail/local/')) {
+      return request.json.then(function(body) {      
+        requestParameters = {
+          method: request.method,
+          path: url.slice(22),
+          body: body
+        }
+        return requestFromClient(event.clientId, requestParameters).then(function(response) {
+          return new Response(response.body, {status: response.status, statusText: response.statusText})
+        })
+      })
     } else {
       event.respondWith(fetch(event.request))
     }
