@@ -4,19 +4,17 @@
     <meta charset="UTF-8">
     <title>Main</title>
     <script src="kintail-local.js"></script>
-    <script type="text/javascript">
-        console.log('Calling init()')
-        Kintail.Local.init().then(function() {
-            console.log('init() completed')
-            window.onload = function () {
-                console.log('Setting image URL')
-                document.getElementById("iconImage").src = "https://opensolid.github.io/images/geometry/icons/triangle3d.svg"
-            }
-        })
-    </script>
   </head>
   <body>
     <h1>Test page</h1>
     <img id="iconImage" src="https://opensolid.github.io/images/geometry/icons/frame3d.svg">
+    <script type="text/javascript">
+        console.log('Calling init()')
+        Kintail.Local.init().then(function() {
+            console.log('init() completed')
+            console.log('Setting image URL')
+            document.getElementById("iconImage").src = "https://opensolid.github.io/images/geometry/icons/triangle3d.svg"
+        })
+    </script>
   </body>
 </html>
