@@ -3,10 +3,10 @@ if ('window' in self) {
     self['Kintail'] = {}
     Kintail['Local'] = {}
     Kintail.Local['init'] = (function(thisFile) {
-      function registerServiceWorker() {
-        return navigator.serviceWorker.register(thisFile).then(function(registration) {
-          console.log('ServiceWorker registration successful with scope: ', registration.scope)
+      var scope = 'http://kintail/local'
 
+      function registerServiceWorker() {
+        return navigator.serviceWorker.register(thisFile, scope).then(function(registration) {
           navigator.serviceWorker.addEventListener('message', function(event) {
             console.log('Received message from service worker', event.data)
           })
@@ -16,7 +16,7 @@ if ('window' in self) {
       }
 
       return function() {
-        return navigator.serviceWorker.getRegistration().then(function(registration) {
+        return navigator.serviceWorker.getRegistration(scope).then(function(registration) {
           if (registration === undefined) {
             return registerServiceWorker()
           } else {
