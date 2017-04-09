@@ -2,7 +2,7 @@ if (self instanceof Window) {
   console.log('Running as main script')
   if ('serviceWorker' in navigator) {
     console.log('Registering service worker')
-    navigator.serviceWorker.register(document.currentScript.src, {scope: '//local'}).then(function(registration) {
+    navigator.serviceWorker.register(document.currentScript.src, {scope: './/local'}).then(function(registration) {
       console.log('ServiceWorker registration successful with scope: ', registration.scope);
     }).catch(function(err) {
       console.log('ServiceWorker registration failed: ', err);
