@@ -11,7 +11,7 @@ if ('window' in self) {
 
           navigator.serviceWorker.addEventListener('message', function(event) {
             console.log('Received message from service worker', event.data)
-          });
+          })
         }).catch(function(err) {
           console.log('ServiceWorker registration failed: ', err)
         })
@@ -36,12 +36,12 @@ if ('window' in self) {
   }
 } else if (self instanceof ServiceWorkerGlobalScope) {
   self.addEventListener('install', function(event) {
-    event.waitUntil(self.skipWaiting());
-  });
+    event.waitUntil(self.skipWaiting())
+  })
 
   self.addEventListener('activate', function(event) {
-    event.waitUntil(self.clients.claim());
-  });
+    event.waitUntil(self.clients.claim())
+  })
 
   function requestFromClient(clientId, message) {
     console.log('Looking up client from ID', clientId)
@@ -58,15 +58,15 @@ if ('window' in self) {
       // return new Promise(function(resolve, reject) {
       //   messageChannel.port1.onmessage = function(event) {
       //     if (event.data.error) {
-      //       reject(event.data.error);
+      //       reject(event.data.error)
       //     } else {
-      //       resolve(event.data);
+      //       resolve(event.data)
       //     }
-      //   };
+      //   }
 
 
-      //   client.postMessage(message, [messageChannel.port2]);
-      // });
+      //   client.postMessage(message, [messageChannel.port2])
+      // })
     })
   }
 
