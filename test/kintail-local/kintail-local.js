@@ -55,7 +55,7 @@ if ('window' in self) {
 
   self.addEventListener('fetch', function(event) {
     console.log('Intercepted fetch event for ' + event.request.url)
-    
+
     requestFromClient(event.clientId, event.request.url)
   })
 }
