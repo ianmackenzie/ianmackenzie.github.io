@@ -19,7 +19,7 @@ if ('window' in self) {
             return registerServiceWorker()
           } else {
             console.log('Unregistering existing service worker')
-            registration.unregister().then(registerServiceWorker);
+            return registration.unregister().then(registerServiceWorker);
           }
         });
       }
