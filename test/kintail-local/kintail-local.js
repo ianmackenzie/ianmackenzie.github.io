@@ -1,6 +1,10 @@
 if (self.window !== undefined) {
   console.log('Running as main script')
   if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistration().then(function(registration) {
+      console.log('Unregistering existing service worker')
+      registration.unregister();
+    });
     console.log('Registering service worker')
     navigator.serviceWorker.register(document.currentScript.src).then(function(registration) {
       console.log('ServiceWorker registration successful with scope: ', registration.scope);
