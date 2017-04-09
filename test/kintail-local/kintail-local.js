@@ -8,7 +8,7 @@ if ('window' in self) {
 
         return navigator.serviceWorker.register(thisFile).then(function(registration) {
           console.log('ServiceWorker registration successful with scope: ', registration.scope)
-        
+
           navigator.serviceWorker.addEventListener('message', function(event) {
             console.log('Received message from service worker', event.data)
           });
