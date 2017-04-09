@@ -35,6 +35,14 @@ if ('window' in self) {
     console.log('Service workers are not supported')
   }
 } else if (self instanceof ServiceWorkerGlobalScope) {
+  self.addEventListener('install', function(event) {
+    event.waitUntil(self.skipWaiting());
+  });
+
+  self.addEventListener('activate', function(event) {
+    event.waitUntil(self.clients.claim());
+  });
+
   function requestFromClient(clientId, message) {
     console.log('Looking up client from ID', clientId)
 
