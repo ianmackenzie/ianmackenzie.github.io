@@ -1,4 +1,4 @@
-if (self instanceof Window) {
+if (Window !== undefined && self instanceof Window) {
   console.log('Running as main script')
   if ('serviceWorker' in navigator) {
     console.log('Registering service worker')
@@ -12,7 +12,7 @@ if (self instanceof Window) {
   }
 } else if (self instanceof ServiceWorkerGlobalScope) {
   console.log('Running as service worker')
-  self.addEventListener('fetch', function(event) {
-    console.log('Intercepting fetch event for ' + event.request.url)
-  });
+  // self.addEventListener('fetch', function(event) {
+  //   console.log('Intercepting fetch event for ' + event.request.url)
+  // });
 }
