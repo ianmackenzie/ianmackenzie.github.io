@@ -2,7 +2,9 @@ if ('window' in self) {
   console.log('Running as main script')
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistration().then(function(registration) {
-      if (registration !== undefined) {
+      if (registration === undefined) {
+        console.log('No existing service worker')
+      } else {
         console.log('Unregistering existing service worker')
         registration.unregister();
       }
