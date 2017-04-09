@@ -36,7 +36,11 @@ if ('window' in self) {
   }
 } else if (self instanceof ServiceWorkerGlobalScope) {
   function requestFromClient(clientId, message) {
+    console.log('Looking up client from ID', clientId)
+
     return clients.get(clientId).then(function(client) {
+      console.log('Found client')
+
       return new Promise(function(resolve, reject) {
         var messageChannel = new MessageChannel();
         
@@ -48,6 +52,8 @@ if ('window' in self) {
           }
         };
 
+        console.log('Posting message to client')
+        
         client.postMessage(message, [messageChannel.port2]);
       });
     })
