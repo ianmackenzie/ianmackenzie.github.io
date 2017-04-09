@@ -47,13 +47,17 @@ if ('window' in self) {
     console.log('Looking up client from ID', clientId)
 
     return clients.get(clientId).then(function(client) {
-      console.log('Found client')
-      console.log('Posting message to client')
-      
-      var messageChannel = new MessageChannel()
-      
-      client.postMessage(message, [messageChannel.port2])
-      return true;
+      if (client !== undefined) {
+        console.log('Found client')
+        console.log('Posting message to client')
+        
+        var messageChannel = new MessageChannel()
+        
+        client.postMessage(message, [messageChannel.port2])
+        return true
+      } else {
+        return false
+      }
 
       // return new Promise(function(resolve, reject) {
       //   messageChannel.port1.onmessage = function(event) {
