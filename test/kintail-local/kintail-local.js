@@ -4,7 +4,7 @@ if ('window' in self) {
     Kintail['Local'] = {}
     Kintail.Local['init'] = (function(thisFile) {
       function handleRequest(request) {
-        if (request.method == 'GET' && request.path == 'local/file/read') {
+        if (request.method == 'GET' && request.path == 'file/read') {
           return Promise.resolve({status: 200, statusText: 'OK', body: "<file contents>"})
         } else {
           return Promise.resolve({status: 400, statusText: "Unrecognized request", body: ""})
