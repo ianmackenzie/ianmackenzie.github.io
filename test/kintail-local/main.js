@@ -9277,12 +9277,12 @@ var _kintail$local$Kintail_Local_File$read = function (file) {
 		_elm_lang$core$Basics$always(_kintail$local$Kintail_Local_File$ReadError),
 		_elm_lang$http$Http$toTask(request));
 };
-var _kintail$local$Kintail_Local_File$WriteError = {ctor: 'WriteError'};
-var _kintail$local$Kintail_Local_File$write = function (_p11) {
+var _kintail$local$Kintail_Local_File$SaveError = {ctor: 'SaveError'};
+var _kintail$local$Kintail_Local_File$save = function (_p11) {
 	var _p12 = _p11;
 	var handleResponse = function (response) {
 		return _elm_lang$core$Native_Utils.eq(response.status.code, 200) ? _elm_lang$core$Result$Ok(
-			{ctor: '_Tuple0'}) : _elm_lang$core$Result$Err('Failed to write file');
+			{ctor: '_Tuple0'}) : _elm_lang$core$Result$Err('Failed to save file');
 	};
 	var encoded = _elm_lang$core$Json_Encode$object(
 		{
@@ -9306,7 +9306,7 @@ var _kintail$local$Kintail_Local_File$write = function (_p11) {
 		{
 			method: 'PUT',
 			headers: {ctor: '[]'},
-			url: _kintail$local$Kintail_Local$url('file/write'),
+			url: _kintail$local$Kintail_Local$url('file/save'),
 			body: _elm_lang$http$Http$jsonBody(encoded),
 			expect: _elm_lang$http$Http$expectStringResponse(handleResponse),
 			timeout: _elm_lang$core$Maybe$Nothing,
@@ -9314,171 +9314,71 @@ var _kintail$local$Kintail_Local_File$write = function (_p11) {
 		});
 	return A2(
 		_elm_lang$core$Task$mapError,
-		_elm_lang$core$Basics$always(_kintail$local$Kintail_Local_File$WriteError),
+		_elm_lang$core$Basics$always(_kintail$local$Kintail_Local_File$SaveError),
 		_elm_lang$http$Http$toTask(request));
 };
 
-var _kintail$local$Main$description = function (file) {
-	return A2(
-		_elm_lang$core$Basics_ops['++'],
-		_kintail$local$Kintail_Local_File$name(file),
-		A2(
-			_elm_lang$core$Basics_ops['++'],
-			' (',
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				_elm_lang$core$Basics$toString(
-					_kintail$local$Kintail_Local_File$sizeInBytes(file)),
-				' bytes)')));
-};
-var _kintail$local$Main$init = {
-	ctor: '_Tuple2',
-	_0: {
-		selectedFiles: {ctor: '[]'},
-		currentFileContents: ''
-	},
-	_1: _elm_lang$core$Platform_Cmd$none
-};
-var _kintail$local$Main$Model = F2(
-	function (a, b) {
-		return {selectedFiles: a, currentFileContents: b};
-	});
-var _kintail$local$Main$FileContents = function (a) {
-	return {ctor: 'FileContents', _0: a};
-};
+var _kintail$local$Main$ErrorOccurred = {ctor: 'ErrorOccurred'};
+var _kintail$local$Main$FileSaved = {ctor: 'FileSaved'};
 var _kintail$local$Main$handleResponse = function (result) {
 	var _p0 = result;
 	if (_p0.ctor === 'Ok') {
-		return _kintail$local$Main$FileContents(_p0._0);
+		return _kintail$local$Main$FileSaved;
 	} else {
-		return _kintail$local$Main$FileContents('<error reading file>');
+		return A2(_elm_lang$core$Debug$log, 'Error occurred', _kintail$local$Main$ErrorOccurred);
 	}
 };
 var _kintail$local$Main$update = F2(
-	function (message, model) {
-		var _p1 = message;
-		switch (_p1.ctor) {
-			case 'SelectedFiles':
+	function (message, _p1) {
+		var _p2 = _p1;
+		var _p3 = message;
+		switch (_p3.ctor) {
+			case 'SaveFile':
 				return {
 					ctor: '_Tuple2',
-					_0: {selectedFiles: _p1._0, currentFileContents: ''},
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'ReadFile':
-				return {
-					ctor: '_Tuple2',
-					_0: model,
+					_0: {ctor: '_Tuple0'},
 					_1: A2(
 						_elm_lang$core$Task$attempt,
 						_kintail$local$Main$handleResponse,
-						_kintail$local$Kintail_Local_File$read(_p1._0))
+						_kintail$local$Kintail_Local_File$save(
+							{contents: 'One line\nAnother line', suggestedFilename: 'contents.txt '}))
+				};
+			case 'FileSaved':
+				return {
+					ctor: '_Tuple2',
+					_0: {ctor: '_Tuple0'},
+					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
 				return {
 					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{currentFileContents: _p1._0}),
+					_0: {ctor: '_Tuple0'},
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 		}
 	});
-var _kintail$local$Main$ReadFile = function (a) {
-	return {ctor: 'ReadFile', _0: a};
-};
-var _kintail$local$Main$listElement = function (file) {
+var _kintail$local$Main$SaveFile = {ctor: 'SaveFile'};
+var _kintail$local$Main$view = function (model) {
 	return A2(
-		_elm_lang$html$Html$li,
-		{ctor: '[]'},
+		_elm_lang$html$Html$button,
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html$text(
-				_kintail$local$Main$description(file)),
-			_1: {
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$button,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Events$onClick(
-							_kintail$local$Main$ReadFile(file)),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text('Read'),
-						_1: {ctor: '[]'}
-					}),
-				_1: {ctor: '[]'}
-			}
-		});
-};
-var _kintail$local$Main$SelectedFiles = function (a) {
-	return {ctor: 'SelectedFiles', _0: a};
-};
-var _kintail$local$Main$view = function (_p2) {
-	var _p3 = _p2;
-	var _p4 = _p3.selectedFiles;
-	var labelText = _elm_lang$core$List$isEmpty(_p4) ? 'Choose files' : A2(
-		_elm_lang$core$Basics_ops['++'],
-		_elm_lang$core$Basics$toString(
-			_elm_lang$core$List$length(_p4)),
-		' files chosen:');
-	var chooserAttributes = {
-		ctor: '::',
-		_0: _elm_lang$html$Html_Attributes$multiple(true),
-		_1: {
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$hidden(true),
+			_0: _elm_lang$html$Html_Events$onClick(_kintail$local$Main$SaveFile),
 			_1: {ctor: '[]'}
-		}
-	};
-	var chooserId = 'fileChooser';
-	return A2(
-		_elm_lang$html$Html$div,
-		{ctor: '[]'},
+		},
 		{
 			ctor: '::',
-			_0: A3(_kintail$local$Kintail_Local_File$chooser, chooserId, _kintail$local$Main$SelectedFiles, chooserAttributes),
-			_1: {
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$label,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$for(chooserId),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(labelText),
-						_1: {ctor: '[]'}
-					}),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$ul,
-						{ctor: '[]'},
-						A2(_elm_lang$core$List$map, _kintail$local$Main$listElement, _p4)),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$textarea,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$value(_p3.currentFileContents),
-								_1: {ctor: '[]'}
-							},
-							{ctor: '[]'}),
-						_1: {ctor: '[]'}
-					}
-				}
-			}
+			_0: _elm_lang$html$Html$text('Save file'),
+			_1: {ctor: '[]'}
 		});
 };
 var _kintail$local$Main$main = _elm_lang$html$Html$program(
 	{
-		init: _kintail$local$Main$init,
+		init: {
+			ctor: '_Tuple2',
+			_0: {ctor: '_Tuple0'},
+			_1: _elm_lang$core$Platform_Cmd$none
+		},
 		update: _kintail$local$Main$update,
 		view: _kintail$local$Main$view,
 		subscriptions: _elm_lang$core$Basics$always(_elm_lang$core$Platform_Sub$none)
