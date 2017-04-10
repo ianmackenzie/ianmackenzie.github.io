@@ -9270,7 +9270,7 @@ var _kintail$local$Kintail_Local_File$read = function (file) {
 		{
 			method: 'POST',
 			headers: {ctor: '[]'},
-			url: 'https://local/file/read',
+			url: 'https://kintail/local/file/read',
 			body: _elm_lang$http$Http$jsonBody(
 				_kintail$local$Kintail_Local_File$encode(file)),
 			expect: _elm_lang$http$Http$expectString,
