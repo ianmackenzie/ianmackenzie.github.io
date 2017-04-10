@@ -9196,7 +9196,10 @@ var _kintail$local$Kintail_Local_File$fileDecoder = F2(
 			A2(
 				_elm_lang$core$Json_Decode$map,
 				toDate,
-				A2(_elm_lang$core$Json_Decode$field, 'lastModified', _elm_lang$core$Json_Decode$int)),
+				A2(
+					_elm_lang$core$Json_Decode$map,
+					_elm_lang$core$Debug$log('lastModified raw value'),
+					A2(_elm_lang$core$Json_Decode$field, 'lastModified', _elm_lang$core$Json_Decode$int))),
 			A2(
 				_elm_lang$core$Json_Decode$map,
 				toMaybe,
