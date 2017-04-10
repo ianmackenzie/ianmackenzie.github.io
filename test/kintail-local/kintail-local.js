@@ -106,6 +106,7 @@ if ('window' in self) {
 
   function requestFromClient(clientId, request) {
     return clients.get(clientId).then(function(client) {
+      console.log('Found client', client)
       return new Promise(function(resolve, reject) {
         if (client !== undefined) {
           var messageChannel = new MessageChannel()
@@ -131,7 +132,9 @@ if ('window' in self) {
     if (url.startsWith('https://kintail/local/')) {
       var path = url.slice(22)
       event.respondWith(request.text().then(function(body) {
-        return requestFromClient(event.clientId, {path: path, body: body}).then(function(response) {
+        var requestParameters = {path: path, body: body};
+        console.log('Requesting', requestParameters)
+        return requestFromClient(event.clientId, requestParameters).then(function(response) {
           var headers = new Headers();
           headers.append('Content-Type', response.contentType);
           return new Response(response.body, {status: response.status, statusText: response.statusText, headers: headers})
