@@ -9099,6 +9099,10 @@ var _elm_lang$http$Http$StringPart = F2(
 	});
 var _elm_lang$http$Http$stringPart = _elm_lang$http$Http$StringPart;
 
+var _kintail$local$Kintail_Local$url = function (path) {
+	return A2(_elm_lang$core$Basics_ops['++'], 'https://kintail/local/', path);
+};
+
 var _kintail$local$Kintail_Local_File$encode = function (_p0) {
 	var _p1 = _p0;
 	var _p2 = _p1._0;
@@ -9261,7 +9265,7 @@ var _kintail$local$Kintail_Local_File$read = function (file) {
 		{
 			method: 'POST',
 			headers: {ctor: '[]'},
-			url: 'https://kintail/local/file/read',
+			url: _kintail$local$Kintail_Local$url('file/read'),
 			body: _elm_lang$http$Http$jsonBody(
 				_kintail$local$Kintail_Local_File$encode(file)),
 			expect: _elm_lang$http$Http$expectString,
@@ -9302,7 +9306,7 @@ var _kintail$local$Kintail_Local_File$write = function (_p11) {
 		{
 			method: 'PUT',
 			headers: {ctor: '[]'},
-			url: '//local/file/write',
+			url: _kintail$local$Kintail_Local$url('file/write'),
 			body: _elm_lang$http$Http$jsonBody(encoded),
 			expect: _elm_lang$http$Http$expectStringResponse(handleResponse),
 			timeout: _elm_lang$core$Maybe$Nothing,
