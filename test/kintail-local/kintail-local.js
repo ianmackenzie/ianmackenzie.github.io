@@ -1,3 +1,4 @@
+var Kintail = Kintail || {}; Kintail["Local"] =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
