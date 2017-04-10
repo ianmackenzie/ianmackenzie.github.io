@@ -73,100 +73,98 @@ var Kintail = Kintail || {}; Kintail["Local"] =
 
 if ('window' in self) {
   if ('serviceWorker' in navigator) {
-    self['Kintail'] = {}
-    Kintail['Local'] = {}
-    Kintail.Local['init'] = (function(thisFile) {
-      function badRequest(description) {
-        return Promise.resolve({status: 400, statusText: 'Bad Request', body: description})
+    function badRequest(description) {
+      return Promise.resolve({status: 400, statusText: 'Bad Request', body: description})
+    }
+
+    function notFound(description) {
+      return Promise.resolve({status: 404, statusText: 'Not Found', body: description})
+    }
+
+    function text(body) {
+      return Promise.resolve({status: 200, statusText: 'OK', body: body})
+    }
+
+    function ok(body) {
+      return Promise.resolve({status: 200, statusText: 'OK', body: body})
+    }
+
+    function readFile(body) {
+      var requestedFile = JSON.parse(body)
+
+      var fileElement = document.getElementById(requestedFile.elementId)
+      if (fileElement === null) {
+        return notFound('Could not find <file> element')
       }
 
-      function notFound(description) {
-        return Promise.resolve({status: 404, statusText: 'Not Found', body: description})
+      var index = requestedFile.index
+      if (index < 0 || index >= fileElement.files.size) {
+        return notFound('Invalid index for given <file> element')
       }
 
-      function text(body) {
-        return Promise.resolve({status: 200, statusText: 'OK', body: body})
+      var file = fileElement.files[index]
+      if (file.name !== requestedFile.name) {
+        return notFound('File name does not match')
+      }
+      if (file.size !== requestedFile.size) {
+        return notFound('File size does not match')
+      }
+      if (file.lastModified !== requestedFile.lastModified) {
+        console.log('file.lastModified:', file.lastModified)
+        console.log('requestedFile.lastModified', requestedFile.lastModified)
+        return notFound('File last-modified time does not match')
+      }
+      if (file.type !== requestedFile.mimeType) {
+        return notFound('File MIME type does not match')
       }
 
-      function ok(body) {
-        return Promise.resolve({status: 200, statusText: 'OK', body: body})
+      return new Promise(function(resolve, reject) {
+        var reader = new FileReader();
+
+        reader.onload = function(event) {
+          resolve(reader.result)
+        }
+
+        reader.readAsText(file);
+      }).then(function(text) {
+        return ok(text)
+      })
+    }
+
+    function handleRequest(request) {
+      if (request.path == 'file/read') {
+        return readFile(request.body)
+      } else {
+        return badRequest("Unrecognized request")
       }
+    }
 
-      function readFile(body) {
-        var requestedFile = JSON.parse(body)
+    var thisFile = document.currentScript.src
 
-        var fileElement = document.getElementById(requestedFile.elementId)
-        if (fileElement === null) {
-          return notFound('Could not find <file> element')
-        }
-
-        var index = requestedFile.index
-        if (index < 0 || index >= fileElement.files.size) {
-          return notFound('Invalid index for given <file> element')
-        }        
-        
-        var file = fileElement.files[index]
-        if (file.name !== requestedFile.name) {
-          return notFound('File name does not match')
-        }
-        if (file.size !== requestedFile.size) {
-          return notFound('File size does not match')
-        }
-        if (file.lastModified !== requestedFile.lastModified) {
-          console.log('file.lastModified:', file.lastModified)
-          console.log('requestedFile.lastModified', requestedFile.lastModified)
-          return notFound('File last-modified time does not match')
-        }
-        if (file.type !== requestedFile.mimeType) {
-          return notFound('File MIME type does not match')
-        }
-
-        return new Promise(function(resolve, reject) {
-          var reader = new FileReader();
-
-          reader.onload = function(event) {
-            resolve(reader.result)
-          }
-
-          reader.readAsText(file);
-        }).then(function(text) {
-          return ok(text)
-        })
-      }
-
-      function handleRequest(request) {
-        if (request.path == 'file/read') {
-          return readFile(request.body)
-        } else {
-          return badRequest("Unrecognized request")
-        }
-      }
-
-      function registerServiceWorker() {
-        return navigator.serviceWorker.register(thisFile).then(function(registration) {
-          console.log('Registered service worker')
-          navigator.serviceWorker.addEventListener('message', function(event) {
-            console.log('Received message from service worker', event.data)
-            handleRequest(event.data).then(function(response) {
-              console.log('Sending message back to service worker', response)
-              event.ports[0].postMessage(response)
-            })
+    function registerServiceWorker() {
+      return navigator.serviceWorker.register(thisFile).then(function(registration) {
+        console.log('Registered service worker')
+        navigator.serviceWorker.addEventListener('message', function(event) {
+          console.log('Received message from service worker', event.data)
+          handleRequest(event.data).then(function(response) {
+            console.log('Sending message back to service worker', response)
+            event.ports[0].postMessage(response)
           })
-        }).catch(function(err) {
-          console.log('Service worker registration failed: ', err)
         })
-      }
+      }).catch(function(err) {
+        console.log('Service worker registration failed: ', err)
+      })
+    }
 
-      return function() {
-        return navigator.serviceWorker.getRegistration().then(function(registration) {
-          if (registration === undefined) {
-            return registerServiceWorker()
-          } else {
-            return registration.unregister().then(registerServiceWorker)
-          }
-        })
-      }
-    })(document.currentScript.src)
+    exports.init = function() {
+      return navigator.serviceWorker.getRegistration().then(function(registration) {
+        if (registration === undefined) {
+          return registerServiceWorker()
+        } else {
+          return registration.unregister().then(registerServiceWorker)
+        }
+      })
+    }
   } else {
     console.log('Service workers are not supported')
   }
@@ -189,7 +187,7 @@ if ('window' in self) {
           messageChannel.port1.onmessage = function(event) {
             resolve(event.data)
           }
-          
+
           console.log('Posting request to client', request)
 
           client.postMessage(request, [messageChannel.port2])
