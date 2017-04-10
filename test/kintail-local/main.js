@@ -9177,10 +9177,6 @@ var _kintail$local$Kintail_Local_File$File = function (a) {
 };
 var _kintail$local$Kintail_Local_File$fileDecoder = F2(
 	function (id, index) {
-		var toDate = function (time) {
-			return _elm_lang$core$Date$fromTime(
-				_elm_lang$core$Basics$toFloat(time));
-		};
 		var toMaybe = function (string) {
 			return _elm_lang$core$String$isEmpty(string) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(string);
 		};
@@ -9195,11 +9191,11 @@ var _kintail$local$Kintail_Local_File$fileDecoder = F2(
 			A2(_elm_lang$core$Json_Decode$field, 'size', _elm_lang$core$Json_Decode$int),
 			A2(
 				_elm_lang$core$Json_Decode$map,
-				toDate,
+				_elm_lang$core$Date$fromTime,
 				A2(
 					_elm_lang$core$Json_Decode$map,
 					_elm_lang$core$Debug$log('lastModified raw value'),
-					A2(_elm_lang$core$Json_Decode$field, 'lastModified', _elm_lang$core$Json_Decode$int))),
+					A2(_elm_lang$core$Json_Decode$field, 'lastModified', _elm_lang$core$Json_Decode$float))),
 			A2(
 				_elm_lang$core$Json_Decode$map,
 				toMaybe,
