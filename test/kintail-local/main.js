@@ -9459,13 +9459,13 @@ var _kintail$local$Main$view = function (_p2) {
 					_1: {
 						ctor: '::',
 						_0: A2(
-							_elm_lang$html$Html$div,
-							{ctor: '[]'},
+							_elm_lang$html$Html$textarea,
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html$text(_p3.currentFileContents),
+								_0: _elm_lang$html$Html_Attributes$value(_p3.currentFileContents),
 								_1: {ctor: '[]'}
-							}),
+							},
+							{ctor: '[]'}),
 						_1: {ctor: '[]'}
 					}
 				}
