@@ -9103,8 +9103,7 @@ var _kintail$local$Kintail_Local_File$encode = function (_p0) {
 	var _p1 = _p0;
 	var _p2 = _p1._0;
 	var mimeTypeString = A2(_elm_lang$core$Maybe$withDefault, '', _p2.mimeType);
-	var lastModifiedTime = _elm_lang$core$Basics$truncate(
-		_elm_lang$core$Date$toTime(_p2.lastModified));
+	var lastModifiedTime = _elm_lang$core$Date$toTime(_p2.lastModified);
 	return _elm_lang$core$Json_Encode$object(
 		{
 			ctor: '::',
@@ -9132,14 +9131,14 @@ var _kintail$local$Kintail_Local_File$encode = function (_p0) {
 						_0: {
 							ctor: '_Tuple2',
 							_0: 'size',
-							_1: _elm_lang$core$Json_Encode$int(_p2.sizeInBytes)
+							_1: _elm_lang$core$Json_Encode$float(_p2.sizeInBytes)
 						},
 						_1: {
 							ctor: '::',
 							_0: {
 								ctor: '_Tuple2',
 								_0: 'lastModified',
-								_1: _elm_lang$core$Json_Encode$int(lastModifiedTime)
+								_1: _elm_lang$core$Json_Encode$float(lastModifiedTime)
 							},
 							_1: {
 								ctor: '::',
@@ -9177,9 +9176,11 @@ var _kintail$local$Kintail_Local_File$File = function (a) {
 };
 var _kintail$local$Kintail_Local_File$fileDecoder = F2(
 	function (id, index) {
+		var dateDecoder = A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Date$fromTime, _elm_lang$core$Json_Decode$float);
 		var toMaybe = function (string) {
 			return _elm_lang$core$String$isEmpty(string) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(string);
 		};
+		var mimeTypeDecoder = A2(_elm_lang$core$Json_Decode$map, toMaybe, _elm_lang$core$Json_Decode$string);
 		return A5(
 			_elm_lang$core$Json_Decode$map4,
 			F4(
@@ -9188,21 +9189,9 @@ var _kintail$local$Kintail_Local_File$fileDecoder = F2(
 						{elementId: id, index: index, name: name, sizeInBytes: sizeInBytes, lastModified: lastModified, mimeType: mimeType});
 				}),
 			A2(_elm_lang$core$Json_Decode$field, 'name', _elm_lang$core$Json_Decode$string),
-			A2(_elm_lang$core$Json_Decode$field, 'size', _elm_lang$core$Json_Decode$int),
-			A2(
-				_elm_lang$core$Json_Decode$map,
-				_elm_lang$core$Debug$log('parsed date'),
-				A2(
-					_elm_lang$core$Json_Decode$map,
-					_elm_lang$core$Date$fromTime,
-					A2(
-						_elm_lang$core$Json_Decode$map,
-						_elm_lang$core$Debug$log('lastModified raw value'),
-						A2(_elm_lang$core$Json_Decode$field, 'lastModified', _elm_lang$core$Json_Decode$float)))),
-			A2(
-				_elm_lang$core$Json_Decode$map,
-				toMaybe,
-				A2(_elm_lang$core$Json_Decode$field, 'type', _elm_lang$core$Json_Decode$string)));
+			A2(_elm_lang$core$Json_Decode$field, 'size', _elm_lang$core$Json_Decode$float),
+			A2(_elm_lang$core$Json_Decode$field, 'lastModified', dateDecoder),
+			A2(_elm_lang$core$Json_Decode$field, 'type', mimeTypeDecoder));
 	});
 var _kintail$local$Kintail_Local_File$accumulateFiles = F3(
 	function (id, index, accumulated) {
