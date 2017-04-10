@@ -69,6 +69,7 @@ if ('window' in self) {
 
       function registerServiceWorker() {
         return navigator.serviceWorker.register(thisFile).then(function(registration) {
+          console.log('Registered service worker')
           navigator.serviceWorker.addEventListener('message', function(event) {
             console.log('Received message from service worker', event.data)
             handleRequest(event.data).then(function(response) {
@@ -77,7 +78,7 @@ if ('window' in self) {
             })
           })
         }).catch(function(err) {
-          console.log('ServiceWorker registration failed: ', err)
+          console.log('Service worker registration failed: ', err)
         })
       }
 
@@ -126,6 +127,7 @@ if ('window' in self) {
   self.addEventListener('fetch', function(event) {
     var request = event.request
     var url = request.url
+    console.log('Intercepting request', url)
     if (url.startsWith('https://kintail/local/')) {
       var path = url.slice(22)
       event.respondWith(request.text().then(function(body) {
