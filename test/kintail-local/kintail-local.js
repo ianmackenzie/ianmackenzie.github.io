@@ -131,6 +131,7 @@ if ('window' in self) {
     console.log('Intercepting request', url)
     if (url.startsWith('https://kintail/local/')) {
       var path = url.slice(22)
+      console.log('path', path)
       event.respondWith(request.text().then(function(body) {
         var requestParameters = {path: path, body: body};
         console.log('Requesting', requestParameters)
@@ -139,6 +140,8 @@ if ('window' in self) {
           headers.append('Content-Type', response.contentType);
           return new Response(response.body, {status: response.status, statusText: response.statusText, headers: headers})
         })
+      }).catch(function (reason) {
+        console.log('Responding failed:', reason)
       }))
     } else {
       event.respondWith(fetch(event.request))
