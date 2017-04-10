@@ -40,6 +40,8 @@ if ('window' in self) {
           return notFound('File size does not match')
         }
         if (file.lastModified !== requestedFile.lastModified) {
+          console.log('file.lastModified:', file.lastModified)
+          console.log('requestedFile.lastModified', requestedFile.lastModified)
           return notFound('File last-modified time does not match')
         }
         if (file.type !== requestedFile.mimeType) {
