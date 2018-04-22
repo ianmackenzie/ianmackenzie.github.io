@@ -1,0 +1,17 @@
+<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg width="80" height="80" stroke="black" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs xmlns="http://www.w3.org/1999/xhtml"><style type="text/css"><![CDATA[
+html, head, body { margin: 0px; height: 100%; }
+.elm-overlay { position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; color: white; pointer-events: none; font-family: "Trebuchet MS", "Lucida Grande", "Bitstream Vera Sans", "Helvetica Neue", sans-serif; }
+.elm-overlay-resume { width: 100%; height: 100%; cursor: pointer; text-align: center; pointer-events: auto; background-color: rgba(200, 200, 200, 0.701961); }
+.elm-overlay-resume-words { position: absolute; top: calc(50% - 40px); font-size: 80px; line-height: 80px; height: 80px; width: 100%; }
+.elm-mini-controls { position: fixed; bottom: 0px; right: 6px; border-radius: 4px; background-color: rgb(61, 61, 61); font-family: monospace; pointer-events: auto; }
+.elm-mini-controls-button { padding: 6px; cursor: pointer; text-align: center; min-width: 24ch; }
+.elm-mini-controls-import-export { padding: 4px 0px; font-size: 0.8em; text-align: center; background-color: rgb(50, 50, 50); }
+.elm-overlay-message { position: absolute; width: 600px; height: 100%; padding-left: calc(50% - 300px); padding-right: calc(50% - 300px); background-color: rgba(200, 200, 200, 0.701961); pointer-events: auto; }
+.elm-overlay-message-title { font-size: 36px; height: 80px; background-color: rgb(50, 50, 50); padding-left: 22px; vertical-align: middle; line-height: 80px; }
+.elm-overlay-message-details { padding: 8px 20px; overflow-y: auto; max-height: calc(100% - 156px); background-color: rgb(61, 61, 61); }
+.elm-overlay-message-details-type { font-size: 1.5em; }
+.elm-overlay-message-details ul { list-style-type: none; padding-left: 20px; }
+.elm-overlay-message-details ul ul { list-style-type: disc; padding-left: 2em; }
+.elm-overlay-message-details li { margin: 8px 0px; }
+.elm-overlay-message-buttons { height: 60px; line-height: 60px; text-align: right; background-color: rgb(50, 50, 50); }
+.elm-overlay-message-buttons button { margin-right: 20px; }]]></style></defs><g transform="matrix(1 0 0 -1 20 60)"><g><g stroke="darkgrey"><g><g fill="white"><polyline points="0,0 20,0"/><polygon points="20,-2.5 25,0 20,2.5"/></g><g fill="white"><polyline points="0,0 0,20"/><polygon points="2.5,20 0,25 -2.5,20"/></g><circle cx="0" cy="0" r="1.5" fill="white"/></g></g><g><circle cx="30" cy="30" r="15" fill="none"/><g><polyline points="24,30 36,30"/><polyline points="30,24 30,36"/><circle cx="30" cy="30" r="2"/></g></g></g></g><polygon points="0,0 80,0 80,80 0,80" stroke-width="1" stroke="none" fill="none"/></svg>
