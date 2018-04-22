@@ -1,0 +1,17 @@
+<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg width="190" height="160" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs xmlns="http://www.w3.org/1999/xhtml"><style type="text/css"><![CDATA[
+html, head, body { margin: 0px; height: 100%; }
+.elm-overlay { position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; color: white; pointer-events: none; font-family: "Trebuchet MS", "Lucida Grande", "Bitstream Vera Sans", "Helvetica Neue", sans-serif; }
+.elm-overlay-resume { width: 100%; height: 100%; cursor: pointer; text-align: center; pointer-events: auto; background-color: rgba(200, 200, 200, 0.701961); }
+.elm-overlay-resume-words { position: absolute; top: calc(50% - 40px); font-size: 80px; line-height: 80px; height: 80px; width: 100%; }
+.elm-mini-controls { position: fixed; bottom: 0px; right: 6px; border-radius: 4px; background-color: rgb(61, 61, 61); font-family: monospace; pointer-events: auto; }
+.elm-mini-controls-button { padding: 6px; cursor: pointer; text-align: center; min-width: 24ch; }
+.elm-mini-controls-import-export { padding: 4px 0px; font-size: 0.8em; text-align: center; background-color: rgb(50, 50, 50); }
+.elm-overlay-message { position: absolute; width: 600px; height: 100%; padding-left: calc(50% - 300px); padding-right: calc(50% - 300px); background-color: rgba(200, 200, 200, 0.701961); pointer-events: auto; }
+.elm-overlay-message-title { font-size: 36px; height: 80px; background-color: rgb(50, 50, 50); padding-left: 22px; vertical-align: middle; line-height: 80px; }
+.elm-overlay-message-details { padding: 8px 20px; overflow-y: auto; max-height: calc(100% - 156px); background-color: rgb(61, 61, 61); }
+.elm-overlay-message-details-type { font-size: 1.5em; }
+.elm-overlay-message-details ul { list-style-type: none; padding-left: 20px; }
+.elm-overlay-message-details ul ul { list-style-type: disc; padding-left: 2em; }
+.elm-overlay-message-details li { margin: 8px 0px; }
+.elm-overlay-message-buttons { height: 60px; line-height: 60px; text-align: right; background-color: rgb(50, 50, 50); }
+.elm-overlay-message-buttons button { margin-right: 20px; }]]></style></defs><g transform="matrix(1 0 0 -1 -30 190)"><g><path d="M 50 100 C 75 125 133.33333333333334 116.66666666666666 150 100" stroke="black" fill="none"/><g><polyline points="50,100 117.92893218813452,167.92893218813452" stroke="grey"/><polygon points="120.75735931288071,165.10050506338834 125,175 115.10050506338834,170.7573593128807" fill="grey"/></g><g><polyline points="150,100 192.92893218813452,57.07106781186547" stroke="grey"/><polygon points="190.10050506338834,54.24264068711928 200,49.99999999999999 195.75735931288074,59.89949493661166" fill="grey"/></g><circle cx="50" cy="100" r="3" fill="white" stroke="black"/><circle cx="150" cy="100" r="3" fill="white" stroke="black"/></g></g></svg>
