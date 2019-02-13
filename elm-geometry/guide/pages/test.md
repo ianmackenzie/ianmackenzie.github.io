@@ -1,9 +1,3 @@
-module Test exposing (md)
-
-
-md : String
-md =
-    """
 # First section
 
 Some `inline code` followed by some _italic_ text
@@ -28,4 +22,3 @@ A code block:
 With a custom element:
 
 <custom-element a="3" b="4" c/>
-"""
