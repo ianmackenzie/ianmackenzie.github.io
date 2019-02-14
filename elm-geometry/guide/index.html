@@ -5,11 +5,16 @@
 <head>
     <meta charset="utf-8">
     <title>Loading...</title>
-    <link href="https://fonts.googleapis.com/css?family=Alegreya+Sans|Merriweather|Source+Code+Pro" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css?family=Alegreya+Sans:800|Merriweather:400,400i,700|Source+Code+Pro:400,700"
+        rel="stylesheet">
+    <script src="main.js"></script>
 </head>
 
 <body>
-    <script src="main.js"></script>
+    <script>
+        var app = Elm.Main.init({ flags: null });
+    </script>
 </body>
 
 </html>

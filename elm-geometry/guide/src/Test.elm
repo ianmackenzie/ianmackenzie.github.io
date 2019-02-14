@@ -3,18 +3,19 @@ module Test exposing (md)
 
 md : String
 md =
-    """
-# First section
+    """# Title with `inline code`
 
-Some `inline code` followed by some _italic_ text
+Some `inline code` followed by some _italic_ text.
 
-## A subsection
+## A section with `some inline-code`
 
-Containing some `more inline code`
+Containing some `more inline code`.
 
-# Second section
+## Another _section_
     
-With some **bold** text
+With some **bold** text, and a custom element:
+
+<counter/>
 
 A code block:
 
@@ -23,9 +24,9 @@ A code block:
         indented code
     unindented code
 
-## Another subsection
+### A subsection with `some inline-code`
 
-With a custom element:
+With a second custom element:
 
-<custom-element a="3" b="4" c/>
+<counter/>
 """
