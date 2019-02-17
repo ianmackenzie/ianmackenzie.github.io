@@ -48,5 +48,9 @@ A code block:
 
 With another custom element:
 
+### `A weird subsection`
+
+Just inline code in the title!
+
 <counter/>
 """

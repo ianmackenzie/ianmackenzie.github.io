@@ -11,7 +11,9 @@ import Test
 
 
 type alias Flags =
-    ()
+    { width : Int
+    , height : Int
+    }
 
 
 type Model
@@ -52,7 +54,7 @@ counter =
         }
 
 
-init : () -> ( Model, Cmd Msg )
+init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
         widgets =
@@ -60,7 +62,7 @@ init flags =
             ]
 
         model =
-            case Document.parse widgets Test.md of
+            case Document.parse { screenWidth = flags.width, widgets = widgets } Test.md of
                 Ok document ->
                     Loaded document
 
@@ -77,7 +79,7 @@ view model =
             { title = Document.title document
             , body =
                 [ Element.layout [ Element.width Element.fill ]
-                    (Document.view [ Element.width (Element.px 640), Element.centerX ] document)
+                    (Document.view [ Element.centerX ] document)
                 ]
             }
 

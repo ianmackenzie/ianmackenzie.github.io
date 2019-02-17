@@ -4468,6 +4468,8 @@ function _Browser_load(url)
 var author$project$Guide$Document$Document = function (a) {
 	return {$: 'Document', a: a};
 };
+var author$project$Guide$Document$LargeScreen = {$: 'LargeScreen'};
+var author$project$Guide$Document$SmallScreen = {$: 'SmallScreen'};
 var author$project$Guide$Document$Title = function (a) {
 	return {$: 'Title', a: a};
 };
@@ -4487,6 +4489,15 @@ var author$project$Guide$Document$Static = F2(
 	});
 var author$project$Guide$Document$SubsectionContext = {$: 'SubsectionContext'};
 var author$project$Guide$Document$TitleContext = {$: 'TitleContext'};
+var author$project$Guide$Document$largeScreenFontSizes = {body: 16, bodyCode: 16, section: 32, sectionCode: 30, subsection: 22, subsectionCode: 22, title: 48, titleCode: 44};
+var author$project$Guide$Document$smallScreenFontSizes = {body: 13, bodyCode: 14, section: 22, sectionCode: 22, subsection: 18, subsectionCode: 18, title: 32, titleCode: 28};
+var author$project$Guide$Document$fontSizes = function (screenType) {
+	if (screenType.$ === 'LargeScreen') {
+		return author$project$Guide$Document$largeScreenFontSizes;
+	} else {
+		return author$project$Guide$Document$smallScreenFontSizes;
+	}
+};
 var elm$core$Basics$EQ = {$: 'EQ'};
 var elm$core$Basics$GT = {$: 'GT'};
 var elm$core$Basics$LT = {$: 'LT'};
@@ -10553,23 +10564,35 @@ var mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
 			'border-radius',
 			elm$core$String$fromInt(radius) + 'px'));
 };
-var author$project$Guide$Document$viewCodeBlock = function (code) {
-	return A2(
-		mdgriffith$elm_ui$Element$column,
-		_List_fromArray(
-			[
-				mdgriffith$elm_ui$Element$Border$rounded(5),
-				A2(mdgriffith$elm_ui$Element$paddingXY, 10, 4),
-				author$project$Guide$Document$sourceCodePro,
-				mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Document$lightGrey)
-			]),
-		A2(
-			elm$core$List$map,
-			mdgriffith$elm_ui$Element$text,
-			elm$core$String$lines(
-				elm$core$String$trim(code))));
+var mdgriffith$elm_ui$Internal$Flag$fontSize = mdgriffith$elm_ui$Internal$Flag$flag(4);
+var mdgriffith$elm_ui$Internal$Model$FontSize = function (a) {
+	return {$: 'FontSize', a: a};
 };
-var author$project$Guide$Document$fontSizes = {body: 16, bodyCode: 16, section: 32, sectionCode: 30, subsection: 22, subsectionCode: 22, title: 48, titleCode: 44};
+var mdgriffith$elm_ui$Element$Font$size = function (i) {
+	return A2(
+		mdgriffith$elm_ui$Internal$Model$StyleClass,
+		mdgriffith$elm_ui$Internal$Flag$fontSize,
+		mdgriffith$elm_ui$Internal$Model$FontSize(i));
+};
+var author$project$Guide$Document$viewCodeBlock = F2(
+	function (screenType, code) {
+		return A2(
+			mdgriffith$elm_ui$Element$column,
+			_List_fromArray(
+				[
+					mdgriffith$elm_ui$Element$Border$rounded(5),
+					A2(mdgriffith$elm_ui$Element$paddingXY, 10, 4),
+					author$project$Guide$Document$sourceCodePro,
+					mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Document$lightGrey),
+					mdgriffith$elm_ui$Element$Font$size(
+					author$project$Guide$Document$fontSizes(screenType).bodyCode)
+				]),
+			A2(
+				elm$core$List$map,
+				mdgriffith$elm_ui$Element$text,
+				elm$core$String$lines(
+					elm$core$String$trim(code))));
+	});
 var mdgriffith$elm_ui$Element$el = F2(
 	function (attrs, child) {
 		return A4(
@@ -10587,16 +10610,6 @@ var mdgriffith$elm_ui$Element$el = F2(
 				_List_fromArray(
 					[child])));
 	});
-var mdgriffith$elm_ui$Internal$Flag$fontSize = mdgriffith$elm_ui$Internal$Flag$flag(4);
-var mdgriffith$elm_ui$Internal$Model$FontSize = function (a) {
-	return {$: 'FontSize', a: a};
-};
-var mdgriffith$elm_ui$Element$Font$size = function (i) {
-	return A2(
-		mdgriffith$elm_ui$Internal$Model$StyleClass,
-		mdgriffith$elm_ui$Internal$Flag$fontSize,
-		mdgriffith$elm_ui$Internal$Model$FontSize(i));
-};
 var author$project$Guide$Document$inlineCodeElement = F2(
 	function (fontSize, chunk) {
 		if (chunk.$ === 'Characters') {
@@ -10641,8 +10654,8 @@ var mdgriffith$elm_ui$Internal$Model$Class = F2(
 	});
 var mdgriffith$elm_ui$Element$Font$bold = A2(mdgriffith$elm_ui$Internal$Model$Class, mdgriffith$elm_ui$Internal$Flag$fontWeight, mdgriffith$elm_ui$Internal$Style$classes.bold);
 var mdgriffith$elm_ui$Element$Font$italic = mdgriffith$elm_ui$Internal$Model$htmlClass(mdgriffith$elm_ui$Internal$Style$classes.italic);
-var author$project$Guide$Document$renderTextFragment = F2(
-	function (context, fragment) {
+var author$project$Guide$Document$renderTextFragment = F3(
+	function (screenType, context, fragment) {
 		switch (fragment.$) {
 			case 'Plain':
 				var string = fragment.a;
@@ -10666,19 +10679,21 @@ var author$project$Guide$Document$renderTextFragment = F2(
 				var fontSize = function () {
 					switch (context.$) {
 						case 'TitleContext':
-							return author$project$Guide$Document$fontSizes.titleCode;
+							return author$project$Guide$Document$fontSizes(screenType).titleCode;
 						case 'SectionContext':
-							return author$project$Guide$Document$fontSizes.sectionCode;
+							return author$project$Guide$Document$fontSizes(screenType).sectionCode;
 						case 'SubsectionContext':
-							return author$project$Guide$Document$fontSizes.subsectionCode;
+							return author$project$Guide$Document$fontSizes(screenType).subsectionCode;
 						case 'ParagraphContext':
-							return author$project$Guide$Document$fontSizes.bodyCode;
+							return author$project$Guide$Document$fontSizes(screenType).bodyCode;
 						default:
-							return author$project$Guide$Document$fontSizes.bodyCode;
+							return author$project$Guide$Document$fontSizes(screenType).bodyCode;
 					}
 				}();
 				var backgroundAttributes = _Utils_eq(context, author$project$Guide$Document$ParagraphContext) ? _List_fromArray(
 					[
+						A2(mdgriffith$elm_ui$Element$paddingXY, 4, 2),
+						mdgriffith$elm_ui$Element$Border$rounded(3),
 						mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Document$lightGrey)
 					]) : _List_Nil;
 				return A2(
@@ -10689,24 +10704,18 @@ var author$project$Guide$Document$renderTextFragment = F2(
 						A2(
 							elm$core$List$cons,
 							mdgriffith$elm_ui$Element$Font$size(fontSize),
-							A2(
-								elm$core$List$cons,
-								A2(mdgriffith$elm_ui$Element$paddingXY, 4, 2),
-								A2(
-									elm$core$List$cons,
-									mdgriffith$elm_ui$Element$Border$rounded(3),
-									backgroundAttributes)))),
+							backgroundAttributes)),
 					A2(
 						elm$core$List$map,
 						author$project$Guide$Document$inlineCodeElement(fontSize),
 						chunks));
 		}
 	});
-var author$project$Guide$Document$renderText = F2(
-	function (context, fragments) {
+var author$project$Guide$Document$renderText = F3(
+	function (screenType, context, fragments) {
 		return A2(
 			elm$core$List$map,
-			author$project$Guide$Document$renderTextFragment(context),
+			A2(author$project$Guide$Document$renderTextFragment, screenType, context),
 			fragments);
 	});
 var mdgriffith$elm_ui$Internal$Model$Fill = function (a) {
@@ -10754,12 +10763,13 @@ var mdgriffith$elm_ui$Element$paragraph = F2(
 						attrs))),
 			mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
-var author$project$Guide$Document$viewParagraph = function (textFragments) {
-	return A2(
-		mdgriffith$elm_ui$Element$paragraph,
-		_List_Nil,
-		A2(author$project$Guide$Document$renderText, author$project$Guide$Document$ParagraphContext, textFragments));
-};
+var author$project$Guide$Document$viewParagraph = F2(
+	function (screenType, textFragments) {
+		return A2(
+			mdgriffith$elm_ui$Element$paragraph,
+			_List_Nil,
+			A3(author$project$Guide$Document$renderText, screenType, author$project$Guide$Document$ParagraphContext, textFragments));
+	});
 var mdgriffith$elm_ui$Internal$Model$SansSerif = {$: 'SansSerif'};
 var mdgriffith$elm_ui$Element$Font$sansSerif = mdgriffith$elm_ui$Internal$Model$SansSerif;
 var author$project$Guide$Document$alegreyaSans = mdgriffith$elm_ui$Element$Font$family(
@@ -10807,34 +10817,38 @@ var mdgriffith$elm_ui$Internal$Model$Heading = function (a) {
 	return {$: 'Heading', a: a};
 };
 var mdgriffith$elm_ui$Element$Region$heading = A2(elm$core$Basics$composeL, mdgriffith$elm_ui$Internal$Model$Describe, mdgriffith$elm_ui$Internal$Model$Heading);
-var author$project$Guide$Document$viewSection = function (textFragments) {
-	return A2(
-		mdgriffith$elm_ui$Element$paragraph,
-		_List_fromArray(
-			[
-				mdgriffith$elm_ui$Element$Region$heading(2),
-				author$project$Guide$Document$alegreyaSans,
-				mdgriffith$elm_ui$Element$Font$extraBold,
-				mdgriffith$elm_ui$Element$Font$size(author$project$Guide$Document$fontSizes.section),
-				mdgriffith$elm_ui$Element$paddingEach(
-				{bottom: 0, left: 0, right: 0, top: 12})
-			]),
-		A2(author$project$Guide$Document$renderText, author$project$Guide$Document$SectionContext, textFragments));
-};
-var author$project$Guide$Document$viewSubsection = function (textFragments) {
-	return A2(
-		mdgriffith$elm_ui$Element$paragraph,
-		_List_fromArray(
-			[
-				mdgriffith$elm_ui$Element$Region$heading(3),
-				author$project$Guide$Document$alegreyaSans,
-				mdgriffith$elm_ui$Element$Font$extraBold,
-				mdgriffith$elm_ui$Element$Font$size(author$project$Guide$Document$fontSizes.subsection),
-				mdgriffith$elm_ui$Element$paddingEach(
-				{bottom: 0, left: 0, right: 0, top: 6})
-			]),
-		A2(author$project$Guide$Document$renderText, author$project$Guide$Document$SubsectionContext, textFragments));
-};
+var author$project$Guide$Document$viewSection = F2(
+	function (screenType, textFragments) {
+		return A2(
+			mdgriffith$elm_ui$Element$paragraph,
+			_List_fromArray(
+				[
+					mdgriffith$elm_ui$Element$Region$heading(2),
+					author$project$Guide$Document$alegreyaSans,
+					mdgriffith$elm_ui$Element$Font$extraBold,
+					mdgriffith$elm_ui$Element$Font$size(
+					author$project$Guide$Document$fontSizes(screenType).section),
+					mdgriffith$elm_ui$Element$paddingEach(
+					{bottom: 0, left: 0, right: 0, top: 12})
+				]),
+			A3(author$project$Guide$Document$renderText, screenType, author$project$Guide$Document$SectionContext, textFragments));
+	});
+var author$project$Guide$Document$viewSubsection = F2(
+	function (screenType, textFragments) {
+		return A2(
+			mdgriffith$elm_ui$Element$paragraph,
+			_List_fromArray(
+				[
+					mdgriffith$elm_ui$Element$Region$heading(3),
+					author$project$Guide$Document$alegreyaSans,
+					mdgriffith$elm_ui$Element$Font$extraBold,
+					mdgriffith$elm_ui$Element$Font$size(
+					author$project$Guide$Document$fontSizes(screenType).subsection),
+					mdgriffith$elm_ui$Element$paddingEach(
+					{bottom: 0, left: 0, right: 0, top: 6})
+				]),
+			A3(author$project$Guide$Document$renderText, screenType, author$project$Guide$Document$SubsectionContext, textFragments));
+	});
 var mdgriffith$elm_ui$Internal$Flag$borderColor = mdgriffith$elm_ui$Internal$Flag$flag(28);
 var mdgriffith$elm_ui$Element$Border$color = function (clr) {
 	return A2(
@@ -10891,43 +10905,47 @@ var mdgriffith$elm_ui$Element$Border$widthEach = function (_n0) {
 			bottom,
 			left));
 };
-var author$project$Guide$Document$viewTitle = function (textFragments) {
-	return A2(
-		mdgriffith$elm_ui$Element$el,
-		_List_fromArray(
-			[
-				mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill),
-				mdgriffith$elm_ui$Element$paddingEach(
-				{bottom: 8, left: 0, right: 0, top: 0})
-			]),
-		A2(
-			mdgriffith$elm_ui$Element$paragraph,
+var author$project$Guide$Document$viewTitle = F2(
+	function (screenType, textFragments) {
+		return A2(
+			mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
 				[
-					mdgriffith$elm_ui$Element$Region$heading(1),
-					author$project$Guide$Document$alegreyaSans,
-					mdgriffith$elm_ui$Element$Font$extraBold,
-					mdgriffith$elm_ui$Element$Font$size(author$project$Guide$Document$fontSizes.title),
-					mdgriffith$elm_ui$Element$Border$widthEach(
-					{bottom: 1, left: 0, right: 0, top: 0}),
-					mdgriffith$elm_ui$Element$Border$color(author$project$Guide$Document$lightGrey),
-					mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill)
+					mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill),
+					mdgriffith$elm_ui$Element$paddingEach(
+					{bottom: 8, left: 0, right: 0, top: 8})
 				]),
-			A2(author$project$Guide$Document$renderText, author$project$Guide$Document$TitleContext, textFragments)));
-};
-var author$project$Guide$Document$compileBullets = F3(
-	function (bullets, widgetId, accumulated) {
+			A2(
+				mdgriffith$elm_ui$Element$paragraph,
+				_List_fromArray(
+					[
+						mdgriffith$elm_ui$Element$Region$heading(1),
+						author$project$Guide$Document$alegreyaSans,
+						mdgriffith$elm_ui$Element$Font$extraBold,
+						mdgriffith$elm_ui$Element$Font$size(
+						author$project$Guide$Document$fontSizes(screenType).title),
+						mdgriffith$elm_ui$Element$Border$widthEach(
+						{bottom: 1, left: 0, right: 0, top: 0}),
+						mdgriffith$elm_ui$Element$Border$color(author$project$Guide$Document$lightGrey),
+						mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill)
+					]),
+				A3(author$project$Guide$Document$renderText, screenType, author$project$Guide$Document$TitleContext, textFragments)));
+	});
+var author$project$Guide$Document$compileBullets = F4(
+	function (screenType, bullets, widgetId, accumulated) {
 		compileBullets:
 		while (true) {
 			if (bullets.b) {
 				var chunks = bullets.a;
 				var rest = bullets.b;
-				var _n4 = A3(author$project$Guide$Document$compileHelp, chunks, widgetId, _List_Nil);
+				var _n4 = A4(author$project$Guide$Document$compileHelp, screenType, chunks, widgetId, _List_Nil);
 				var compiledChunks = _n4.a;
 				var updatedId = _n4.b;
-				var $temp$bullets = rest,
+				var $temp$screenType = screenType,
+					$temp$bullets = rest,
 					$temp$widgetId = updatedId,
 					$temp$accumulated = A2(elm$core$List$cons, compiledChunks, accumulated);
+				screenType = $temp$screenType;
 				bullets = $temp$bullets;
 				widgetId = $temp$widgetId;
 				accumulated = $temp$accumulated;
@@ -10939,16 +10957,17 @@ var author$project$Guide$Document$compileBullets = F3(
 			}
 		}
 	});
-var author$project$Guide$Document$compileHelp = F3(
-	function (chunks, widgetId, accumulated) {
+var author$project$Guide$Document$compileHelp = F4(
+	function (screenType, chunks, widgetId, accumulated) {
 		compileHelp:
 		while (true) {
 			if (chunks.b) {
 				var first = chunks.a;
 				var rest = chunks.b;
 				var prepend = function (compiledChunk) {
-					return A3(
+					return A4(
 						author$project$Guide$Document$compileHelp,
+						screenType,
 						rest,
 						widgetId,
 						A2(elm$core$List$cons, compiledChunk, accumulated));
@@ -10960,36 +10979,38 @@ var author$project$Guide$Document$compileHelp = F3(
 							A2(
 								author$project$Guide$Document$Static,
 								author$project$Guide$Document$TitleContext,
-								author$project$Guide$Document$viewTitle(textFragments)));
+								A2(author$project$Guide$Document$viewTitle, screenType, textFragments)));
 					case 'Section':
 						var textFragments = first.a;
 						return prepend(
 							A2(
 								author$project$Guide$Document$Static,
 								author$project$Guide$Document$SectionContext,
-								author$project$Guide$Document$viewSection(textFragments)));
+								A2(author$project$Guide$Document$viewSection, screenType, textFragments)));
 					case 'Subsection':
 						var textFragments = first.a;
 						return prepend(
 							A2(
 								author$project$Guide$Document$Static,
 								author$project$Guide$Document$SubsectionContext,
-								author$project$Guide$Document$viewSubsection(textFragments)));
+								A2(author$project$Guide$Document$viewSubsection, screenType, textFragments)));
 					case 'Paragraph':
 						var textFragments = first.a;
 						return prepend(
 							A2(
 								author$project$Guide$Document$Static,
 								author$project$Guide$Document$ParagraphContext,
-								author$project$Guide$Document$viewParagraph(textFragments)));
+								A2(author$project$Guide$Document$viewParagraph, screenType, textFragments)));
 					case 'CustomBlock':
 						var widget = first.a;
-						var $temp$chunks = rest,
+						var $temp$screenType = screenType,
+							$temp$chunks = rest,
 							$temp$widgetId = widgetId + 1,
 							$temp$accumulated = A2(
 							elm$core$List$cons,
 							A2(author$project$Guide$Document$Interactive, widgetId, widget),
 							accumulated);
+						screenType = $temp$screenType;
 						chunks = $temp$chunks;
 						widgetId = $temp$widgetId;
 						accumulated = $temp$accumulated;
@@ -11000,18 +11021,20 @@ var author$project$Guide$Document$compileHelp = F3(
 							A2(
 								author$project$Guide$Document$Static,
 								author$project$Guide$Document$CodeBlockContext,
-								author$project$Guide$Document$viewCodeBlock(code)));
+								A2(author$project$Guide$Document$viewCodeBlock, screenType, code)));
 					default:
 						var bullets = first.a;
-						var _n2 = A3(author$project$Guide$Document$compileBullets, bullets, widgetId, _List_Nil);
+						var _n2 = A4(author$project$Guide$Document$compileBullets, screenType, bullets, widgetId, _List_Nil);
 						var compiledBullets = _n2.a;
 						var updatedId = _n2.b;
-						var $temp$chunks = rest,
+						var $temp$screenType = screenType,
+							$temp$chunks = rest,
 							$temp$widgetId = updatedId,
 							$temp$accumulated = A2(
 							elm$core$List$cons,
 							author$project$Guide$Document$CompiledBullets(compiledBullets),
 							accumulated);
+						screenType = $temp$screenType;
 						chunks = $temp$chunks;
 						widgetId = $temp$widgetId;
 						accumulated = $temp$accumulated;
@@ -11024,9 +11047,10 @@ var author$project$Guide$Document$compileHelp = F3(
 			}
 		}
 	});
-var author$project$Guide$Document$compile = function (chunks) {
-	return A3(author$project$Guide$Document$compileHelp, chunks, 0, _List_Nil).a;
-};
+var author$project$Guide$Document$compile = F2(
+	function (screenType, chunks) {
+		return A4(author$project$Guide$Document$compileHelp, screenType, chunks, 0, _List_Nil).a;
+	});
 var author$project$Guide$Document$Bullets = function (a) {
 	return {$: 'Bullets', a: a};
 };
@@ -11241,7 +11265,7 @@ var elm_community$result_extra$Result$Extra$combine = A2(
 	elm$core$Result$map2(elm$core$List$cons),
 	elm$core$Result$Ok(_List_Nil));
 var author$project$Guide$Document$parseChunks = F3(
-	function (widgets, blocks, accumulated) {
+	function (config, blocks, accumulated) {
 		parseChunks:
 		while (true) {
 			if (blocks.b) {
@@ -11250,16 +11274,16 @@ var author$project$Guide$Document$parseChunks = F3(
 				var prepend = function (chunk) {
 					return A3(
 						author$project$Guide$Document$parseChunks,
-						widgets,
+						config,
 						rest,
 						A2(elm$core$List$cons, chunk, accumulated));
 				};
 				switch (first.$) {
 					case 'BlankLine':
-						var $temp$widgets = widgets,
+						var $temp$config = config,
 							$temp$blocks = rest,
 							$temp$accumulated = accumulated;
-						widgets = $temp$widgets;
+						config = $temp$config;
 						blocks = $temp$blocks;
 						accumulated = $temp$accumulated;
 						continue parseChunks;
@@ -11289,7 +11313,7 @@ var author$project$Guide$Document$parseChunks = F3(
 										A2(author$project$Guide$Document$parseText, inlines, _List_Nil)));
 							default:
 								return elm$core$Result$Err(
-									'Heading level ' + (elm$core$String$fromInt(level) + ' not yet tsupported'));
+									'Heading level ' + (elm$core$String$fromInt(level) + ' not yet supported'));
 						}
 					case 'CodeBlock':
 						if (first.a.$ === 'Indented') {
@@ -11322,7 +11346,7 @@ var author$project$Guide$Document$parseChunks = F3(
 									A2(
 										elm$core$List$map,
 										function (itemBlocks) {
-											return A3(author$project$Guide$Document$parseChunks, widgets, itemBlocks, _List_Nil);
+											return A3(author$project$Guide$Document$parseChunks, config, itemBlocks, _List_Nil);
 										},
 										items)));
 						} else {
@@ -11339,7 +11363,7 @@ var author$project$Guide$Document$parseChunks = F3(
 									if ((!inlines.a.b.b) && (!inlines.a.c.b)) {
 										var _n8 = inlines.a;
 										var tag = _n8.a;
-										var _n9 = A2(elm$core$Dict$get, tag, widgets);
+										var _n9 = A2(elm$core$Dict$get, tag, config.widgets);
 										if (_n9.$ === 'Just') {
 											var registeredWidget = _n9.a;
 											return prepend(
@@ -15052,15 +15076,19 @@ var pablohirafuji$elm_markdown$Markdown$Inline$extractTextHelp = F2(
 		}
 	});
 var author$project$Guide$Document$parse = F2(
-	function (widgets, markdown) {
+	function (_n0, markdown) {
+		var screenWidth = _n0.screenWidth;
+		var widgets = _n0.widgets;
+		var width = A2(elm$core$Basics$min, screenWidth - 24, 640);
+		var screenType = (screenWidth > 600) ? author$project$Guide$Document$LargeScreen : author$project$Guide$Document$SmallScreen;
 		var options = {rawHtml: pablohirafuji$elm_markdown$Markdown$Config$ParseUnsafe, softAsHardLineBreak: false};
 		var blocks = A2(
 			pablohirafuji$elm_markdown$Markdown$Block$parse,
 			elm$core$Maybe$Just(options),
 			markdown);
 		if ((blocks.b && (blocks.a.$ === 'Heading')) && (blocks.a.b === 1)) {
-			var _n1 = blocks.a;
-			var inlines = _n1.c;
+			var _n2 = blocks.a;
+			var inlines = _n2.c;
 			var rest = blocks.b;
 			return A3(
 				elm$core$Result$map2,
@@ -15068,18 +15096,25 @@ var author$project$Guide$Document$parse = F2(
 					function (titleText, bodyChunks) {
 						return author$project$Guide$Document$Document(
 							{
-								chunks: author$project$Guide$Document$compile(
+								chunks: A2(
+									author$project$Guide$Document$compile,
+									screenType,
 									A2(
 										elm$core$List$cons,
 										author$project$Guide$Document$Title(titleText),
 										bodyChunks)),
-								title: pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines)
+								screenType: screenType,
+								title: pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines),
+								width: width
 							});
 					}),
 				A2(author$project$Guide$Document$parseText, inlines, _List_Nil),
 				A3(
 					author$project$Guide$Document$parseChunks,
-					elm$core$Dict$fromList(widgets),
+					{
+						screenType: screenType,
+						widgets: elm$core$Dict$fromList(widgets)
+					},
 					rest,
 					_List_Nil));
 		} else {
@@ -15334,7 +15369,7 @@ var author$project$Main$counter = author$project$Guide$Widget$interactive(
 					]));
 		}
 	});
-var author$project$Test$md = '# Title with `inline code`\r\n\r\nSome `inline code` followed by some _italic_ text.\r\n\r\n## A section with `some inline-code`\r\n\r\nContaining some `more inline code`.\r\n\r\nAlso some bullets:\r\n\r\n* First bullet\r\n* Second bullet\r\n  * With an indented bullet that has a custom widget\r\n    \r\n    <counter/>\r\n\r\n  * And another indented bullet with a code block:\r\n    \r\n        some code\r\n        some more code\r\n            some indented code\r\n\r\n  * A bullet after the code block!\r\n\r\n* And finally a third bullet\r\n* Plus a fourth bullet just for fun with some _italic text_ and `long inline code` probably\r\n  splitting over multiple lines because I made this bullet **really** long\r\n\r\n## Another _section_\r\n    \r\nWith some **bold** text, and a custom element:\r\n\r\n<counter/>\r\n\r\nA code block:\r\n\r\n    code\r\n    more code\r\n        indented code\r\n    unindented code\r\n\r\n### A subsection with `some inline-code`\r\n\r\nWith another custom element:\r\n\r\n<counter/>\r\n';
+var author$project$Test$md = '# Title with `inline code`\r\n\r\nSome `inline code` followed by some _italic_ text.\r\n\r\n## A section with `some inline-code`\r\n\r\nContaining some `more inline code`.\r\n\r\nAlso some bullets:\r\n\r\n* First bullet\r\n* Second bullet\r\n  * With an indented bullet that has a custom widget\r\n    \r\n    <counter/>\r\n\r\n  * And another indented bullet with a code block:\r\n    \r\n        some code\r\n        some more code\r\n            some indented code\r\n\r\n  * A bullet after the code block!\r\n\r\n* And finally a third bullet\r\n* Plus a fourth bullet just for fun with some _italic text_ and `long inline code` probably\r\n  splitting over multiple lines because I made this bullet **really** long\r\n\r\n## Another _section_\r\n    \r\nWith some **bold** text, and a custom element:\r\n\r\n<counter/>\r\n\r\nA code block:\r\n\r\n    code\r\n    more code\r\n        indented code\r\n    unindented code\r\n\r\n### A subsection with `some inline-code`\r\n\r\nWith another custom element:\r\n\r\n### `A weird subsection`\r\n\r\nJust inline code in the title!\r\n\r\n<counter/>\r\n';
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$init = function (flags) {
@@ -15343,7 +15378,10 @@ var author$project$Main$init = function (flags) {
 			_Utils_Tuple2('counter', author$project$Main$counter)
 		]);
 	var model = function () {
-		var _n0 = A2(author$project$Guide$Document$parse, widgets, author$project$Test$md);
+		var _n0 = A2(
+			author$project$Guide$Document$parse,
+			{screenWidth: flags.width, widgets: widgets},
+			author$project$Test$md);
 		if (_n0.$ === 'Ok') {
 			var document = _n0.a;
 			return author$project$Main$Loaded(document);
@@ -15372,7 +15410,6 @@ var author$project$Guide$Document$merriweather = mdgriffith$elm_ui$Element$Font$
 			mdgriffith$elm_ui$Element$Font$typeface('Merriweather'),
 			mdgriffith$elm_ui$Element$Font$serif
 		]));
-var author$project$Guide$Document$topLevelSpacing = 12;
 var author$project$Guide$Document$updateWidget = F3(
 	function (givenId, newWidget, chunks) {
 		return A2(
@@ -15412,26 +15449,60 @@ var elm$core$Basics$always = F2(
 	});
 var mdgriffith$elm_ui$Internal$Model$unstyled = A2(elm$core$Basics$composeL, mdgriffith$elm_ui$Internal$Model$Unstyled, elm$core$Basics$always);
 var mdgriffith$elm_ui$Element$html = mdgriffith$elm_ui$Internal$Model$unstyled;
-var author$project$Guide$Document$bulletIcon = A2(
-	mdgriffith$elm_ui$Element$el,
-	_List_fromArray(
-		[
-			mdgriffith$elm_ui$Element$paddingEach(
-			{bottom: 0, left: 20, right: 8, top: 0}),
-			mdgriffith$elm_ui$Element$Font$bold
-		]),
-	mdgriffith$elm_ui$Element$html(
-		function () {
-			var radius = 3.25;
-			var halfWidth = elm$core$Basics$ceiling(radius);
-			return A2(
+var author$project$Guide$Document$bulletIcon = function (_n0) {
+	var screenType = _n0.screenType;
+	var topLevel = _n0.topLevel;
+	var rightPadding = function () {
+		if (screenType.$ === 'LargeScreen') {
+			return 8;
+		} else {
+			return 6;
+		}
+	}();
+	var radius = function () {
+		if (screenType.$ === 'LargeScreen') {
+			return 3.25;
+		} else {
+			return 2.75;
+		}
+	}();
+	var leftPadding = function () {
+		if (topLevel) {
+			if (screenType.$ === 'LargeScreen') {
+				return 20;
+			} else {
+				return 12;
+			}
+		} else {
+			return rightPadding;
+		}
+	}();
+	var height = function () {
+		if (screenType.$ === 'LargeScreen') {
+			return 6.5;
+		} else {
+			return 6.5;
+		}
+	}();
+	var halfWidth = elm$core$Basics$ceiling(radius);
+	return A2(
+		mdgriffith$elm_ui$Element$el,
+		_List_fromArray(
+			[
+				mdgriffith$elm_ui$Element$paddingEach(
+				{bottom: 0, left: leftPadding, right: rightPadding, top: 0}),
+				mdgriffith$elm_ui$Element$Font$bold
+			]),
+		mdgriffith$elm_ui$Element$html(
+			A2(
 				elm$svg$Svg$svg,
 				_List_fromArray(
 					[
 						elm$svg$Svg$Attributes$width(
 						elm$core$String$fromInt(2 * halfWidth)),
 						elm$svg$Svg$Attributes$height(
-						elm$core$String$fromInt(author$project$Guide$Document$fontSizes.body))
+						elm$core$String$fromInt(
+							author$project$Guide$Document$fontSizes(screenType).body))
 					]),
 				_List_fromArray(
 					[
@@ -15442,16 +15513,18 @@ var author$project$Guide$Document$bulletIcon = A2(
 								elm$svg$Svg$Attributes$cx(
 								elm$core$String$fromInt(halfWidth)),
 								elm$svg$Svg$Attributes$cy(
-								elm$core$String$fromFloat(author$project$Guide$Document$fontSizes.body - 6.5)),
+								elm$core$String$fromFloat(
+									author$project$Guide$Document$fontSizes(screenType).body - height)),
 								elm$svg$Svg$Attributes$r(
 								elm$core$String$fromFloat(radius)),
 								elm$svg$Svg$Attributes$fill('black'),
 								elm$svg$Svg$Attributes$stroke('none')
 							]),
 						_List_Nil)
-					]));
-		}()));
+					]))));
+};
 var author$project$Guide$Document$bulletSpacing = 8;
+var author$project$Guide$Document$topLevelSpacing = 12;
 var author$project$Guide$Document$widthFill = mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill);
 var author$project$Guide$Widget$view = F2(
 	function (toMessage, _n0) {
@@ -15506,68 +15579,88 @@ var mdgriffith$elm_ui$Element$textColumn = F2(
 				attrs),
 			mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
-var author$project$Guide$Document$bulletedItem = function (chunks) {
-	return A2(
-		mdgriffith$elm_ui$Element$row,
-		_List_fromArray(
-			[author$project$Guide$Document$widthFill]),
-		_List_fromArray(
-			[
-				A2(
-				mdgriffith$elm_ui$Element$el,
-				_List_fromArray(
-					[mdgriffith$elm_ui$Element$alignTop]),
-				author$project$Guide$Document$bulletIcon),
-				A2(
-				author$project$Guide$Document$viewChunks,
-				{spacing: author$project$Guide$Document$bulletSpacing},
-				chunks)
-			]));
-};
-var author$project$Guide$Document$viewBullets = function (bullets) {
-	return A2(
-		mdgriffith$elm_ui$Element$column,
-		_List_fromArray(
-			[
-				mdgriffith$elm_ui$Element$spacing(author$project$Guide$Document$bulletSpacing),
-				author$project$Guide$Document$widthFill
-			]),
-		A2(elm$core$List$map, author$project$Guide$Document$bulletedItem, bullets));
-};
-var author$project$Guide$Document$viewChunk = function (chunk) {
-	switch (chunk.$) {
-		case 'Static':
-			var textContext = chunk.a;
-			var element = chunk.b;
-			return A2(mdgriffith$elm_ui$Element$map, elm$core$Basics$never, element);
-		case 'Interactive':
-			var id = chunk.a;
-			var widget = chunk.b;
-			return A2(
-				author$project$Guide$Widget$view,
-				function (newWidget) {
-					return _Utils_Tuple2(id, newWidget);
-				},
-				widget);
-		default:
-			var bullets = chunk.a;
-			return author$project$Guide$Document$viewBullets(bullets);
-	}
-};
+var author$project$Guide$Document$bulletedItem = F2(
+	function (config, chunks) {
+		return A2(
+			mdgriffith$elm_ui$Element$row,
+			_List_fromArray(
+				[author$project$Guide$Document$widthFill]),
+			_List_fromArray(
+				[
+					A2(
+					mdgriffith$elm_ui$Element$el,
+					_List_fromArray(
+						[mdgriffith$elm_ui$Element$alignTop]),
+					author$project$Guide$Document$bulletIcon(config)),
+					A2(
+					author$project$Guide$Document$viewChunks,
+					_Utils_update(
+						config,
+						{topLevel: false}),
+					chunks)
+				]));
+	});
+var author$project$Guide$Document$viewBullets = F2(
+	function (config, bullets) {
+		return A2(
+			mdgriffith$elm_ui$Element$column,
+			_List_fromArray(
+				[
+					mdgriffith$elm_ui$Element$spacing(author$project$Guide$Document$bulletSpacing),
+					author$project$Guide$Document$widthFill
+				]),
+			A2(
+				elm$core$List$map,
+				author$project$Guide$Document$bulletedItem(config),
+				bullets));
+	});
+var author$project$Guide$Document$viewChunk = F2(
+	function (config, chunk) {
+		switch (chunk.$) {
+			case 'Static':
+				var textContext = chunk.a;
+				var element = chunk.b;
+				return A2(mdgriffith$elm_ui$Element$map, elm$core$Basics$never, element);
+			case 'Interactive':
+				var id = chunk.a;
+				var widget = chunk.b;
+				return A2(
+					author$project$Guide$Widget$view,
+					function (newWidget) {
+						return _Utils_Tuple2(id, newWidget);
+					},
+					widget);
+			default:
+				var bullets = chunk.a;
+				return A2(author$project$Guide$Document$viewBullets, config, bullets);
+		}
+	});
 var author$project$Guide$Document$viewChunks = F2(
-	function (_n0, chunks) {
-		var spacing = _n0.spacing;
+	function (config, chunks) {
+		var spacing = config.topLevel ? author$project$Guide$Document$topLevelSpacing : author$project$Guide$Document$bulletSpacing;
 		return A2(
 			mdgriffith$elm_ui$Element$textColumn,
 			_List_fromArray(
 				[
-					mdgriffith$elm_ui$Element$spacing(spacing)
+					mdgriffith$elm_ui$Element$spacing(spacing),
+					author$project$Guide$Document$widthFill
 				]),
-			A2(elm$core$List$map, author$project$Guide$Document$viewChunk, chunks));
+			A2(
+				elm$core$List$map,
+				author$project$Guide$Document$viewChunk(config),
+				chunks));
 	});
+var mdgriffith$elm_ui$Internal$Model$Px = function (a) {
+	return {$: 'Px', a: a};
+};
+var mdgriffith$elm_ui$Element$px = mdgriffith$elm_ui$Internal$Model$Px;
 var author$project$Guide$Document$view = F2(
 	function (attributes, _n0) {
 		var document = _n0.a;
+		var widthAttribute = mdgriffith$elm_ui$Element$width(
+			mdgriffith$elm_ui$Element$px(document.width));
+		var fontSizeAttribute = mdgriffith$elm_ui$Element$Font$size(
+			author$project$Guide$Document$fontSizes(document.screenType).body);
 		return A2(
 			mdgriffith$elm_ui$Element$el,
 			A2(
@@ -15575,8 +15668,8 @@ var author$project$Guide$Document$view = F2(
 				author$project$Guide$Document$merriweather,
 				A2(
 					elm$core$List$cons,
-					mdgriffith$elm_ui$Element$Font$size(author$project$Guide$Document$fontSizes.body),
-					attributes)),
+					fontSizeAttribute,
+					A2(elm$core$List$cons, widthAttribute, attributes))),
 			A2(
 				mdgriffith$elm_ui$Element$map,
 				function (_n1) {
@@ -15585,12 +15678,14 @@ var author$project$Guide$Document$view = F2(
 					return author$project$Guide$Document$Document(
 						{
 							chunks: A3(author$project$Guide$Document$updateWidget, id, widget, document.chunks),
-							title: document.title
+							screenType: document.screenType,
+							title: document.title,
+							width: document.width
 						});
 				},
 				A2(
 					author$project$Guide$Document$viewChunks,
-					{spacing: author$project$Guide$Document$topLevelSpacing},
+					{screenType: document.screenType, topLevel: true},
 					document.chunks)));
 	});
 var mdgriffith$elm_ui$Internal$Model$OnlyDynamic = F2(
@@ -15798,10 +15893,6 @@ var mdgriffith$elm_ui$Element$layoutWith = F3(
 	});
 var mdgriffith$elm_ui$Element$layout = mdgriffith$elm_ui$Element$layoutWith(
 	{options: _List_Nil});
-var mdgriffith$elm_ui$Internal$Model$Px = function (a) {
-	return {$: 'Px', a: a};
-};
-var mdgriffith$elm_ui$Element$px = mdgriffith$elm_ui$Internal$Model$Px;
 var author$project$Main$view = function (model) {
 	if (model.$ === 'Loaded') {
 		var document = model.a;
@@ -15817,11 +15908,7 @@ var author$project$Main$view = function (model) {
 					A2(
 						author$project$Guide$Document$view,
 						_List_fromArray(
-							[
-								mdgriffith$elm_ui$Element$width(
-								mdgriffith$elm_ui$Element$px(640)),
-								mdgriffith$elm_ui$Element$centerX
-							]),
+							[mdgriffith$elm_ui$Element$centerX]),
 						document))
 				]),
 			title: author$project$Guide$Document$title(document)
@@ -16038,6 +16125,7 @@ var elm$url$Url$fromString = function (str) {
 var elm$browser$Browser$document = _Browser_document;
 var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
+var elm$json$Json$Decode$int = _Json_decodeInt;
 var author$project$Main$main = elm$browser$Browser$document(
 	{
 		init: author$project$Main$init,
@@ -16046,4 +16134,15 @@ var author$project$Main$main = elm$browser$Browser$document(
 		view: author$project$Main$view
 	});
 _Platform_export({'Main':{'init':author$project$Main$main(
-	elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));
+	A2(
+		elm$json$Json$Decode$andThen,
+		function (width) {
+			return A2(
+				elm$json$Json$Decode$andThen,
+				function (height) {
+					return elm$json$Json$Decode$succeed(
+						{height: height, width: width});
+				},
+				A2(elm$json$Json$Decode$field, 'height', elm$json$Json$Decode$int));
+		},
+		A2(elm$json$Json$Decode$field, 'width', elm$json$Json$Decode$int)))(0)}});}(this));
