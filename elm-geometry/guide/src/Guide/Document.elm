@@ -279,7 +279,7 @@ viewTitle : List Text -> Element msg
 viewTitle textFragments =
     Element.el
         [ Element.width Element.fill
-        , Element.paddingEach { bottom = 8, top = 0, left = 0, right = 0 }
+        , Element.paddingEach { bottom = 8, top = 8, left = 0, right = 0 }
         ]
         (Element.paragraph
             [ Region.heading 1
