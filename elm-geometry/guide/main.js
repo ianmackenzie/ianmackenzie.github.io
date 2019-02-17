@@ -4490,7 +4490,7 @@ var author$project$Guide$Document$Static = F2(
 var author$project$Guide$Document$SubsectionContext = {$: 'SubsectionContext'};
 var author$project$Guide$Document$TitleContext = {$: 'TitleContext'};
 var author$project$Guide$Document$largeScreenFontSizes = {body: 16, bodyCode: 16, section: 32, sectionCode: 30, subsection: 22, subsectionCode: 22, title: 48, titleCode: 44};
-var author$project$Guide$Document$smallScreenFontSizes = {body: 13, bodyCode: 14, section: 22, sectionCode: 22, subsection: 18, subsectionCode: 18, title: 32, titleCode: 28};
+var author$project$Guide$Document$smallScreenFontSizes = {body: 14, bodyCode: 14, section: 22, sectionCode: 22, subsection: 18, subsectionCode: 18, title: 32, titleCode: 28};
 var author$project$Guide$Document$fontSizes = function (screenType) {
 	if (screenType.$ === 'LargeScreen') {
 		return author$project$Guide$Document$largeScreenFontSizes;
