@@ -378,18 +378,13 @@ renderTextFragment context fragment =
 
                 backgroundAttributes =
                     if context == ParagraphContext then
-                        [ Background.color lightGrey ]
+                        [ Element.paddingXY 4 2, Border.rounded 3, Background.color lightGrey ]
 
                     else
                         []
             in
             Element.row
-                (sourceCodePro
-                    :: Font.size fontSize
-                    :: Element.paddingXY 4 2
-                    :: Border.rounded 3
-                    :: backgroundAttributes
-                )
+                (sourceCodePro :: Font.size fontSize :: backgroundAttributes)
                 (List.map (inlineCodeElement fontSize) chunks)
 
 
