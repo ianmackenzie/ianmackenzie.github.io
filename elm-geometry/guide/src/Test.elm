@@ -11,6 +11,26 @@ Some `inline code` followed by some _italic_ text.
 
 Containing some `more inline code`.
 
+Also some bullets:
+
+* First bullet
+* Second bullet
+  * With an indented bullet that has a custom widget
+    
+    <counter/>
+
+  * And another indented bullet with a code block:
+    
+        some code
+        some more code
+            some indented code
+
+  * A bullet after the code block!
+
+* And finally a third bullet
+* Plus a fourth bullet just for fun with some _italic text_ and `long inline code` probably
+  splitting over multiple lines because I made this bullet **really** long
+
 ## Another _section_
     
 With some **bold** text, and a custom element:
@@ -26,7 +46,7 @@ A code block:
 
 ### A subsection with `some inline-code`
 
-With a second custom element:
+With another custom element:
 
 <counter/>
 """

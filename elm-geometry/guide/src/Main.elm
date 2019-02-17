@@ -77,7 +77,7 @@ view model =
             { title = Document.title document
             , body =
                 [ Element.layout [ Element.width Element.fill ]
-                    (Document.view [ Element.width (Element.px 600), Element.centerX ] document)
+                    (Document.view [ Element.width (Element.px 640), Element.centerX ] document)
                 ]
             }
 

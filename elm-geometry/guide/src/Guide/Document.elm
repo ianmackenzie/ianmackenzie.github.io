@@ -11,6 +11,9 @@ import Markdown.Block as Block exposing (Block)
 import Markdown.Config
 import Markdown.Inline as Inline exposing (Inline)
 import Regex exposing (Regex)
+import Result.Extra as Result
+import Svg
+import Svg.Attributes
 
 
 type Document
@@ -20,9 +23,14 @@ type Document
         }
 
 
+type alias Msg =
+    ( Int, Widget )
+
+
 type CompiledChunk
     = Static TextContext (Element Never)
     | Interactive Int Widget
+    | CompiledBullets (List (List CompiledChunk))
 
 
 type Chunk
@@ -32,6 +40,7 @@ type Chunk
     | Paragraph (List Text)
     | CustomBlock Widget
     | CodeBlock String
+    | Bullets (List (List Chunk))
 
 
 type InlineCodeChunk
@@ -52,6 +61,11 @@ type TextContext
     | SubsectionContext
     | ParagraphContext
     | CodeBlockContext
+
+
+widthFill : Element.Attribute msg
+widthFill =
+    Element.width Element.fill
 
 
 sourceCodePro : Element.Attribute msg
@@ -96,6 +110,16 @@ fontSizes =
     }
 
 
+topLevelSpacing : Int
+topLevelSpacing =
+    12
+
+
+bulletSpacing : Int
+bulletSpacing =
+    8
+
+
 title : Document -> String
 title (Document document) =
     document.title
@@ -103,57 +127,109 @@ title (Document document) =
 
 view : List (Element.Attribute Document) -> Document -> Element Document
 view attributes (Document document) =
-    let
-        viewChunk chunk =
-            case chunk of
-                Static textContext element ->
-                    Element.map never element
+    Element.el (merriweather :: Font.size fontSizes.body :: attributes)
+        (viewChunks { spacing = topLevelSpacing } document.chunks
+            |> Element.map
+                (\( id, widget ) ->
+                    Document
+                        { title = document.title
+                        , chunks = updateWidget id widget document.chunks
+                        }
+                )
+        )
 
-                Interactive index widget ->
-                    Widget.view
-                        (\newWidget ->
-                            Document
-                                { title = document.title
-                                , chunks = updateWidget index newWidget document.chunks
-                                }
-                        )
-                        widget
-    in
-    Element.textColumn
-        (merriweather :: Font.size fontSizes.body :: Element.spacing 12 :: attributes)
-        (List.map viewChunk document.chunks)
+
+viewChunk : CompiledChunk -> Element Msg
+viewChunk chunk =
+    case chunk of
+        Static textContext element ->
+            Element.map never element
+
+        Interactive id widget ->
+            Widget.view (\newWidget -> ( id, newWidget )) widget
+
+        CompiledBullets bullets ->
+            viewBullets bullets
+
+
+viewChunks : { spacing : Int } -> List CompiledChunk -> Element Msg
+viewChunks { spacing } chunks =
+    Element.textColumn [ Element.spacing spacing ] (List.map viewChunk chunks)
+
+
+bulletIcon : Element msg
+bulletIcon =
+    Element.el [ Element.paddingEach { top = 0, bottom = 0, left = 20, right = 8 }, Font.bold ]
+        (Element.html <|
+            let
+                radius =
+                    3.25
+
+                halfWidth =
+                    ceiling radius
+            in
+            Svg.svg
+                [ Svg.Attributes.width (String.fromInt (2 * halfWidth))
+                , Svg.Attributes.height (String.fromInt fontSizes.body)
+                ]
+                [ Svg.circle
+                    [ Svg.Attributes.cx (String.fromInt halfWidth)
+                    , Svg.Attributes.cy (String.fromFloat (toFloat fontSizes.body - 6.5))
+                    , Svg.Attributes.r (String.fromFloat radius)
+                    , Svg.Attributes.fill "black"
+                    , Svg.Attributes.stroke "none"
+                    ]
+                    []
+                ]
+        )
+
+
+bulletedItem : List CompiledChunk -> Element Msg
+bulletedItem chunks =
+    Element.row [ widthFill ]
+        [ Element.el [ Element.alignTop ] bulletIcon
+        , viewChunks { spacing = bulletSpacing } chunks
+        ]
+
+
+viewBullets : List (List CompiledChunk) -> Element Msg
+viewBullets bullets =
+    Element.column [ Element.spacing bulletSpacing, widthFill ] (List.map bulletedItem bullets)
 
 
 updateWidget : Int -> Widget -> List CompiledChunk -> List CompiledChunk
-updateWidget givenIndex newWidget chunks =
+updateWidget givenId newWidget chunks =
     List.map
         (\chunk ->
             case chunk of
                 Static _ _ ->
                     chunk
 
-                Interactive chunkIndex currentWidget ->
-                    if chunkIndex == givenIndex then
-                        Interactive chunkIndex newWidget
+                Interactive widgetId currentWidget ->
+                    if widgetId == givenId then
+                        Interactive widgetId newWidget
 
                     else
                         chunk
+
+                CompiledBullets bullets ->
+                    CompiledBullets (List.map (updateWidget givenId newWidget) bullets)
         )
         chunks
 
 
 compile : List Chunk -> List CompiledChunk
 compile chunks =
-    compileHelp chunks 0 []
+    Tuple.first (compileHelp chunks 0 [])
 
 
-compileHelp : List Chunk -> Int -> List CompiledChunk -> List CompiledChunk
-compileHelp chunks widgetIndex accumulated =
+compileHelp : List Chunk -> Int -> List CompiledChunk -> ( List CompiledChunk, Int )
+compileHelp chunks widgetId accumulated =
     case chunks of
         first :: rest ->
             let
                 prepend compiledChunk =
-                    compileHelp rest widgetIndex (compiledChunk :: accumulated)
+                    compileHelp rest widgetId (compiledChunk :: accumulated)
             in
             case first of
                 Title textFragments ->
@@ -169,15 +245,34 @@ compileHelp chunks widgetIndex accumulated =
                     prepend (Static ParagraphContext (viewParagraph textFragments))
 
                 CustomBlock widget ->
-                    compileHelp rest
-                        (widgetIndex + 1)
-                        (Interactive widgetIndex widget :: accumulated)
+                    compileHelp rest (widgetId + 1) (Interactive widgetId widget :: accumulated)
 
                 CodeBlock code ->
                     prepend (Static CodeBlockContext (viewCodeBlock code))
 
+                Bullets bullets ->
+                    let
+                        ( compiledBullets, updatedId ) =
+                            compileBullets bullets widgetId []
+                    in
+                    compileHelp rest updatedId (CompiledBullets compiledBullets :: accumulated)
+
         [] ->
-            List.reverse accumulated
+            ( List.reverse accumulated, widgetId )
+
+
+compileBullets : List (List Chunk) -> Int -> List (List CompiledChunk) -> ( List (List CompiledChunk), Int )
+compileBullets bullets widgetId accumulated =
+    case bullets of
+        chunks :: rest ->
+            let
+                ( compiledChunks, updatedId ) =
+                    compileHelp chunks widgetId []
+            in
+            compileBullets rest updatedId (compiledChunks :: accumulated)
+
+        [] ->
+            ( List.reverse accumulated, widgetId )
 
 
 viewTitle : List Text -> Element msg
@@ -411,32 +506,44 @@ parseChunks widgets blocks accumulated =
                 Block.BlockQuote _ ->
                     Err "Block quotes not yet supported"
 
-                Block.List _ _ ->
-                    Err "Lists not yet supported"
+                Block.List { type_ } items ->
+                    case type_ of
+                        Block.Unordered ->
+                            Result.andThen (Bullets >> prepend)
+                                (Result.combine
+                                    (List.map
+                                        (\itemBlocks -> parseChunks widgets itemBlocks [])
+                                        items
+                                    )
+                                )
+
+                        Block.Ordered _ ->
+                            Err "Numbered lists not yet supported"
 
                 Block.PlainInlines inlines ->
                     case inlines of
+                        [ Inline.Image _ _ _ ] ->
+                            Err "Images not yet supported"
+
+                        [ Inline.HtmlInline tag [] [] ] ->
+                            case Dict.get tag widgets of
+                                Just registeredWidget ->
+                                    prepend (CustomBlock registeredWidget)
+
+                                Nothing ->
+                                    Err ("No widget found with name " ++ tag)
+
+                        [ Inline.HtmlInline tag attributes children ] ->
+                            Err "Custom elements with attributes or children not yet supported"
+
+                        [ Inline.Text text ] ->
+                            Result.andThen (Paragraph >> prepend) (parseText inlines [])
+
                         [ inline ] ->
-                            case inline of
-                                Inline.Image _ _ _ ->
-                                    Err "Images not yet supported"
-
-                                Inline.HtmlInline tag [] [] ->
-                                    case Dict.get tag widgets of
-                                        Just registeredWidget ->
-                                            prepend (CustomBlock registeredWidget)
-
-                                        Nothing ->
-                                            Err ("No widget found with name " ++ tag)
-
-                                Inline.HtmlInline tag attributes children ->
-                                    Err "Custom elements with attributes or children not yet supported"
-
-                                _ ->
-                                    Err "Only images and custom elements supported as standalone elements right now"
+                            Err ("Only images and custom elements supported as standalone elements right now, got " ++ Debug.toString inline)
 
                         _ ->
-                            Err "Only single plain inlines supported"
+                            Result.andThen (Paragraph >> prepend) (parseText inlines [])
 
                 Block.Custom _ _ ->
                     Err "Internal error - should not be possible to have a Custom block"
