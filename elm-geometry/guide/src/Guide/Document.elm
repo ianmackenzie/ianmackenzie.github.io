@@ -486,7 +486,7 @@ parseChunks widgets blocks accumulated =
                             Result.map Subsection (parseText inlines []) |> Result.andThen prepend
 
                         _ ->
-                            Err ("Heading level " ++ String.fromInt level ++ " not yet tsupported")
+                            Err ("Heading level " ++ String.fromInt level ++ " not yet supported")
 
                 Block.CodeBlock Block.Indented code ->
                     prepend (CodeBlock code)
