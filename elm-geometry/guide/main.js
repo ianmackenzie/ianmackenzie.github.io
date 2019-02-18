@@ -11475,6 +11475,7 @@ var author$project$Guide$Document$inlineCodeRegex = A2(
 var author$project$Guide$Document$Spaces = function (a) {
 	return {$: 'Spaces', a: a};
 };
+var author$project$Guide$Document$nonBreakingSpace = '\u00a0';
 var elm$core$String$length = _String_length;
 var elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
 var elm$core$String$repeatHelp = F3(
@@ -11503,7 +11504,7 @@ var author$project$Guide$Document$toInlineCodeChunk = function (match) {
 						A2(
 							elm$core$String$repeat,
 							elm$core$String$length(spaces),
-							'\u00a0'));
+							author$project$Guide$Document$nonBreakingSpace));
 				} else {
 					break _n0$2;
 				}
@@ -16511,7 +16512,12 @@ var elm$url$Url$Parser$parse = F2(
 	});
 var author$project$Guide$Page$matching = F2(
 	function (url, pages) {
-		var _n0 = A2(elm$url$Url$Parser$parse, author$project$Guide$Page$urlParser, url);
+		var _n0 = A2(
+			elm$url$Url$Parser$parse,
+			author$project$Guide$Page$urlParser,
+			_Utils_update(
+				url,
+				{path: '/'}));
 		if (_n0.$ === 'Just') {
 			var query = _n0.a.query;
 			var fragment = _n0.a.fragment;
