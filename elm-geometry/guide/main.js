@@ -10593,6 +10593,27 @@ var author$project$Guide$Document$viewCodeBlock = F2(
 				elm$core$String$lines(
 					elm$core$String$trim(code))));
 	});
+var author$project$Guide$Document$codeBackgroundAttributes = _List_fromArray(
+	[
+		A2(mdgriffith$elm_ui$Element$paddingXY, 4, 2),
+		mdgriffith$elm_ui$Element$Border$rounded(3),
+		mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Document$lightGrey)
+	]);
+var author$project$Guide$Document$codeFontSize = F2(
+	function (screenType, context) {
+		switch (context.$) {
+			case 'TitleContext':
+				return author$project$Guide$Document$fontSizes(screenType).titleCode;
+			case 'SectionContext':
+				return author$project$Guide$Document$fontSizes(screenType).sectionCode;
+			case 'SubsectionContext':
+				return author$project$Guide$Document$fontSizes(screenType).subsectionCode;
+			case 'ParagraphContext':
+				return author$project$Guide$Document$fontSizes(screenType).bodyCode;
+			default:
+				return author$project$Guide$Document$fontSizes(screenType).bodyCode;
+		}
+	});
 var mdgriffith$elm_ui$Element$el = F2(
 	function (attrs, child) {
 		return A4(
@@ -10627,6 +10648,78 @@ var author$project$Guide$Document$inlineCodeElement = F2(
 				mdgriffith$elm_ui$Element$text(spaces));
 		}
 	});
+var author$project$Guide$Document$linkBlue = A3(mdgriffith$elm_ui$Element$rgb255, 17, 131, 204);
+var author$project$Guide$Document$inlineCodeChunkToString = function (chunk) {
+	if (chunk.$ === 'Spaces') {
+		var string = chunk.a;
+		return string;
+	} else {
+		var string = chunk.a;
+		return string;
+	}
+};
+var author$project$Guide$Document$toPlainText = function (textFragment) {
+	toPlainText:
+	while (true) {
+		switch (textFragment.$) {
+			case 'Plain':
+				var string = textFragment.a;
+				return string;
+			case 'Italic':
+				var string = textFragment.a;
+				return string;
+			case 'Bold':
+				var string = textFragment.a;
+				return string;
+			case 'Link':
+				var displayed = textFragment.a.displayed;
+				var $temp$textFragment = displayed;
+				textFragment = $temp$textFragment;
+				continue toPlainText;
+			default:
+				var chunks = textFragment.a;
+				return elm$core$String$concat(
+					A2(elm$core$List$map, author$project$Guide$Document$inlineCodeChunkToString, chunks));
+		}
+	}
+};
+var elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
+var elm$html$Html$Attributes$rel = _VirtualDom_attribute('rel');
+var mdgriffith$elm_ui$Element$link = F2(
+	function (attrs, _n0) {
+		var url = _n0.url;
+		var label = _n0.label;
+		return A4(
+			mdgriffith$elm_ui$Internal$Model$element,
+			mdgriffith$elm_ui$Internal$Model$asEl,
+			mdgriffith$elm_ui$Internal$Model$NodeName('a'),
+			A2(
+				elm$core$List$cons,
+				mdgriffith$elm_ui$Internal$Model$Attr(
+					elm$html$Html$Attributes$href(url)),
+				A2(
+					elm$core$List$cons,
+					mdgriffith$elm_ui$Internal$Model$Attr(
+						elm$html$Html$Attributes$rel('noopener noreferrer')),
+					A2(
+						elm$core$List$cons,
+						mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$shrink),
+						A2(
+							elm$core$List$cons,
+							mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$shrink),
+							A2(
+								elm$core$List$cons,
+								mdgriffith$elm_ui$Internal$Model$htmlClass(mdgriffith$elm_ui$Internal$Style$classes.contentCenterX + (' ' + mdgriffith$elm_ui$Internal$Style$classes.contentCenterY)),
+								attrs))))),
+			mdgriffith$elm_ui$Internal$Model$Unkeyed(
+				_List_fromArray(
+					[label])));
+	});
 var mdgriffith$elm_ui$Internal$Model$AsRow = {$: 'AsRow'};
 var mdgriffith$elm_ui$Internal$Model$asRow = mdgriffith$elm_ui$Internal$Model$AsRow;
 var mdgriffith$elm_ui$Element$row = F2(
@@ -10653,7 +10746,19 @@ var mdgriffith$elm_ui$Internal$Model$Class = F2(
 		return {$: 'Class', a: a, b: b};
 	});
 var mdgriffith$elm_ui$Element$Font$bold = A2(mdgriffith$elm_ui$Internal$Model$Class, mdgriffith$elm_ui$Internal$Flag$fontWeight, mdgriffith$elm_ui$Internal$Style$classes.bold);
+var mdgriffith$elm_ui$Internal$Flag$fontColor = mdgriffith$elm_ui$Internal$Flag$flag(14);
+var mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
+	return A2(
+		mdgriffith$elm_ui$Internal$Model$StyleClass,
+		mdgriffith$elm_ui$Internal$Flag$fontColor,
+		A3(
+			mdgriffith$elm_ui$Internal$Model$Colored,
+			'fc-' + mdgriffith$elm_ui$Internal$Model$formatColorClass(fontColor),
+			'color',
+			fontColor));
+};
 var mdgriffith$elm_ui$Element$Font$italic = mdgriffith$elm_ui$Internal$Model$htmlClass(mdgriffith$elm_ui$Internal$Style$classes.italic);
+var mdgriffith$elm_ui$Element$Font$underline = mdgriffith$elm_ui$Internal$Model$htmlClass(mdgriffith$elm_ui$Internal$Style$classes.underline);
 var author$project$Guide$Document$renderTextFragment = F3(
 	function (screenType, context, fragment) {
 		switch (fragment.$) {
@@ -10674,28 +10779,50 @@ var author$project$Guide$Document$renderTextFragment = F3(
 					_List_fromArray(
 						[mdgriffith$elm_ui$Element$Font$bold]),
 					mdgriffith$elm_ui$Element$text(string));
-			default:
-				var chunks = fragment.a;
-				var fontSize = function () {
-					switch (context.$) {
-						case 'TitleContext':
-							return author$project$Guide$Document$fontSizes(screenType).titleCode;
-						case 'SectionContext':
-							return author$project$Guide$Document$fontSizes(screenType).sectionCode;
-						case 'SubsectionContext':
-							return author$project$Guide$Document$fontSizes(screenType).subsectionCode;
-						case 'ParagraphContext':
-							return author$project$Guide$Document$fontSizes(screenType).bodyCode;
+			case 'Link':
+				var url = fragment.a.url;
+				var displayed = fragment.a.displayed;
+				var labelText = author$project$Guide$Document$toPlainText(displayed);
+				var attributes = function () {
+					switch (displayed.$) {
+						case 'Plain':
+							return _List_Nil;
+						case 'Italic':
+							var string = displayed.a;
+							return _List_fromArray(
+								[mdgriffith$elm_ui$Element$Font$italic]);
+						case 'Bold':
+							var string = displayed.a;
+							return _List_fromArray(
+								[mdgriffith$elm_ui$Element$Font$bold]);
+						case 'InlineCode':
+							var chunks = displayed.a;
+							return A2(
+								elm$core$List$cons,
+								author$project$Guide$Document$sourceCodePro,
+								A2(
+									elm$core$List$cons,
+									mdgriffith$elm_ui$Element$Font$size(
+										A2(author$project$Guide$Document$codeFontSize, screenType, context)),
+									author$project$Guide$Document$codeBackgroundAttributes));
 						default:
-							return author$project$Guide$Document$fontSizes(screenType).bodyCode;
+							return _List_Nil;
 					}
 				}();
-				var backgroundAttributes = _Utils_eq(context, author$project$Guide$Document$ParagraphContext) ? _List_fromArray(
-					[
-						A2(mdgriffith$elm_ui$Element$paddingXY, 4, 2),
-						mdgriffith$elm_ui$Element$Border$rounded(3),
-						mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Document$lightGrey)
-					]) : _List_Nil;
+				return A2(
+					mdgriffith$elm_ui$Element$link,
+					A2(
+						elm$core$List$cons,
+						mdgriffith$elm_ui$Element$Font$color(author$project$Guide$Document$linkBlue),
+						A2(elm$core$List$cons, mdgriffith$elm_ui$Element$Font$underline, attributes)),
+					{
+						label: mdgriffith$elm_ui$Element$text(labelText),
+						url: url
+					});
+			default:
+				var chunks = fragment.a;
+				var fontSize = A2(author$project$Guide$Document$codeFontSize, screenType, context);
+				var backgroundAttributes = _Utils_eq(context, author$project$Guide$Document$ParagraphContext) ? author$project$Guide$Document$codeBackgroundAttributes : _List_Nil;
 				return A2(
 					mdgriffith$elm_ui$Element$row,
 					A2(
@@ -11072,11 +11199,17 @@ var author$project$Guide$Document$Subsection = function (a) {
 var author$project$Guide$Document$Bold = function (a) {
 	return {$: 'Bold', a: a};
 };
+var author$project$Guide$Document$Characters = function (a) {
+	return {$: 'Characters', a: a};
+};
 var author$project$Guide$Document$InlineCode = function (a) {
 	return {$: 'InlineCode', a: a};
 };
 var author$project$Guide$Document$Italic = function (a) {
 	return {$: 'Italic', a: a};
+};
+var author$project$Guide$Document$Link = function (a) {
+	return {$: 'Link', a: a};
 };
 var author$project$Guide$Document$Plain = function (a) {
 	return {$: 'Plain', a: a};
@@ -11097,9 +11230,6 @@ var author$project$Guide$Document$inlineCodeRegex = A2(
 	elm$core$Maybe$withDefault,
 	elm$regex$Regex$never,
 	elm$regex$Regex$fromString('(\\s+)|(\\S+)'));
-var author$project$Guide$Document$Characters = function (a) {
-	return {$: 'Characters', a: a};
-};
 var author$project$Guide$Document$Spaces = function (a) {
 	return {$: 'Spaces', a: a};
 };
@@ -11156,6 +11286,7 @@ var author$project$Guide$Document$toInlineCodeChunks = function (string) {
 	var matches = A2(elm$regex$Regex$find, author$project$Guide$Document$inlineCodeRegex, string);
 	return A2(elm$core$List$map, author$project$Guide$Document$toInlineCodeChunk, matches);
 };
+var elm$core$Debug$toString = _Debug_toString;
 var author$project$Guide$Document$parseText = F2(
 	function (inlines, accumulated) {
 		if (inlines.b) {
@@ -11182,7 +11313,59 @@ var author$project$Guide$Document$parseText = F2(
 							author$project$Guide$Document$InlineCode(
 								author$project$Guide$Document$toInlineCodeChunks(string)));
 					case 'Link':
-						return elm$core$Result$Err('Links not yet supported');
+						var url = first.a;
+						var urlInlines = first.c;
+						var prependLink = function (displayed) {
+							return prepend(
+								author$project$Guide$Document$Link(
+									{displayed: displayed, url: url}));
+						};
+						_n2$4:
+						while (true) {
+							if (urlInlines.b && (!urlInlines.b.b)) {
+								switch (urlInlines.a.$) {
+									case 'Text':
+										var string = urlInlines.a.a;
+										return prependLink(
+											author$project$Guide$Document$Plain(string));
+									case 'Emphasis':
+										if ((urlInlines.a.b.b && (urlInlines.a.b.a.$ === 'Text')) && (!urlInlines.a.b.b.b)) {
+											switch (urlInlines.a.a) {
+												case 1:
+													var _n3 = urlInlines.a;
+													var _n4 = _n3.b;
+													var string = _n4.a.a;
+													return prependLink(
+														author$project$Guide$Document$Italic(string));
+												case 2:
+													var _n5 = urlInlines.a;
+													var _n6 = _n5.b;
+													var string = _n6.a.a;
+													return prependLink(
+														author$project$Guide$Document$Bold(string));
+												default:
+													break _n2$4;
+											}
+										} else {
+											break _n2$4;
+										}
+									case 'CodeInline':
+										var string = urlInlines.a.a;
+										return prependLink(
+											author$project$Guide$Document$InlineCode(
+												_List_fromArray(
+													[
+														author$project$Guide$Document$Characters(string)
+													])));
+									default:
+										break _n2$4;
+								}
+							} else {
+								break _n2$4;
+							}
+						}
+						return elm$core$Result$Err(
+							'Link label must currently be a single plain text, italic, bold or inline code fragment, got ' + elm$core$Debug$toString(urlInlines));
 					case 'Image':
 						return elm$core$Result$Err('Inline images not yet supported');
 					case 'HtmlInline':
@@ -11191,13 +11374,13 @@ var author$project$Guide$Document$parseText = F2(
 						if ((first.b.b && (first.b.a.$ === 'Text')) && (!first.b.b.b)) {
 							switch (first.a) {
 								case 1:
-									var _n2 = first.b;
-									var string = _n2.a.a;
+									var _n7 = first.b;
+									var string = _n7.a.a;
 									return prepend(
 										author$project$Guide$Document$Italic(string));
 								case 2:
-									var _n3 = first.b;
-									var string = _n3.a.a;
+									var _n8 = first.b;
+									var string = _n8.a.a;
 									return prepend(
 										author$project$Guide$Document$Bold(string));
 								default:
@@ -11221,7 +11404,6 @@ var elm$core$Basics$composeR = F3(
 		return g(
 			f(x));
 	});
-var elm$core$Debug$toString = _Debug_toString;
 var elm$core$Result$andThen = F2(
 	function (callback, result) {
 		if (result.$ === 'Ok') {
@@ -15369,7 +15551,7 @@ var author$project$Main$counter = author$project$Guide$Widget$interactive(
 					]));
 		}
 	});
-var author$project$Test$md = '# Title with `inline code`\r\n\r\nSome `inline code` followed by some _italic_ text.\r\n\r\n## A section with `some inline-code`\r\n\r\nContaining some `more inline code`.\r\n\r\nAlso some bullets:\r\n\r\n* First bullet\r\n* Second bullet\r\n  * With an indented bullet that has a custom widget\r\n    \r\n    <counter/>\r\n\r\n  * And another indented bullet with a code block:\r\n    \r\n        some code\r\n        some more code\r\n            some indented code\r\n\r\n  * A bullet after the code block!\r\n\r\n* And finally a third bullet\r\n* Plus a fourth bullet just for fun with some _italic text_ and `long inline code` probably\r\n  splitting over multiple lines because I made this bullet **really** long\r\n\r\n## Another _section_\r\n    \r\nWith some **bold** text, and a custom element:\r\n\r\n<counter/>\r\n\r\nA code block:\r\n\r\n    code\r\n    more code\r\n        indented code\r\n    unindented code\r\n\r\n### A subsection with `some inline-code`\r\n\r\nWith another custom element:\r\n\r\n### `A weird subsection`\r\n\r\nJust inline code in the title!\r\n\r\n<counter/>\r\n';
+var author$project$Test$md = '# Title with `inline code`\r\n\r\nSome `inline code` followed by some _italic_ text.\r\n\r\n## A section with `some inline-code`\r\n\r\nContaining some `more inline code` as well as [a GitHub link](https://github.com/ianmackenzie/elm-geometry)\r\nand some more text after the link to check wrapping behaviour.\r\n\r\nAlso some bullets:\r\n\r\n* First bullet\r\n* Second bullet\r\n  * With an indented bullet that has a custom widget\r\n    \r\n    <counter/>\r\n\r\n  * And another indented bullet with a code block:\r\n    \r\n        some code\r\n        some more code\r\n            some indented code\r\n\r\n  * A bullet after the code block!\r\n\r\n* A third bullet with [`a fun link`](https://elm-lang.org) and [_an italic link_](https://arstechnica.com)\r\n* Plus a fourth bullet just for fun with some _italic text_ and `long inline code` probably\r\n  splitting over multiple lines because I made this bullet **really** long\r\n\r\n## Another _section_\r\n    \r\nWith some **bold** text, and a custom element:\r\n\r\n<counter/>\r\n\r\nA code block:\r\n\r\n    code\r\n    more code\r\n        indented code\r\n    unindented code\r\n\r\n### A subsection with `some inline-code`\r\n\r\nWith another custom element:\r\n\r\n### `A weird subsection`\r\n\r\nJust inline code in the title!\r\n\r\n<counter/>\r\n';
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$init = function (flags) {
@@ -15832,7 +16014,6 @@ var mdgriffith$elm_ui$Internal$Model$renderRoot = F3(
 					_List_fromArray(
 						[child]))));
 	});
-var mdgriffith$elm_ui$Internal$Flag$fontColor = mdgriffith$elm_ui$Internal$Flag$flag(14);
 var mdgriffith$elm_ui$Internal$Model$rootStyle = function () {
 	var families = _List_fromArray(
 		[

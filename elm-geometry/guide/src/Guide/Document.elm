@@ -55,6 +55,7 @@ type Text
     | Italic String
     | Bold String
     | InlineCode (List InlineCodeChunk)
+    | Link { url : String, displayed : Text }
 
 
 type TextContext
@@ -114,6 +115,11 @@ merriweather =
 lightGrey : Element.Color
 lightGrey =
     Element.rgb255 238 238 238
+
+
+linkBlue : Element.Color
+linkBlue =
+    Element.rgb255 17 131 204
 
 
 type alias FontSizes =
@@ -470,6 +476,59 @@ inlineCodeElement fontSize chunk =
             Element.el [ Font.size (round ((2 / 3) * toFloat fontSize)) ] (Element.text spaces)
 
 
+inlineCodeChunkToString : InlineCodeChunk -> String
+inlineCodeChunkToString chunk =
+    case chunk of
+        Spaces string ->
+            string
+
+        Characters string ->
+            string
+
+
+toPlainText : Text -> String
+toPlainText textFragment =
+    case textFragment of
+        Plain string ->
+            string
+
+        Italic string ->
+            string
+
+        Bold string ->
+            string
+
+        Link { displayed } ->
+            toPlainText displayed
+
+        InlineCode chunks ->
+            String.concat (List.map inlineCodeChunkToString chunks)
+
+
+codeFontSize : ScreenType -> TextContext -> Int
+codeFontSize screenType context =
+    case context of
+        TitleContext ->
+            (fontSizes screenType).titleCode
+
+        SectionContext ->
+            (fontSizes screenType).sectionCode
+
+        SubsectionContext ->
+            (fontSizes screenType).subsectionCode
+
+        ParagraphContext ->
+            (fontSizes screenType).bodyCode
+
+        CodeBlockContext ->
+            (fontSizes screenType).bodyCode
+
+
+codeBackgroundAttributes : List (Element.Attribute msg)
+codeBackgroundAttributes =
+    [ Element.paddingXY 4 2, Border.rounded 3, Background.color lightGrey ]
+
+
 renderTextFragment : ScreenType -> TextContext -> Text -> Element msg
 renderTextFragment screenType context fragment =
     case fragment of
@@ -482,28 +541,42 @@ renderTextFragment screenType context fragment =
         Bold string ->
             Element.el [ Font.bold ] (Element.text string)
 
+        Link { url, displayed } ->
+            let
+                attributes =
+                    case displayed of
+                        Plain _ ->
+                            []
+
+                        Italic string ->
+                            [ Font.italic ]
+
+                        Bold string ->
+                            [ Font.bold ]
+
+                        InlineCode chunks ->
+                            sourceCodePro
+                                :: Font.size (codeFontSize screenType context)
+                                :: codeBackgroundAttributes
+
+                        Link _ ->
+                            -- Should never happen
+                            []
+
+                labelText =
+                    toPlainText displayed
+            in
+            Element.link (Font.color linkBlue :: Font.underline :: attributes)
+                { url = url, label = Element.text labelText }
+
         InlineCode chunks ->
             let
                 fontSize =
-                    case context of
-                        TitleContext ->
-                            (fontSizes screenType).titleCode
-
-                        SectionContext ->
-                            (fontSizes screenType).sectionCode
-
-                        SubsectionContext ->
-                            (fontSizes screenType).subsectionCode
-
-                        ParagraphContext ->
-                            (fontSizes screenType).bodyCode
-
-                        CodeBlockContext ->
-                            (fontSizes screenType).bodyCode
+                    codeFontSize screenType context
 
                 backgroundAttributes =
                     if context == ParagraphContext then
-                        [ Element.paddingXY 4 2, Border.rounded 3, Background.color lightGrey ]
+                        codeBackgroundAttributes
 
                     else
                         []
@@ -559,8 +632,26 @@ parseText inlines accumulated =
                 Inline.CodeInline string ->
                     prepend (InlineCode (toInlineCodeChunks string))
 
-                Inline.Link _ _ _ ->
-                    Err "Links not yet supported"
+                Inline.Link url _ urlInlines ->
+                    let
+                        prependLink displayed =
+                            prepend (Link { url = url, displayed = displayed })
+                    in
+                    case urlInlines of
+                        [ Inline.Text string ] ->
+                            prependLink (Plain string)
+
+                        [ Inline.Emphasis 1 [ Inline.Text string ] ] ->
+                            prependLink (Italic string)
+
+                        [ Inline.Emphasis 2 [ Inline.Text string ] ] ->
+                            prependLink (Bold string)
+
+                        [ Inline.CodeInline string ] ->
+                            prependLink (InlineCode [ Characters string ])
+
+                        _ ->
+                            Err ("Link label must currently be a single plain text, italic, bold or inline code fragment, got " ++ Debug.toString urlInlines)
 
                 Inline.Image _ _ _ ->
                     Err "Inline images not yet supported"

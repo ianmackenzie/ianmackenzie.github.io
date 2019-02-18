@@ -9,7 +9,8 @@ Some `inline code` followed by some _italic_ text.
 
 ## A section with `some inline-code`
 
-Containing some `more inline code`.
+Containing some `more inline code` as well as [a GitHub link](https://github.com/ianmackenzie/elm-geometry)
+and some more text after the link to check wrapping behaviour.
 
 Also some bullets:
 
@@ -27,7 +28,7 @@ Also some bullets:
 
   * A bullet after the code block!
 
-* And finally a third bullet
+* A third bullet with [`a fun link`](https://elm-lang.org) and [_an italic link_](https://arstechnica.com)
 * Plus a fourth bullet just for fun with some _italic text_ and `long inline code` probably
   splitting over multiple lines because I made this bullet **really** long
 
