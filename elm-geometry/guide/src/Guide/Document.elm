@@ -462,7 +462,7 @@ viewCodeBlock : ScreenType -> String -> Element msg
 viewCodeBlock screenType code =
     Element.column
         [ Border.rounded 5
-        , Element.paddingXY 10 4
+        , Element.paddingXY 12 10
         , sourceCodePro
         , Background.color lightGrey
         , Font.size (fontSizes screenType).bodyCode
