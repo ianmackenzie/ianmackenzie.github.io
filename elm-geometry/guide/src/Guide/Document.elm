@@ -6,6 +6,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Region as Region
+import Guide.Screen as Screen
 import Guide.Widget as Widget exposing (Widget)
 import Html
 import Html.Attributes
@@ -23,7 +24,7 @@ type Document
         { title : String
         , width : Int
         , chunks : List CompiledChunk
-        , screenType : ScreenType
+        , screenClass : Screen.Class
         }
 
 
@@ -69,19 +70,14 @@ type TextContext
     | CodeBlockContext
 
 
-type ScreenType
-    = SmallScreen
-    | LargeScreen
-
-
 type alias ParseConfig =
     { widgets : Dict String Widget
-    , screenType : ScreenType
+    , screenClass : Screen.Class
     }
 
 
 type alias ViewConfig =
-    { screenType : ScreenType
+    { screenClass : Screen.Class
     , topLevel : Bool
     }
 
@@ -115,36 +111,21 @@ merriweather =
         ]
 
 
-lightGrey : Element.Color
-lightGrey =
-    -- Element.rgb255 238 238 238
-    let
-        scale =
-            0.6
-
-        value =
-            round (255 - scale * (255 - 238))
-    in
-    Element.rgb255 value value value
+type alias Colors =
+    { codeBlockBackground : Element.Color
+    , inlineCodeBackground : Element.Color
+    , linkBlue : Element.Color
+    , divider : Element.Color
+    }
 
 
-linkBlue : Element.Color
-linkBlue =
-    --Element.rgb255 17 131 204
-    let
-        scale =
-            0.8
-
-        red =
-            round (scale * 17)
-
-        green =
-            round (scale * 131)
-
-        blue =
-            round (scale * 204)
-    in
-    Element.rgb255 red green blue
+colors : Colors
+colors =
+    { codeBlockBackground = Element.rgb255 245 245 245
+    , inlineCodeBackground = Element.rgb255 238 238 238
+    , divider = Element.rgb255 238 238 238
+    , linkBlue = Element.rgb255 14 105 163 -- originally 17 131 204
+    }
 
 
 type alias FontSizes =
@@ -188,13 +169,13 @@ smallScreenFontSizes =
     }
 
 
-fontSizes : ScreenType -> FontSizes
-fontSizes screenType =
-    case screenType of
-        LargeScreen ->
+fontSizes : Screen.Class -> FontSizes
+fontSizes screenClass =
+    case screenClass of
+        Screen.Large ->
             largeScreenFontSizes
 
-        SmallScreen ->
+        Screen.Small ->
             smallScreenFontSizes
 
 
@@ -217,7 +198,7 @@ view : List (Element.Attribute Document) -> Document -> Element Document
 view attributes (Document document) =
     let
         fontSize =
-            Font.size (fontSizes document.screenType).body
+            Font.size (fontSizes document.screenClass).body
 
         width =
             Element.width (Element.px document.width)
@@ -235,14 +216,14 @@ view attributes (Document document) =
     in
     Element.el
         (merriweather :: fontSize :: width :: padding :: mainContent :: attributes)
-        (viewChunks { topLevel = True, screenType = document.screenType } document.chunks
+        (viewChunks { topLevel = True, screenClass = document.screenClass } document.chunks
             |> Element.map
                 (\( id, widget ) ->
                     Document
                         { title = document.title
                         , chunks = updateWidget id widget document.chunks
                         , width = document.width
-                        , screenType = document.screenType
+                        , screenClass = document.screenClass
                         }
                 )
         )
@@ -261,7 +242,7 @@ viewChunk config chunk =
             viewBullets config bullets
 
 
-viewChunks : { topLevel : Bool, screenType : ScreenType } -> List CompiledChunk -> Element Msg
+viewChunks : { topLevel : Bool, screenClass : Screen.Class } -> List CompiledChunk -> Element Msg
 viewChunks config chunks =
     let
         spacing =
@@ -276,42 +257,42 @@ viewChunks config chunks =
 
 
 bulletIcon : ViewConfig -> Element msg
-bulletIcon { screenType, topLevel } =
+bulletIcon { screenClass, topLevel } =
     let
         radius =
-            case screenType of
-                LargeScreen ->
+            case screenClass of
+                Screen.Large ->
                     3.25
 
-                SmallScreen ->
+                Screen.Small ->
                     2.75
 
         height =
-            case screenType of
-                LargeScreen ->
+            case screenClass of
+                Screen.Large ->
                     6.5
 
-                SmallScreen ->
+                Screen.Small ->
                     6.5
 
         halfWidth =
             ceiling radius
 
         rightPadding =
-            case screenType of
-                LargeScreen ->
+            case screenClass of
+                Screen.Large ->
                     8
 
-                SmallScreen ->
+                Screen.Small ->
                     6
 
         leftPadding =
             if topLevel then
-                case screenType of
-                    LargeScreen ->
+                case screenClass of
+                    Screen.Large ->
                         20
 
-                    SmallScreen ->
+                    Screen.Small ->
                         12
 
             else
@@ -329,11 +310,11 @@ bulletIcon { screenType, topLevel } =
         (Element.html <|
             Svg.svg
                 [ Svg.Attributes.width (String.fromInt (2 * halfWidth))
-                , Svg.Attributes.height (String.fromInt (fontSizes screenType).body)
+                , Svg.Attributes.height (String.fromInt (fontSizes screenClass).body)
                 ]
                 [ Svg.circle
                     [ Svg.Attributes.cx (String.fromInt halfWidth)
-                    , Svg.Attributes.cy (String.fromFloat (toFloat (fontSizes screenType).body - height))
+                    , Svg.Attributes.cy (String.fromFloat (toFloat (fontSizes screenClass).body - height))
                     , Svg.Attributes.r (String.fromFloat radius)
                     , Svg.Attributes.fill "black"
                     , Svg.Attributes.stroke "none"
@@ -378,47 +359,47 @@ updateWidget givenId newWidget chunks =
         chunks
 
 
-compile : ScreenType -> List Chunk -> List CompiledChunk
-compile screenType chunks =
-    Tuple.first (compileHelp screenType chunks 0 [])
+compile : Screen.Class -> List Chunk -> List CompiledChunk
+compile screenClass chunks =
+    Tuple.first (compileHelp screenClass chunks 0 [])
 
 
-compileHelp : ScreenType -> List Chunk -> Int -> List CompiledChunk -> ( List CompiledChunk, Int )
-compileHelp screenType chunks widgetId accumulated =
+compileHelp : Screen.Class -> List Chunk -> Int -> List CompiledChunk -> ( List CompiledChunk, Int )
+compileHelp screenClass chunks widgetId accumulated =
     case chunks of
         first :: rest ->
             let
                 prepend compiledChunk =
-                    compileHelp screenType rest widgetId (compiledChunk :: accumulated)
+                    compileHelp screenClass rest widgetId (compiledChunk :: accumulated)
             in
             case first of
                 Title textFragments ->
-                    prepend (Static TitleContext (viewTitle screenType textFragments))
+                    prepend (Static TitleContext (viewTitle screenClass textFragments))
 
                 Section textFragments ->
-                    prepend (Static SectionContext (viewSection screenType textFragments))
+                    prepend (Static SectionContext (viewSection screenClass textFragments))
 
                 Subsection textFragments ->
-                    prepend (Static SubsectionContext (viewSubsection screenType textFragments))
+                    prepend (Static SubsectionContext (viewSubsection screenClass textFragments))
 
                 Paragraph textFragments ->
-                    prepend (Static ParagraphContext (viewParagraph screenType textFragments))
+                    prepend (Static ParagraphContext (viewParagraph screenClass textFragments))
 
                 CustomBlock widget ->
-                    compileHelp screenType
+                    compileHelp screenClass
                         rest
                         (widgetId + 1)
                         (Interactive widgetId widget :: accumulated)
 
                 CodeBlock code ->
-                    prepend (Static CodeBlockContext (viewCodeBlock screenType code))
+                    prepend (Static CodeBlockContext (viewCodeBlock screenClass code))
 
                 Bullets bullets ->
                     let
                         ( compiledBullets, updatedId ) =
-                            compileBullets screenType bullets widgetId []
+                            compileBullets screenClass bullets widgetId []
                     in
-                    compileHelp screenType
+                    compileHelp screenClass
                         rest
                         updatedId
                         (CompiledBullets compiledBullets :: accumulated)
@@ -427,22 +408,22 @@ compileHelp screenType chunks widgetId accumulated =
             ( List.reverse accumulated, widgetId )
 
 
-compileBullets : ScreenType -> List (List Chunk) -> Int -> List (List CompiledChunk) -> ( List (List CompiledChunk), Int )
-compileBullets screenType bullets widgetId accumulated =
+compileBullets : Screen.Class -> List (List Chunk) -> Int -> List (List CompiledChunk) -> ( List (List CompiledChunk), Int )
+compileBullets screenClass bullets widgetId accumulated =
     case bullets of
         chunks :: rest ->
             let
                 ( compiledChunks, updatedId ) =
-                    compileHelp screenType chunks widgetId []
+                    compileHelp screenClass chunks widgetId []
             in
-            compileBullets screenType rest updatedId (compiledChunks :: accumulated)
+            compileBullets screenClass rest updatedId (compiledChunks :: accumulated)
 
         [] ->
             ( List.reverse accumulated, widgetId )
 
 
-viewTitle : ScreenType -> List Text -> Element msg
-viewTitle screenType textFragments =
+viewTitle : Screen.Class -> List Text -> Element msg
+viewTitle screenClass textFragments =
     Element.el
         [ Element.width Element.fill
         , Element.paddingEach { bottom = 8, top = 8, left = 0, right = 0 }
@@ -451,42 +432,42 @@ viewTitle screenType textFragments =
             [ Region.heading 1
             , alegreyaSans
             , Font.extraBold
-            , Font.size (fontSizes screenType).title
+            , Font.size (fontSizes screenClass).title
             , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-            , Border.color lightGrey
+            , Border.color colors.divider
             , Element.width Element.fill
             ]
-            (renderText screenType TitleContext textFragments)
+            (renderText screenClass TitleContext textFragments)
         )
 
 
-viewSection : ScreenType -> List Text -> Element msg
-viewSection screenType textFragments =
+viewSection : Screen.Class -> List Text -> Element msg
+viewSection screenClass textFragments =
     Element.paragraph
         [ Region.heading 2
         , alegreyaSans
         , Font.extraBold
-        , Font.size (fontSizes screenType).section
+        , Font.size (fontSizes screenClass).section
         , Element.paddingEach { top = 12, bottom = 0, left = 0, right = 0 }
         ]
-        (renderText screenType SectionContext textFragments)
+        (renderText screenClass SectionContext textFragments)
 
 
-viewSubsection : ScreenType -> List Text -> Element msg
-viewSubsection screenType textFragments =
+viewSubsection : Screen.Class -> List Text -> Element msg
+viewSubsection screenClass textFragments =
     Element.paragraph
         [ Region.heading 3
         , alegreyaSans
         , Font.extraBold
-        , Font.size (fontSizes screenType).subsection
+        , Font.size (fontSizes screenClass).subsection
         , Element.paddingEach { top = 6, bottom = 0, left = 0, right = 0 }
         ]
-        (renderText screenType SubsectionContext textFragments)
+        (renderText screenClass SubsectionContext textFragments)
 
 
-viewParagraph : ScreenType -> List Text -> Element msg
-viewParagraph screenType textFragments =
-    Element.paragraph [] (renderText screenType ParagraphContext textFragments)
+viewParagraph : Screen.Class -> List Text -> Element msg
+viewParagraph screenClass textFragments =
+    Element.paragraph [] (renderText screenClass ParagraphContext textFragments)
 
 
 viewCodeBlockLine : String -> Element msg
@@ -498,22 +479,22 @@ viewCodeBlockLine line =
         Element.text line
 
 
-viewCodeBlock : ScreenType -> String -> Element msg
-viewCodeBlock screenType code =
+viewCodeBlock : Screen.Class -> String -> Element msg
+viewCodeBlock screenClass code =
     Element.column
         [ Border.rounded 5
         , Element.paddingXY 12 10
         , sourceCodePro
-        , Background.color lightGrey
-        , Font.size (fontSizes screenType).codeBlockCode
+        , Background.color colors.codeBlockBackground
+        , Font.size (fontSizes screenClass).codeBlockCode
         , Element.scrollbarX
         ]
         (List.map viewCodeBlockLine (String.lines (String.trim code)))
 
 
-renderText : ScreenType -> TextContext -> List Text -> List (Element msg)
-renderText screenType context fragments =
-    List.map (renderTextFragment screenType context) fragments
+renderText : Screen.Class -> TextContext -> List Text -> List (Element msg)
+renderText screenClass context fragments =
+    List.map (renderTextFragment screenClass context) fragments
 
 
 inlineCodeElement : Int -> InlineCodeChunk -> Element msg
@@ -558,32 +539,44 @@ toPlainText textFragment =
             description
 
 
-codeFontSize : ScreenType -> TextContext -> Int
-codeFontSize screenType context =
+codeFontSize : Screen.Class -> TextContext -> Int
+codeFontSize screenClass context =
     case context of
         TitleContext ->
-            (fontSizes screenType).titleCode
+            (fontSizes screenClass).titleCode
 
         SectionContext ->
-            (fontSizes screenType).sectionCode
+            (fontSizes screenClass).sectionCode
 
         SubsectionContext ->
-            (fontSizes screenType).subsectionCode
+            (fontSizes screenClass).subsectionCode
 
         ParagraphContext ->
-            (fontSizes screenType).bodyCode
+            (fontSizes screenClass).bodyCode
 
         CodeBlockContext ->
-            (fontSizes screenType).codeBlockCode
+            (fontSizes screenClass).codeBlockCode
 
 
-codeBackgroundAttributes : List (Element.Attribute msg)
-codeBackgroundAttributes =
-    [ Element.paddingXY 4 2, Border.rounded 3, Background.color lightGrey ]
+inlineCodeBackgroundAttributes : List (Element.Attribute msg)
+inlineCodeBackgroundAttributes =
+    [ Element.paddingXY 4 2, Border.rounded 3, Background.color colors.inlineCodeBackground ]
 
 
-renderTextFragment : ScreenType -> TextContext -> Text -> Element msg
-renderTextFragment screenType context fragment =
+renderImage : { url : String, description : String } -> Element msg
+renderImage { url, description } =
+    Element.html <|
+        Html.img
+            [ Html.Attributes.src url
+            , Html.Attributes.alt description
+            , Html.Attributes.style "max-width" "100%"
+            , Html.Attributes.style "max-height" "100%"
+            ]
+            []
+
+
+renderTextFragment : Screen.Class -> TextContext -> Text -> Element msg
+renderTextFragment screenClass context fragment =
     case fragment of
         Plain string ->
             Element.text string
@@ -596,44 +589,42 @@ renderTextFragment screenType context fragment =
 
         Link { url, displayed } ->
             let
-                attributes =
+                ( attributes, label ) =
                     case displayed of
-                        Plain _ ->
-                            []
+                        Plain string ->
+                            ( [], Element.text string )
 
                         Italic string ->
-                            [ Font.italic ]
+                            ( [ Font.italic ], Element.text string )
 
                         Bold string ->
-                            [ Font.bold ]
+                            ( [ Font.bold ], Element.text string )
 
                         InlineCode chunks ->
-                            sourceCodePro
-                                :: Font.size (codeFontSize screenType context)
-                                :: codeBackgroundAttributes
+                            ( sourceCodePro
+                                :: Font.size (codeFontSize screenClass context)
+                                :: inlineCodeBackgroundAttributes
+                            , Element.text <|
+                                String.concat (List.map inlineCodeChunkToString chunks)
+                            )
 
-                        Image _ ->
-                            -- Should never happen
-                            []
+                        Image properties ->
+                            ( [], renderImage properties )
 
                         Link _ ->
                             -- Should never happen
-                            []
-
-                labelText =
-                    toPlainText displayed
+                            ( [], Element.none )
             in
-            Element.link (Font.color linkBlue :: Font.underline :: attributes)
-                { url = url, label = Element.text labelText }
+            Element.link (Font.color colors.linkBlue :: attributes) { url = url, label = label }
 
         InlineCode chunks ->
             let
                 fontSize =
-                    codeFontSize screenType context
+                    codeFontSize screenClass context
 
                 backgroundAttributes =
                     if context == ParagraphContext then
-                        codeBackgroundAttributes
+                        inlineCodeBackgroundAttributes
 
                     else
                         []
@@ -642,15 +633,8 @@ renderTextFragment screenType context fragment =
                 (sourceCodePro :: Font.size fontSize :: backgroundAttributes)
                 (List.map (inlineCodeElement fontSize) chunks)
 
-        Image { url, description } ->
-            Element.html <|
-                Html.img
-                    [ Html.Attributes.src url
-                    , Html.Attributes.alt description
-                    , Html.Attributes.style "max-width" "100%"
-                    , Html.Attributes.style "max-height" "100%"
-                    ]
-                    []
+        Image properties ->
+            renderImage properties
 
 
 
@@ -720,6 +704,13 @@ parseText inlines accumulated =
 
                         [ Inline.CodeInline string ] ->
                             prependLink (InlineCode [ Characters string ])
+
+                        [ Inline.Image imageUrl _ imageInlines ] ->
+                            prependLink <|
+                                Image
+                                    { url = imageUrl
+                                    , description = Inline.extractText imageInlines
+                                    }
 
                         _ ->
                             Err ("Link label must currently be a single plain text, italic, bold or inline code fragment, got " ++ Debug.toString urlInlines)
@@ -825,8 +816,8 @@ parseChunks config blocks accumulated =
             Ok (List.reverse accumulated)
 
 
-parse : { screenWidth : Int, widgets : List ( String, Widget ) } -> String -> Result String Document
-parse { screenWidth, widgets } markdown =
+parse : { availableWidth : Int, screenClass : Screen.Class, widgets : List ( String, Widget ) } -> String -> Result String Document
+parse { availableWidth, screenClass, widgets } markdown =
     let
         options =
             { softAsHardLineBreak = False
@@ -837,14 +828,7 @@ parse { screenWidth, widgets } markdown =
             Block.parse (Just options) markdown
 
         width =
-            min (screenWidth - 24) 640
-
-        screenType =
-            if screenWidth > 600 then
-                LargeScreen
-
-            else
-                SmallScreen
+            min (availableWidth - 24) 640
     in
     case blocks of
         (Block.Heading _ 1 inlines) :: rest ->
@@ -852,13 +836,13 @@ parse { screenWidth, widgets } markdown =
                 (\titleText bodyChunks ->
                     Document
                         { title = Inline.extractText inlines
-                        , chunks = compile screenType (Title titleText :: bodyChunks)
+                        , chunks = compile screenClass (Title titleText :: bodyChunks)
                         , width = width
-                        , screenType = screenType
+                        , screenClass = screenClass
                         }
                 )
                 (parseText inlines [])
-                (parseChunks { screenType = screenType, widgets = Dict.fromList widgets } rest [])
+                (parseChunks { screenClass = screenClass, widgets = Dict.fromList widgets } rest [])
 
         _ ->
             Err "Markdown document must start with a level 1 header"
