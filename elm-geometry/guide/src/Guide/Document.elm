@@ -637,10 +637,6 @@ renderTextFragment screenClass context fragment =
             renderImage properties
 
 
-
---Element.image [] { src = url, description = description }
-
-
 inlineCodeRegex : Regex
 inlineCodeRegex =
     Regex.fromString "(\\s+)|(\\S+)" |> Maybe.withDefault Regex.never
