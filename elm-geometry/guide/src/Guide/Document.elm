@@ -134,6 +134,7 @@ type alias FontSizes =
     , sectionCode : Int
     , subsectionCode : Int
     , bodyCode : Int
+    , codeBlockCode : Int
     }
 
 
@@ -147,6 +148,7 @@ largeScreenFontSizes =
     , sectionCode = 30
     , subsectionCode = 22
     , bodyCode = 14
+    , codeBlockCode = 14
     }
 
 
@@ -160,6 +162,7 @@ smallScreenFontSizes =
     , sectionCode = 22
     , subsectionCode = 18
     , bodyCode = 14
+    , codeBlockCode = 12
     }
 
 
@@ -468,7 +471,7 @@ viewCodeBlock screenType code =
         , Element.paddingXY 12 10
         , sourceCodePro
         , Background.color lightGrey
-        , Font.size (fontSizes screenType).bodyCode
+        , Font.size (fontSizes screenType).codeBlockCode
         ]
         (List.map Element.text (String.lines (String.trim code)))
 
@@ -536,7 +539,7 @@ codeFontSize screenType context =
             (fontSizes screenType).bodyCode
 
         CodeBlockContext ->
-            (fontSizes screenType).bodyCode
+            (fontSizes screenType).codeBlockCode
 
 
 codeBackgroundAttributes : List (Element.Attribute msg)
