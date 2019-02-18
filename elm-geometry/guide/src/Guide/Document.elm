@@ -139,11 +139,11 @@ largeScreenFontSizes =
     { title = 48
     , section = 32
     , subsection = 22
-    , body = 16
+    , body = 14
     , titleCode = 44
     , sectionCode = 30
     , subsectionCode = 22
-    , bodyCode = 16
+    , bodyCode = 14
     }
 
 
