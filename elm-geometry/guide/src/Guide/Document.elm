@@ -193,8 +193,17 @@ view attributes (Document document) =
 
         widthAttribute =
             Element.width (Element.px document.width)
+
+        bottomPadding =
+            Element.paddingEach
+                { top = 0
+                , left = 0
+                , right = 0
+                , bottom = topLevelSpacing
+                }
     in
-    Element.el (merriweather :: fontSizeAttribute :: widthAttribute :: attributes)
+    Element.el
+        (merriweather :: fontSizeAttribute :: widthAttribute :: bottomPadding :: attributes)
         (viewChunks { topLevel = True, screenType = document.screenType } document.chunks
             |> Element.map
                 (\( id, widget ) ->
