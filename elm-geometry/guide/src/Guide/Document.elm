@@ -464,6 +464,15 @@ viewParagraph screenType textFragments =
     Element.paragraph [] (renderText screenType ParagraphContext textFragments)
 
 
+viewCodeBlockLine : String -> Element msg
+viewCodeBlockLine line =
+    if String.isEmpty line then
+        Element.text "\n"
+
+    else
+        Element.text line
+
+
 viewCodeBlock : ScreenType -> String -> Element msg
 viewCodeBlock screenType code =
     Element.column
@@ -473,7 +482,7 @@ viewCodeBlock screenType code =
         , Background.color lightGrey
         , Font.size (fontSizes screenType).codeBlockCode
         ]
-        (List.map Element.text (String.lines (String.trim code)))
+        (List.map viewCodeBlockLine (String.lines (String.trim code)))
 
 
 renderText : ScreenType -> TextContext -> List Text -> List (Element msg)
