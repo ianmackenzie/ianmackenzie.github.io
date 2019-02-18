@@ -62,7 +62,7 @@ init flags =
             ]
 
         model =
-            case Document.parse { screenWidth = flags.width, widgets = widgets } Test.md of
+            case Document.parse { screenWidth = flags.width, widgets = widgets } Test.readme of
                 Ok document ->
                     Loaded document
 

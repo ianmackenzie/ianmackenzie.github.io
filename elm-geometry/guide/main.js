@@ -4489,7 +4489,7 @@ var author$project$Guide$Document$Static = F2(
 	});
 var author$project$Guide$Document$SubsectionContext = {$: 'SubsectionContext'};
 var author$project$Guide$Document$TitleContext = {$: 'TitleContext'};
-var author$project$Guide$Document$largeScreenFontSizes = {body: 16, bodyCode: 16, section: 32, sectionCode: 30, subsection: 22, subsectionCode: 22, title: 48, titleCode: 44};
+var author$project$Guide$Document$largeScreenFontSizes = {body: 14, bodyCode: 14, section: 32, sectionCode: 30, subsection: 22, subsectionCode: 22, title: 48, titleCode: 44};
 var author$project$Guide$Document$smallScreenFontSizes = {body: 14, bodyCode: 14, section: 22, sectionCode: 22, subsection: 18, subsectionCode: 18, title: 32, titleCode: 28};
 var author$project$Guide$Document$fontSizes = function (screenType) {
 	if (screenType.$ === 'LargeScreen') {
@@ -10581,7 +10581,7 @@ var author$project$Guide$Document$viewCodeBlock = F2(
 			_List_fromArray(
 				[
 					mdgriffith$elm_ui$Element$Border$rounded(5),
-					A2(mdgriffith$elm_ui$Element$paddingXY, 10, 4),
+					A2(mdgriffith$elm_ui$Element$paddingXY, 12, 10),
 					author$project$Guide$Document$sourceCodePro,
 					mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Document$lightGrey),
 					mdgriffith$elm_ui$Element$Font$size(
@@ -10676,13 +10676,37 @@ var author$project$Guide$Document$toPlainText = function (textFragment) {
 				var $temp$textFragment = displayed;
 				textFragment = $temp$textFragment;
 				continue toPlainText;
-			default:
+			case 'InlineCode':
 				var chunks = textFragment.a;
 				return elm$core$String$concat(
 					A2(elm$core$List$map, author$project$Guide$Document$inlineCodeChunkToString, chunks));
+			default:
+				var description = textFragment.a.description;
+				return description;
 		}
 	}
 };
+var elm$html$Html$img = _VirtualDom_node('img');
+var elm$html$Html$Attributes$alt = elm$html$Html$Attributes$stringProperty('alt');
+var elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
+var elm$core$Basics$always = F2(
+	function (a, _n0) {
+		return a;
+	});
+var elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var mdgriffith$elm_ui$Internal$Model$unstyled = A2(elm$core$Basics$composeL, mdgriffith$elm_ui$Internal$Model$Unstyled, elm$core$Basics$always);
+var mdgriffith$elm_ui$Element$html = mdgriffith$elm_ui$Internal$Model$unstyled;
 var elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		elm$html$Html$Attributes$stringProperty,
@@ -10805,6 +10829,8 @@ var author$project$Guide$Document$renderTextFragment = F3(
 									mdgriffith$elm_ui$Element$Font$size(
 										A2(author$project$Guide$Document$codeFontSize, screenType, context)),
 									author$project$Guide$Document$codeBackgroundAttributes));
+						case 'Image':
+							return _List_Nil;
 						default:
 							return _List_Nil;
 					}
@@ -10819,7 +10845,7 @@ var author$project$Guide$Document$renderTextFragment = F3(
 						label: mdgriffith$elm_ui$Element$text(labelText),
 						url: url
 					});
-			default:
+			case 'InlineCode':
 				var chunks = fragment.a;
 				var fontSize = A2(author$project$Guide$Document$codeFontSize, screenType, context);
 				var backgroundAttributes = _Utils_eq(context, author$project$Guide$Document$ParagraphContext) ? author$project$Guide$Document$codeBackgroundAttributes : _List_Nil;
@@ -10836,6 +10862,20 @@ var author$project$Guide$Document$renderTextFragment = F3(
 						elm$core$List$map,
 						author$project$Guide$Document$inlineCodeElement(fontSize),
 						chunks));
+			default:
+				var url = fragment.a.url;
+				var description = fragment.a.description;
+				return mdgriffith$elm_ui$Element$html(
+					A2(
+						elm$html$Html$img,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$src(url),
+								elm$html$Html$Attributes$alt(description),
+								A2(elm$html$Html$Attributes$style, 'max-width', '100%'),
+								A2(elm$html$Html$Attributes$style, 'max-height', '100%')
+							]),
+						_List_Nil));
 		}
 	});
 var author$project$Guide$Document$renderText = F3(
@@ -10935,11 +10975,6 @@ var mdgriffith$elm_ui$Element$paddingEach = function (_n0) {
 			left));
 };
 var mdgriffith$elm_ui$Element$Font$extraBold = A2(mdgriffith$elm_ui$Internal$Model$Class, mdgriffith$elm_ui$Internal$Flag$fontWeight, mdgriffith$elm_ui$Internal$Style$classes.textExtraBold);
-var elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
 var mdgriffith$elm_ui$Internal$Model$Heading = function (a) {
 	return {$: 'Heading', a: a};
 };
@@ -11202,6 +11237,9 @@ var author$project$Guide$Document$Bold = function (a) {
 var author$project$Guide$Document$Characters = function (a) {
 	return {$: 'Characters', a: a};
 };
+var author$project$Guide$Document$Image = function (a) {
+	return {$: 'Image', a: a};
+};
 var author$project$Guide$Document$InlineCode = function (a) {
 	return {$: 'InlineCode', a: a};
 };
@@ -11287,6 +11325,47 @@ var author$project$Guide$Document$toInlineCodeChunks = function (string) {
 	return A2(elm$core$List$map, author$project$Guide$Document$toInlineCodeChunk, matches);
 };
 var elm$core$Debug$toString = _Debug_toString;
+var pablohirafuji$elm_markdown$Markdown$Inline$extractText = function (inlines) {
+	return A3(elm$core$List$foldl, pablohirafuji$elm_markdown$Markdown$Inline$extractTextHelp, '', inlines);
+};
+var pablohirafuji$elm_markdown$Markdown$Inline$extractTextHelp = F2(
+	function (inline, text) {
+		switch (inline.$) {
+			case 'Text':
+				var str = inline.a;
+				return _Utils_ap(text, str);
+			case 'HardLineBreak':
+				return text + ' ';
+			case 'CodeInline':
+				var str = inline.a;
+				return _Utils_ap(text, str);
+			case 'Link':
+				var inlines = inline.c;
+				return _Utils_ap(
+					text,
+					pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines));
+			case 'Image':
+				var inlines = inline.c;
+				return _Utils_ap(
+					text,
+					pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines));
+			case 'HtmlInline':
+				var inlines = inline.c;
+				return _Utils_ap(
+					text,
+					pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines));
+			case 'Emphasis':
+				var inlines = inline.b;
+				return _Utils_ap(
+					text,
+					pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines));
+			default:
+				var inlines = inline.b;
+				return _Utils_ap(
+					text,
+					pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines));
+		}
+	});
 var author$project$Guide$Document$parseText = F2(
 	function (inlines, accumulated) {
 		if (inlines.b) {
@@ -11367,7 +11446,14 @@ var author$project$Guide$Document$parseText = F2(
 						return elm$core$Result$Err(
 							'Link label must currently be a single plain text, italic, bold or inline code fragment, got ' + elm$core$Debug$toString(urlInlines));
 					case 'Image':
-						return elm$core$Result$Err('Inline images not yet supported');
+						var url = first.a;
+						var imageInlines = first.c;
+						return prepend(
+							author$project$Guide$Document$Image(
+								{
+									description: pablohirafuji$elm_markdown$Markdown$Inline$extractText(imageInlines),
+									url: url
+								}));
 					case 'HtmlInline':
 						return elm$core$Result$Err('Inline custom elements not yet supported');
 					case 'Emphasis':
@@ -11536,40 +11622,24 @@ var author$project$Guide$Document$parseChunks = F3(
 						}
 					case 'PlainInlines':
 						var inlines = first.a;
-						if (inlines.b && (!inlines.b.b)) {
-							switch (inlines.a.$) {
-								case 'Image':
-									var _n7 = inlines.a;
-									return elm$core$Result$Err('Images not yet supported');
-								case 'HtmlInline':
-									if ((!inlines.a.b.b) && (!inlines.a.c.b)) {
-										var _n8 = inlines.a;
-										var tag = _n8.a;
-										var _n9 = A2(elm$core$Dict$get, tag, config.widgets);
-										if (_n9.$ === 'Just') {
-											var registeredWidget = _n9.a;
-											return prepend(
-												author$project$Guide$Document$CustomBlock(registeredWidget));
-										} else {
-											return elm$core$Result$Err('No widget found with name ' + tag);
-										}
-									} else {
-										var _n10 = inlines.a;
-										var tag = _n10.a;
-										var attributes = _n10.b;
-										var children = _n10.c;
-										return elm$core$Result$Err('Custom elements with attributes or children not yet supported');
-									}
-								case 'Text':
-									var text = inlines.a.a;
-									return A2(
-										elm$core$Result$andThen,
-										A2(elm$core$Basics$composeR, author$project$Guide$Document$Paragraph, prepend),
-										A2(author$project$Guide$Document$parseText, inlines, _List_Nil));
-								default:
-									var inline = inlines.a;
-									return elm$core$Result$Err(
-										'Only images and custom elements supported as standalone elements right now, got ' + elm$core$Debug$toString(inline));
+						if ((inlines.b && (inlines.a.$ === 'HtmlInline')) && (!inlines.b.b)) {
+							if ((!inlines.a.b.b) && (!inlines.a.c.b)) {
+								var _n7 = inlines.a;
+								var tag = _n7.a;
+								var _n8 = A2(elm$core$Dict$get, tag, config.widgets);
+								if (_n8.$ === 'Just') {
+									var registeredWidget = _n8.a;
+									return prepend(
+										author$project$Guide$Document$CustomBlock(registeredWidget));
+								} else {
+									return elm$core$Result$Err('No widget found with name ' + tag);
+								}
+							} else {
+								var _n9 = inlines.a;
+								var tag = _n9.a;
+								var attributes = _n9.b;
+								var children = _n9.c;
+								return elm$core$Result$Err('Custom elements with attributes or children not yet supported');
 							}
 						} else {
 							return A2(
@@ -15216,47 +15286,6 @@ var pablohirafuji$elm_markdown$Markdown$Block$parse = function (maybeOptions) {
 				A2(pablohirafuji$elm_markdown$Markdown$Block$parseInlines, maybeOptions, true))));
 };
 var pablohirafuji$elm_markdown$Markdown$Config$ParseUnsafe = {$: 'ParseUnsafe'};
-var pablohirafuji$elm_markdown$Markdown$Inline$extractText = function (inlines) {
-	return A3(elm$core$List$foldl, pablohirafuji$elm_markdown$Markdown$Inline$extractTextHelp, '', inlines);
-};
-var pablohirafuji$elm_markdown$Markdown$Inline$extractTextHelp = F2(
-	function (inline, text) {
-		switch (inline.$) {
-			case 'Text':
-				var str = inline.a;
-				return _Utils_ap(text, str);
-			case 'HardLineBreak':
-				return text + ' ';
-			case 'CodeInline':
-				var str = inline.a;
-				return _Utils_ap(text, str);
-			case 'Link':
-				var inlines = inline.c;
-				return _Utils_ap(
-					text,
-					pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines));
-			case 'Image':
-				var inlines = inline.c;
-				return _Utils_ap(
-					text,
-					pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines));
-			case 'HtmlInline':
-				var inlines = inline.c;
-				return _Utils_ap(
-					text,
-					pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines));
-			case 'Emphasis':
-				var inlines = inline.b;
-				return _Utils_ap(
-					text,
-					pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines));
-			default:
-				var inlines = inline.b;
-				return _Utils_ap(
-					text,
-					pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines));
-		}
-	});
 var author$project$Guide$Document$parse = F2(
 	function (_n0, markdown) {
 		var screenWidth = _n0.screenWidth;
@@ -15551,7 +15580,7 @@ var author$project$Main$counter = author$project$Guide$Widget$interactive(
 					]));
 		}
 	});
-var author$project$Test$md = '# Title with `inline code`\r\n\r\nSome `inline code` followed by some _italic_ text.\r\n\r\n## A section with `some inline-code`\r\n\r\nContaining some `more inline code` as well as [a GitHub link](https://github.com/ianmackenzie/elm-geometry)\r\nand some more text after the link to check wrapping behaviour.\r\n\r\nAlso some bullets:\r\n\r\n* First bullet\r\n* Second bullet\r\n  * With an indented bullet that has a custom widget\r\n    \r\n    <counter/>\r\n\r\n  * And another indented bullet with a code block:\r\n    \r\n        some code\r\n        some more code\r\n            some indented code\r\n\r\n  * A bullet after the code block!\r\n\r\n* A third bullet with [`a fun link`](https://elm-lang.org) and [_an italic link_](https://arstechnica.com)\r\n* Plus a fourth bullet just for fun with some _italic text_ and `long inline code` probably\r\n  splitting over multiple lines because I made this bullet **really** long\r\n\r\n## Another _section_\r\n    \r\nWith some **bold** text, and a custom element:\r\n\r\n<counter/>\r\n\r\nA code block:\r\n\r\n    code\r\n    more code\r\n        indented code\r\n    unindented code\r\n\r\n### A subsection with `some inline-code`\r\n\r\nWith another custom element:\r\n\r\n### `A weird subsection`\r\n\r\nJust inline code in the title!\r\n\r\n<counter/>\r\n';
+var author$project$Test$readme = '# elm-geometry\r\n\r\n`elm-geometry` is an [Elm](http://elm-lang.org) package for working with 2D and\r\n3D geometry. It provides a wide variety of geometric data types such as points,\r\nvectors, arcs, spline curves and coordinate frames, along with functions for\r\ntransforming and combining them in many different ways. You can:\r\n\r\n- Rotate points around axes in 3D\r\n- Mirror triangles across 3D planes\r\n- Project 3D geometry into 2D sketch planes\r\n- Measure distances and angles between different objects\r\n- Convert objects between different coordinate systems\r\n- Compose complex 2D/3D transformations\r\n- ...and much more!\r\n\r\n## Table of contents\r\n\r\n- [Overview](#overview)\r\n- [Units and coordinate systems](#units-and-coordinate-systems)\r\n  - [Units](#units)\r\n  - [Coordinate systems](#coordinate-systems)\r\n  - [Conversions](#conversions)\r\n- [Installation](#installation)\r\n- [Documentation](#documentation)\r\n- [Questions and feedback](#questions-and-feedback)\r\n\r\n## Overview\r\n\r\n`elm-geometry` includes a wide variety of data types: points, vectors, directions...\r\n\r\n![Point2d](https://opensolid.github.io/images/geometry/icons/point2d.svg)\r\n![Point3d](https://opensolid.github.io/images/geometry/icons/point3d.svg)\r\n![Vector2d](https://opensolid.github.io/images/geometry/icons/vector2d.svg)\r\n![Vector3d](https://opensolid.github.io/images/geometry/icons/vector3d.svg)\r\n![Direction2d](https://opensolid.github.io/images/geometry/icons/direction2d.svg)\r\n![Direction3d](https://opensolid.github.io/images/geometry/icons/direction3d.svg)\r\n\r\n...line segments, triangles, bounding boxes...\r\n\r\n![LineSegment2d](https://opensolid.github.io/images/geometry/icons/lineSegment2d.svg)\r\n![LineSegment3d](https://opensolid.github.io/images/geometry/icons/lineSegment3d.svg)\r\n![Triangle2d](https://opensolid.github.io/images/geometry/icons/triangle2d.svg)\r\n![Triangle3d](https://opensolid.github.io/images/geometry/icons/triangle3d.svg)\r\n![BoundingBox2d](https://opensolid.github.io/images/geometry/icons/boundingBox2d.svg)\r\n![BoundingBox3d](https://opensolid.github.io/images/geometry/icons/boundingBox3d.svg)\r\n\r\n...polylines, polygons, quadratic and cubic splines...\r\n\r\n![Polyline2d](https://opensolid.github.io/images/geometry/icons/polyline2d.svg)\r\n![Polyline3d](https://opensolid.github.io/images/geometry/icons/polyline3d.svg)\r\n![Polygon2d](https://opensolid.github.io/images/geometry/icons/polygon2d.svg)\r\n![QuadraticSpline2d](https://opensolid.github.io/images/geometry/icons/quadraticSpline2d.svg)\r\n![QuadraticSpline3d](https://opensolid.github.io/images/geometry/icons/quadraticSpline3d.svg)\r\n![CubicSpline2d](https://opensolid.github.io/images/geometry/icons/cubicSpline2d.svg)\r\n![CubicSpline3d](https://opensolid.github.io/images/geometry/icons/cubicSpline3d.svg)\r\n\r\n...circles, arcs, ellipses and elliptical arcs...\r\n\r\n![Circle2d](https://opensolid.github.io/images/geometry/icons/circle2d.svg)\r\n![Circle3d](https://opensolid.github.io/images/geometry/icons/circle3d.svg)\r\n![Arc2d](https://opensolid.github.io/images/geometry/icons/arc2d.svg)\r\n![Arc3d](https://opensolid.github.io/images/geometry/icons/arc3d.svg)\r\n![Ellipse2d](https://opensolid.github.io/images/geometry/icons/ellipse2d.svg)\r\n![EllipticalArc2d](https://opensolid.github.io/images/geometry/icons/ellipticalArc2d.svg)\r\n\r\n...plus axes, planes, and various forms of 2D/3D coordinate systems:\r\n\r\n![Axis2d](https://opensolid.github.io/images/geometry/icons/axis2d.svg)\r\n![Axis3d](https://opensolid.github.io/images/geometry/icons/axis3d.svg)\r\n![Plane3d](https://opensolid.github.io/images/geometry/icons/plane3d.svg)\r\n![Frame2d](https://opensolid.github.io/images/geometry/icons/frame2d.svg)\r\n![Frame3d](https://opensolid.github.io/images/geometry/icons/frame3d.svg)\r\n![SketchPlane3d](https://opensolid.github.io/images/geometry/icons/sketchPlane3d.svg)\r\n\r\nA large range of geometric functionality is included, such as various forms of\r\nconstructors...\r\n\r\n```elm\r\nPoint3d.fromCoordinates\r\n    ( Length.meters 1\r\n    , Length.meters 4\r\n    , Length.meters 5\r\n    )\r\n\r\nDirection2d.fromAngle (Angle.degrees 30)\r\n\r\nPoint3d.midpoint p1 p2\r\n\r\nVector2d.withLength (Length.feet 3) Direction2d.y\r\n\r\nTriangle2d.fromVertices ( p1, p2, p3 )\r\n\r\nPlane3d.throughPoints p1 p2 p3\r\n\r\nAxis3d.through Point3d.origin Direction3d.z\r\n\r\nArc2d.from p1 p2 (Angle.degrees 90)\r\n\r\nQuadraticSpline3d.with\r\n    { startPoint = p1\r\n    , controlPoint = p2\r\n    , endPoint = p3\r\n    }\r\n\r\nCubicSpline2d.fromEndpoints\r\n    { startPoint = p1\r\n    , startDerivative = v1\r\n    , endPoint = p2\r\n    , endDerivative = v2\r\n    }\r\n```\r\n\r\n...point/vector arithmetic...\r\n\r\n```elm\r\nv1 |> Vector3d.plus v2\r\n\r\n-- the vector from the point p1 to the point p2\r\nVector2d.from p1 p2\r\n\r\nv1 |> Vector3d.cross v2\r\n\r\nVector2d.length vector\r\n\r\n-- distance of a point from the origin\r\npoint |> Point2d.distanceFrom Point2d.origin\r\n```\r\n\r\n...and 2D/3D transformations:\r\n\r\n```elm\r\nvector |> Vector2d.rotateBy angle\r\n\r\npoint |> Point2d.rotateAround Point2d.origin angle\r\n\r\npoint |> Point3d.mirrorAcross Plane3d.xy\r\n\r\nvector |> Vector3d.projectionIn Direction3d.z\r\n\r\ntriangle |> Triangle3d.rotateAround Axis3d.x angle\r\n\r\nlineSegment\r\n    |> LineSegment3d.mirrorAcross Plane3d.yz\r\n    |> LineSegment3d.projectOnto Plane3d.xy\r\n\r\nPlane3d.xy |> Plane3d.offsetBy (Length.meters 3)\r\n```\r\n\r\n## Units and coordinate systems\r\n\r\nMost types in `elm-geometry` include two [phantom type parameters](https://blog.ilias.xyz/5-things-you-didnt-know-about-elm-7bdb67b1b3cd#1869)\r\nthat allow compile-time tracking of both what units that geometry is in (usually\r\neither meters for real-world geometry, or pixels for on-screen geometry) and\r\nwhat coordinate system the geometry is defined in. For example, you might use a\r\n\r\n```elm\r\nPoint2d Pixels YUpCoordinates\r\n```\r\n\r\nto represent a point on the screen that is defined in Y-up coordinates (from\r\nthe lower-left corner of an SVG drawing, for example) as opposed to Y-down\r\ncoordinates from the top left corner of the screen.\r\n\r\n### Units\r\n\r\n`elm-geometry` uses the `Quantity` type from [`elm-units`](https://package.elm-lang.org/packages/ianmackenzie/elm-units/latest) to track/convert the units associated with\r\nnumeric values such as point coordinates, vector components, lengths, distances\r\nand angles. Internally, `elm-units` converts everything to [SI](https://en.wikipedia.org/wiki/International_System_of_Units)\r\nunits, so\r\n\r\n```elm\r\nPoint2d.fromCoordinates\r\n    ( Length.inches 10\r\n    , Length.inches 20\r\n    )\r\n```\r\n\r\nand\r\n\r\n```elm\r\nPoint2d.fromCoordinates\r\n    ( Length.centimeters 25.4\r\n    , Length.centimeters 50.8\r\n    )\r\n```\r\n\r\nare equivalent. Tracking units at compile time prevents mixing and matching\r\ndifferent types of geometry; for example,\r\n\r\n```elm\r\nPoint2d.fromCoordinates\r\n    ( Length.meters 3\r\n    , Length.meters 4\r\n    )\r\n```\r\n\r\nand\r\n\r\n```elm\r\nPoint2d.fromCoordinates\r\n    ( Pixels.pixels 200\r\n    , Pixels.pixels 300\r\n    )\r\n```\r\n\r\nhave completely different units, so the compiler can catch nonsensical\r\noperations like trying to find the distance from the first point to the second.\r\n\r\n### Coordinate systems\r\n\r\n2D/3D geometry is often represented using X/Y/Z coordinates. As a result, in\r\naddition to tracking which units are used, `elm-geometry` also lets you add type\r\nannotations to specify what _coordinate system_ particular geometry is defined\r\nin. For example, we might declare a `TopLeftCoordinates` type and then add a\r\ntype annotation to a `point` asserting that it is defined in coordinates\r\nrelative to the top-left corner of the screen:\r\n\r\n```elm\r\n{-| A coordinate system where (0, 0) is the top left corner\r\nof the screen, positive X is to the right, and positive Y\r\nis down.\r\n-}\r\ntype TopLeftCoordinates =\r\n    TopLeftCoordinates\r\n\r\npoint : Point2d Pixels TopLeftCoordinates\r\npoint =\r\n    Point2d.fromCoordinates\r\n        ( Pixels.pixels 200\r\n        , Pixels.pixels 300\r\n        )\r\n```\r\n\r\nNote that the `TopLeftCoordinates` type we declared gives us a convenient place\r\nto document exactly how that coordinate system is defined. This combination now\r\ngives us some nice type safety - the compiler will tell us if we try to mix two\r\npoints that have different units or are defined in different coordinate systems.\r\n\r\n### Conversions\r\n\r\nTODO\r\n\r\n## Installation\r\n\r\nAssuming you have [installed Elm](https://guide.elm-lang.org/install.html) and\r\nstarted a new project, you can install `elm-geometry` by running\r\n\r\n```text\r\nelm install ianmackenzie/elm-geometry\r\n```\r\n\r\nin a command prompt inside your project directory.\r\n\r\n## Documentation\r\n\r\n[Full API documentation](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest)\r\nis available for each module. Most modules are associated with a particular data\r\ntype (for example, the [`Point3d`](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/Point3d)\r\nmodule contains functions for creating and manipulating `Point3d` values).\r\n\r\n## Questions and feedback\r\n\r\nPlease [open a new issue](https://github.com/ianmackenzie/elm-geometry/issues)\r\nif you run into a bug, if any documentation is missing/incorrect/confusing, or\r\nif there\'s a new feature that you would find useful. For general questions about\r\nusing `elm-geometry`, the best place is probably the **#geometry** channel on\r\nthe friendly [Elm Slack](http://elmlang.herokuapp.com/):\r\n\r\n![Elm Slack #geometry channel conversation](https://ianmackenzie.github.io/elm-geometry/1.0.0/README/Slack.png)\r\n\r\nYou can also try:\r\n\r\n- Sending me (**@ianmackenzie**) a message on Slack - even if you don\'t have any\r\n  particular questions right now, it would be great to know what you\'re hoping\r\n  to do with the package!\r\n- Posting to the [Elm Discourse](https://discourse.elm-lang.org/) forums\r\n\r\nYou can also find me on Twitter ([@ianemackenzie](https://twitter.com/ianemackenzie)),\r\nwhere I occasionally post `elm-geometry`-related stuff like demos or new\r\nreleases. Have fun, and don\'t be afraid to ask for help!\r\n';
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$init = function (flags) {
@@ -15563,7 +15592,7 @@ var author$project$Main$init = function (flags) {
 		var _n0 = A2(
 			author$project$Guide$Document$parse,
 			{screenWidth: flags.width, widgets: widgets},
-			author$project$Test$md);
+			author$project$Test$readme);
 		if (_n0.$ === 'Ok') {
 			var document = _n0.a;
 			return author$project$Main$Loaded(document);
@@ -15592,6 +15621,7 @@ var author$project$Guide$Document$merriweather = mdgriffith$elm_ui$Element$Font$
 			mdgriffith$elm_ui$Element$Font$typeface('Merriweather'),
 			mdgriffith$elm_ui$Element$Font$serif
 		]));
+var author$project$Guide$Document$topLevelSpacing = 12;
 var author$project$Guide$Document$updateWidget = F3(
 	function (givenId, newWidget, chunks) {
 		return A2(
@@ -15625,12 +15655,6 @@ var elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
 var elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var elm$core$Basics$always = F2(
-	function (a, _n0) {
-		return a;
-	});
-var mdgriffith$elm_ui$Internal$Model$unstyled = A2(elm$core$Basics$composeL, mdgriffith$elm_ui$Internal$Model$Unstyled, elm$core$Basics$always);
-var mdgriffith$elm_ui$Element$html = mdgriffith$elm_ui$Internal$Model$unstyled;
 var author$project$Guide$Document$bulletIcon = function (_n0) {
 	var screenType = _n0.screenType;
 	var topLevel = _n0.topLevel;
@@ -15706,7 +15730,6 @@ var author$project$Guide$Document$bulletIcon = function (_n0) {
 					]))));
 };
 var author$project$Guide$Document$bulletSpacing = 8;
-var author$project$Guide$Document$topLevelSpacing = 12;
 var author$project$Guide$Document$widthFill = mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill);
 var author$project$Guide$Widget$view = F2(
 	function (toMessage, _n0) {
@@ -15843,6 +15866,8 @@ var author$project$Guide$Document$view = F2(
 			mdgriffith$elm_ui$Element$px(document.width));
 		var fontSizeAttribute = mdgriffith$elm_ui$Element$Font$size(
 			author$project$Guide$Document$fontSizes(document.screenType).body);
+		var bottomPadding = mdgriffith$elm_ui$Element$paddingEach(
+			{bottom: author$project$Guide$Document$topLevelSpacing, left: 0, right: 0, top: 0});
 		return A2(
 			mdgriffith$elm_ui$Element$el,
 			A2(
@@ -15851,7 +15876,10 @@ var author$project$Guide$Document$view = F2(
 				A2(
 					elm$core$List$cons,
 					fontSizeAttribute,
-					A2(elm$core$List$cons, widthAttribute, attributes))),
+					A2(
+						elm$core$List$cons,
+						widthAttribute,
+						A2(elm$core$List$cons, bottomPadding, attributes)))),
 			A2(
 				mdgriffith$elm_ui$Element$map,
 				function (_n1) {
