@@ -1,28 +1,10 @@
 module Main exposing (main)
 
-import Browser
 import Element exposing (Element)
 import Element.Events as Events
 import Element.Input as Input
-import Guide.Document as Document exposing (Document)
+import Guide
 import Guide.Widget as Widget exposing (Widget)
-import Html exposing (Html)
-import Test
-
-
-type alias Flags =
-    { width : Int
-    , height : Int
-    }
-
-
-type Model
-    = Loaded Document
-    | Error String
-
-
-type alias Msg =
-    Document
 
 
 type CounterMsg
@@ -54,51 +36,9 @@ counter =
         }
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
-    let
-        widgets =
-            [ ( "counter", counter )
-            ]
-
-        model =
-            case Document.parse { screenWidth = flags.width, widgets = widgets } Test.readme of
-                Ok document ->
-                    Loaded document
-
-                Err message ->
-                    Error message
-    in
-    ( model, Cmd.none )
-
-
-view : Model -> Browser.Document Msg
-view model =
-    case model of
-        Loaded document ->
-            { title = Document.title document
-            , body =
-                [ Element.layout [ Element.width Element.fill ]
-                    (Document.view [ Element.centerX ] document)
-                ]
-            }
-
-        Error message ->
-            { title = "Error!"
-            , body = [ Html.text message ]
-            }
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update newDocument model =
-    ( Loaded newDocument, Cmd.none )
-
-
-main : Program Flags Model Msg
+main : Guide.Program
 main =
-    Browser.document
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = always Sub.none
+    Guide.program
+        { readmeUrl = "https://cdn.jsdelivr.net/gh/ianmackenzie/elm-geometry/README.md"
+        , pages = []
         }
