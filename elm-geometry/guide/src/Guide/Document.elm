@@ -194,22 +194,25 @@ title (Document document) =
 view : List (Element.Attribute Document) -> Document -> Element Document
 view attributes (Document document) =
     let
-        fontSizeAttribute =
+        fontSize =
             Font.size (fontSizes document.screenType).body
 
-        widthAttribute =
+        width =
             Element.width (Element.px document.width)
 
-        bottomPadding =
+        padding =
             Element.paddingEach
                 { top = 0
                 , left = 0
                 , right = 0
                 , bottom = topLevelSpacing
                 }
+
+        mainContent =
+            Region.mainContent
     in
     Element.el
-        (merriweather :: fontSizeAttribute :: widthAttribute :: bottomPadding :: attributes)
+        (merriweather :: fontSize :: width :: padding :: mainContent :: attributes)
         (viewChunks { topLevel = True, screenType = document.screenType } document.chunks
             |> Element.map
                 (\( id, widget ) ->
