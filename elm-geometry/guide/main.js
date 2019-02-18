@@ -4578,6 +4578,9 @@ var elm$core$Array$foldr = F3(
 var elm$core$Array$toList = function (array) {
 	return A3(elm$core$Array$foldr, elm$core$List$cons, _List_Nil, array);
 };
+var elm$core$Basics$mul = _Basics_mul;
+var elm$core$Basics$round = _Basics_round;
+var elm$core$Basics$sub = _Basics_sub;
 var elm$core$Basics$fdiv = _Basics_fdiv;
 var elm$core$Basics$toFloat = _Basics_toFloat;
 var mdgriffith$elm_ui$Internal$Model$Rgba = F4(
@@ -4588,7 +4591,11 @@ var mdgriffith$elm_ui$Element$rgb255 = F3(
 	function (red, green, blue) {
 		return A4(mdgriffith$elm_ui$Internal$Model$Rgba, red / 255, green / 255, blue / 255, 1);
 	});
-var author$project$Guide$Document$lightGrey = A3(mdgriffith$elm_ui$Element$rgb255, 238, 238, 238);
+var author$project$Guide$Document$lightGrey = function () {
+	var scale = 0.6;
+	var value = elm$core$Basics$round(255 - (scale * (255 - 238)));
+	return A3(mdgriffith$elm_ui$Element$rgb255, value, value, value);
+}();
 var elm$core$List$foldl = F3(
 	function (func, acc, list) {
 		foldl:
@@ -4609,7 +4616,6 @@ var elm$core$List$foldl = F3(
 		}
 	});
 var elm$core$Basics$gt = _Utils_gt;
-var elm$core$Basics$sub = _Basics_sub;
 var elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
 var mdgriffith$elm_ui$Internal$Flag$Flag = function (a) {
 	return {$: 'Flag', a: a};
@@ -5010,7 +5016,6 @@ var elm$core$Basics$max = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) > 0) ? x : y;
 	});
-var elm$core$Basics$mul = _Basics_mul;
 var elm$core$Elm$JsArray$length = _JsArray_length;
 var elm$core$Array$builderToArray = F2(
 	function (reverseNodeList, builder) {
@@ -5535,7 +5540,6 @@ var mdgriffith$elm_ui$Internal$Model$lengthClassName = function (x) {
 			return 'max' + (elm$core$String$fromInt(max) + mdgriffith$elm_ui$Internal$Model$lengthClassName(len));
 	}
 };
-var elm$core$Basics$round = _Basics_round;
 var mdgriffith$elm_ui$Internal$Model$floatClass = function (x) {
 	return elm$core$String$fromInt(
 		elm$core$Basics$round(x * 255));
@@ -10661,7 +10665,13 @@ var author$project$Guide$Document$inlineCodeElement = F2(
 				mdgriffith$elm_ui$Element$text(spaces));
 		}
 	});
-var author$project$Guide$Document$linkBlue = A3(mdgriffith$elm_ui$Element$rgb255, 17, 131, 204);
+var author$project$Guide$Document$linkBlue = function () {
+	var scale = 0.8;
+	var red = elm$core$Basics$round(scale * 17);
+	var green = elm$core$Basics$round(scale * 131);
+	var blue = elm$core$Basics$round(scale * 204);
+	return A3(mdgriffith$elm_ui$Element$rgb255, red, green, blue);
+}();
 var author$project$Guide$Document$inlineCodeChunkToString = function (chunk) {
 	if (chunk.$ === 'Spaces') {
 		var string = chunk.a;
