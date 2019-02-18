@@ -642,11 +642,16 @@ inlineCodeRegex =
     Regex.fromString "(\\s+)|(\\S+)" |> Maybe.withDefault Regex.never
 
 
+nonBreakingSpace : String
+nonBreakingSpace =
+    "\u{00A0}"
+
+
 toInlineCodeChunk : Regex.Match -> InlineCodeChunk
 toInlineCodeChunk match =
     case match.submatches of
         [ Just spaces, Nothing ] ->
-            Spaces (String.repeat (String.length spaces) "\u{00A0}")
+            Spaces (String.repeat (String.length spaces) nonBreakingSpace)
 
         [ Nothing, Just characters ] ->
             Characters characters
