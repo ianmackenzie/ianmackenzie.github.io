@@ -16396,6 +16396,7 @@ var author$project$Guide$Page$urlParser = A2(
 		elm$url$Url$Parser$query(
 			elm$url$Url$Parser$Query$string('page')),
 		elm$url$Url$Parser$fragment(elm$core$Basics$identity)));
+var elm$core$Debug$log = _Debug_log;
 var elm$url$Url$Parser$getFirstMatch = function (states) {
 	getFirstMatch:
 	while (true) {
@@ -16515,9 +16516,12 @@ var author$project$Guide$Page$matching = F2(
 		var _n0 = A2(
 			elm$url$Url$Parser$parse,
 			author$project$Guide$Page$urlParser,
-			_Utils_update(
-				url,
-				{path: '/'}));
+			A2(
+				elm$core$Debug$log,
+				'Processed URL',
+				_Utils_update(
+					url,
+					{path: '/'})));
 		if (_n0.$ === 'Just') {
 			var query = _n0.a.query;
 			var fragment = _n0.a.fragment;
