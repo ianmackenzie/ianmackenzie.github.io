@@ -116,7 +116,7 @@ matchesQuery query page =
 
 matching : Url -> List Page -> Maybe { page : Page, fragment : Maybe String }
 matching url pages =
-    case Url.Parser.parse urlParser (Debug.log "Processed URL" { url | path = "/" }) of
+    case Url.Parser.parse urlParser { url | path = "/" } of
         Just { query, fragment } ->
             case List.filter (matchesQuery query) pages of
                 [ page ] ->
