@@ -117,12 +117,34 @@ merriweather =
 
 lightGrey : Element.Color
 lightGrey =
-    Element.rgb255 238 238 238
+    -- Element.rgb255 238 238 238
+    let
+        scale =
+            0.6
+
+        value =
+            round (255 - scale * (255 - 238))
+    in
+    Element.rgb255 value value value
 
 
 linkBlue : Element.Color
 linkBlue =
-    Element.rgb255 17 131 204
+    --Element.rgb255 17 131 204
+    let
+        scale =
+            0.8
+
+        red =
+            round (scale * 17)
+
+        green =
+            round (scale * 131)
+
+        blue =
+            round (scale * 204)
+    in
+    Element.rgb255 red green blue
 
 
 type alias FontSizes =
