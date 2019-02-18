@@ -481,6 +481,7 @@ viewCodeBlock screenType code =
         , sourceCodePro
         , Background.color lightGrey
         , Font.size (fontSizes screenType).codeBlockCode
+        , Element.scrollbarX
         ]
         (List.map viewCodeBlockLine (String.lines (String.trim code)))
 
