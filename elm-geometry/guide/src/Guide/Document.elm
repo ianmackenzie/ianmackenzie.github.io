@@ -7,6 +7,8 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Region as Region
 import Guide.Widget as Widget exposing (Widget)
+import Html
+import Html.Attributes
 import Markdown.Block as Block exposing (Block)
 import Markdown.Config
 import Markdown.Inline as Inline exposing (Inline)
@@ -56,6 +58,7 @@ type Text
     | Bold String
     | InlineCode (List InlineCodeChunk)
     | Link { url : String, displayed : Text }
+    | Image { url : String, description : String }
 
 
 type TextContext
@@ -513,6 +516,9 @@ toPlainText textFragment =
         InlineCode chunks ->
             String.concat (List.map inlineCodeChunkToString chunks)
 
+        Image { description } ->
+            description
+
 
 codeFontSize : ScreenType -> TextContext -> Int
 codeFontSize screenType context =
@@ -568,6 +574,10 @@ renderTextFragment screenType context fragment =
                                 :: Font.size (codeFontSize screenType context)
                                 :: codeBackgroundAttributes
 
+                        Image _ ->
+                            -- Should never happen
+                            []
+
                         Link _ ->
                             -- Should never happen
                             []
@@ -593,6 +603,20 @@ renderTextFragment screenType context fragment =
             Element.row
                 (sourceCodePro :: Font.size fontSize :: backgroundAttributes)
                 (List.map (inlineCodeElement fontSize) chunks)
+
+        Image { url, description } ->
+            Element.html <|
+                Html.img
+                    [ Html.Attributes.src url
+                    , Html.Attributes.alt description
+                    , Html.Attributes.style "max-width" "100%"
+                    , Html.Attributes.style "max-height" "100%"
+                    ]
+                    []
+
+
+
+--Element.image [] { src = url, description = description }
 
 
 inlineCodeRegex : Regex
@@ -662,8 +686,8 @@ parseText inlines accumulated =
                         _ ->
                             Err ("Link label must currently be a single plain text, italic, bold or inline code fragment, got " ++ Debug.toString urlInlines)
 
-                Inline.Image _ _ _ ->
-                    Err "Inline images not yet supported"
+                Inline.Image url _ imageInlines ->
+                    prepend (Image { url = url, description = Inline.extractText imageInlines })
 
                 Inline.HtmlInline _ _ _ ->
                     Err "Inline custom elements not yet supported"
@@ -742,9 +766,6 @@ parseChunks config blocks accumulated =
 
                 Block.PlainInlines inlines ->
                     case inlines of
-                        [ Inline.Image _ _ _ ] ->
-                            Err "Images not yet supported"
-
                         [ Inline.HtmlInline tag [] [] ] ->
                             case Dict.get tag config.widgets of
                                 Just registeredWidget ->
@@ -755,12 +776,6 @@ parseChunks config blocks accumulated =
 
                         [ Inline.HtmlInline tag attributes children ] ->
                             Err "Custom elements with attributes or children not yet supported"
-
-                        [ Inline.Text text ] ->
-                            Result.andThen (Paragraph >> prepend) (parseText inlines [])
-
-                        [ inline ] ->
-                            Err ("Only images and custom elements supported as standalone elements right now, got " ++ Debug.toString inline)
 
                         _ ->
                             Result.andThen (Paragraph >> prepend) (parseText inlines [])
