@@ -39,6 +39,7 @@ counter =
 main : Guide.Program
 main =
     Guide.program
-        { readmeUrl = "https://cdn.jsdelivr.net/gh/ianmackenzie/elm-geometry/README.md"
+        { title = "elm-geometry"
+        , readmeUrl = "https://cdn.jsdelivr.net/gh/ianmackenzie/elm-geometry/README.md"
         , pages = [ { title = "Units and coordinate systems", widgets = [] } ]
         }

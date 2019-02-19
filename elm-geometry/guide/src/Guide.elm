@@ -10,7 +10,12 @@ import Browser exposing (UrlRequest)
 import Browser.Navigation as Navigation
 import Dict
 import Element exposing (Element)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
+import Guide.Color as Color
 import Guide.Document as Document exposing (Document)
+import Guide.Font as Font
 import Guide.Page as Page exposing (Page)
 import Guide.Screen as Screen exposing (Screen)
 import Guide.Widget as Widget exposing (Widget)
@@ -84,22 +89,10 @@ type State
     | Loaded Page Document
 
 
-title : State -> String
-title state =
-    case state of
-        Loading page ->
-            Page.title page
-
-        Error _ ->
-            "Error!"
-
-        Loaded page _ ->
-            Page.title page
-
-
 type alias Model =
     { screen : Screen
     , navigationKey : Navigation.Key
+    , title : String
     , pages : List Page
     , state : State
     }
@@ -131,8 +124,8 @@ handleNewUrl pages screen url =
             ( Error errorMessage, Cmd.none )
 
 
-init : Page -> List Page -> Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
-init readmePage allPages flags url navigationKey =
+init : String -> Page -> List Page -> Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
+init title readmePage allPages flags url navigationKey =
     let
         screen =
             Screen.init { width = flags.width }
@@ -140,7 +133,8 @@ init readmePage allPages flags url navigationKey =
         ( state, command ) =
             handleNewUrl allPages screen url
     in
-    ( { pages = allPages
+    ( { title = title
+      , pages = allPages
       , state = state
       , screen = screen
       , navigationKey = navigationKey
@@ -149,21 +143,104 @@ init readmePage allPages flags url navigationKey =
     )
 
 
+toPageLink : Page -> Page -> Element msg
+toPageLink currentPage page =
+    let
+        attributes =
+            if page == currentPage then
+                [ Font.bold ]
+
+            else
+                []
+    in
+    Element.link attributes
+        { url = Page.displayedUrl page Nothing
+        , label = Element.text (Page.title page)
+        }
+
+
+navTitle : Model -> Element msg
+navTitle model =
+    Element.el
+        [ Font.color Color.black
+        , Font.bold
+        , Font.size (Font.sizes model.screen.class).navTitle
+        , Border.widthEach { top = 0, bottom = 1, left = 0, right = 0 }
+        , Element.paddingEach { top = 0, bottom = 8, left = 0, right = 0 }
+        , Border.color Color.dividerLine
+        , Element.width Element.fill
+        ]
+        (Element.text model.title)
+
+
+viewNav : Model -> Page -> Element msg
+viewNav model currentPage =
+    let
+        navElement =
+            Element.column
+                [ Element.height Element.fill
+                , Element.width Element.fill
+                , Background.color Color.white
+                , Border.widthEach { top = 0, bottom = 0, left = 0, right = 1 }
+                , Border.color Color.navBorder
+                , Font.alegreyaSans
+                , Font.color Color.linkText
+                , Font.size (Font.sizes model.screen.class).navText
+                , Font.regular
+                , Element.spacing 8
+                , Element.padding 8
+                ]
+                (navTitle model :: List.map (toPageLink currentPage) model.pages)
+    in
+    Element.el
+        [ Element.height Element.fill
+        , Element.width (Element.px navWidth)
+        , Element.clipY
+        , Element.scrollbarY
+        ]
+        navElement
+
+
+viewDocument : Model -> Page -> Document -> Element Msg
+viewDocument model currentPage loadedDocument =
+    let
+        documentElement =
+            Document.view [ Element.centerX ] loadedDocument
+                |> Element.map DocumentUpdated
+    in
+    Element.el
+        [ Element.height Element.fill
+        , Element.width Element.fill
+        , Element.clipY
+        , Element.scrollbarY
+        ]
+        documentElement
+
+
 view : Model -> Browser.Document Msg
 view model =
-    { title = title model.state
+    { title = model.title
     , body =
-        case model.state of
-            Loading _ ->
-                [ Html.text "Loading..." ]
+        [ Element.layout [ Element.width Element.fill, Element.height Element.fill ] <|
+            case model.state of
+                Loading page ->
+                    Element.row
+                        [ Element.height Element.fill
+                        , Element.width Element.fill
+                        ]
+                        [ viewNav model page, Element.none ]
 
-            Loaded _ document ->
-                [ Element.layout [ Element.width Element.fill ]
-                    (Document.view [ Element.centerX ] document |> Element.map DocumentUpdated)
-                ]
+                Loaded page document ->
+                    Element.el
+                        [ Element.height Element.fill
+                        , Element.width Element.fill
+                        , Element.inFront (Element.el [ Element.alignLeft, Element.height Element.fill ] (viewNav model page))
+                        ]
+                        (viewDocument model page document)
 
-            Error message ->
-                [ Html.text message ]
+                Error message ->
+                    Element.text message
+        ]
     }
 
 
@@ -215,11 +292,12 @@ subscriptions model =
 
 
 program :
-    { readmeUrl : String
+    { title : String
+    , readmeUrl : String
     , pages : List { title : String, widgets : List ( String, Widget ) }
     }
     -> Program
-program { readmeUrl, pages } =
+program { title, readmeUrl, pages } =
     let
         readmePage =
             Page.readme { url = readmeUrl }
@@ -228,7 +306,7 @@ program { readmeUrl, pages } =
             readmePage :: List.map Page.with pages
     in
     Browser.application
-        { init = init readmePage allPages
+        { init = init title readmePage allPages
         , view = view
         , update = update
         , subscriptions = subscriptions
