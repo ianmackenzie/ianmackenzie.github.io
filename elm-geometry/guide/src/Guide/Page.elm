@@ -49,7 +49,7 @@ sourceUrl page =
             url
 
         Page properties ->
-            Url.Builder.relative [ properties.title ++ ".md" ] []
+            Url.Builder.relative [ "pages", properties.title ++ ".md" ] []
 
 
 displayedUrl : Page -> Maybe String -> String

@@ -15597,7 +15597,7 @@ var author$project$Guide$Page$sourceUrl = function (page) {
 		return A2(
 			elm$url$Url$Builder$relative,
 			_List_fromArray(
-				[properties.title + '.md']),
+				['pages', properties.title + '.md']),
 			_List_Nil);
 	}
 };
@@ -17499,7 +17499,13 @@ var elm$json$Json$Decode$andThen = _Json_andThen;
 var elm$json$Json$Decode$field = _Json_decodeField;
 var elm$json$Json$Decode$int = _Json_decodeInt;
 var author$project$Main$main = author$project$Guide$program(
-	{pages: _List_Nil, readmeUrl: 'https://cdn.jsdelivr.net/gh/ianmackenzie/elm-geometry/README.md'});
+	{
+		pages: _List_fromArray(
+			[
+				{title: 'Units and coordinate systems', widgets: _List_Nil}
+			]),
+		readmeUrl: 'https://cdn.jsdelivr.net/gh/ianmackenzie/elm-geometry/README.md'
+	});
 _Platform_export({'Main':{'init':author$project$Main$main(
 	A2(
 		elm$json$Json$Decode$andThen,

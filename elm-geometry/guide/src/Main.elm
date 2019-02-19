@@ -40,5 +40,5 @@ main : Guide.Program
 main =
     Guide.program
         { readmeUrl = "https://cdn.jsdelivr.net/gh/ianmackenzie/elm-geometry/README.md"
-        , pages = []
+        , pages = [ { title = "Units and coordinate systems", widgets = [] } ]
         }
