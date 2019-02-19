@@ -6,6 +6,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Region as Region
+import Guide.Color as Color
 import Guide.Font as Font
 import Guide.Screen as Screen
 import Guide.Widget as Widget exposing (Widget)
@@ -86,23 +87,6 @@ type alias ViewConfig =
 widthFill : Element.Attribute msg
 widthFill =
     Element.width Element.fill
-
-
-type alias Colors =
-    { codeBlockBackground : Element.Color
-    , inlineCodeBackground : Element.Color
-    , linkBlue : Element.Color
-    , divider : Element.Color
-    }
-
-
-colors : Colors
-colors =
-    { codeBlockBackground = Element.rgb255 245 245 245
-    , inlineCodeBackground = Element.rgb255 238 238 238
-    , divider = Element.rgb255 238 238 238
-    , linkBlue = Element.rgb255 14 105 163 -- originally 17 131 204
-    }
 
 
 topLevelSpacing : Int
@@ -360,7 +344,7 @@ viewTitle screenClass textFragments =
             , Font.extraBold
             , Font.size (Font.sizes screenClass).title
             , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-            , Border.color colors.divider
+            , Border.color Color.dividerLine
             , Element.width Element.fill
             ]
             (renderText screenClass TitleContext textFragments)
@@ -411,7 +395,7 @@ viewCodeBlock screenClass code =
         [ Border.rounded 5
         , Element.paddingXY 12 10
         , Font.sourceCodePro
-        , Background.color colors.codeBlockBackground
+        , Background.color Color.codeBlockBackground
         , Font.size (Font.sizes screenClass).codeBlockCode
         , Element.scrollbarX
         ]
@@ -490,7 +474,7 @@ codeFontSize screenClass context =
 
 inlineCodeBackgroundAttributes : List (Element.Attribute msg)
 inlineCodeBackgroundAttributes =
-    [ Element.paddingXY 4 2, Border.rounded 3, Background.color colors.inlineCodeBackground ]
+    [ Element.paddingXY 4 2, Border.rounded 3, Background.color Color.inlineCodeBackground ]
 
 
 renderImage : { url : String, description : String } -> Element msg
@@ -545,7 +529,7 @@ renderTextFragment screenClass context fragment =
                             -- Should never happen
                             ( [], Element.none )
             in
-            Element.link (Font.color colors.linkBlue :: attributes) { url = url, label = label }
+            Element.link (Font.color Color.linkText :: attributes) { url = url, label = label }
 
         InlineCode chunks ->
             let
