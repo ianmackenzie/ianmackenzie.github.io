@@ -6,6 +6,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Region as Region
+import Guide.Font as Font
 import Guide.Screen as Screen
 import Guide.Widget as Widget exposing (Widget)
 import Html
@@ -87,30 +88,6 @@ widthFill =
     Element.width Element.fill
 
 
-sourceCodePro : Element.Attribute msg
-sourceCodePro =
-    Font.family
-        [ Font.typeface "Source Code Pro"
-        , Font.monospace
-        ]
-
-
-alegreyaSans : Element.Attribute msg
-alegreyaSans =
-    Font.family
-        [ Font.typeface "Alegreya Sans"
-        , Font.sansSerif
-        ]
-
-
-merriweather : Element.Attribute msg
-merriweather =
-    Font.family
-        [ Font.typeface "Merriweather"
-        , Font.serif
-        ]
-
-
 type alias Colors =
     { codeBlockBackground : Element.Color
     , inlineCodeBackground : Element.Color
@@ -126,57 +103,6 @@ colors =
     , divider = Element.rgb255 238 238 238
     , linkBlue = Element.rgb255 14 105 163 -- originally 17 131 204
     }
-
-
-type alias FontSizes =
-    { title : Int
-    , section : Int
-    , subsection : Int
-    , body : Int
-    , titleCode : Int
-    , sectionCode : Int
-    , subsectionCode : Int
-    , bodyCode : Int
-    , codeBlockCode : Int
-    }
-
-
-largeScreenFontSizes : FontSizes
-largeScreenFontSizes =
-    { title = 48
-    , section = 32
-    , subsection = 22
-    , body = 14
-    , titleCode = 44
-    , sectionCode = 30
-    , subsectionCode = 22
-    , bodyCode = 14
-    , codeBlockCode = 14
-    }
-
-
-smallScreenFontSizes : FontSizes
-smallScreenFontSizes =
-    { title = 32
-    , section = 22
-    , subsection = 18
-    , body = 14
-    , titleCode = 28
-    , sectionCode = 22
-    , subsectionCode = 18
-    , bodyCode = 14
-    , codeBlockCode = 12
-    }
-
-
-fontSizes : Screen.Class -> FontSizes
-fontSizes screenClass =
-    case screenClass of
-        Screen.Large ->
-            largeScreenFontSizes
-
-        Screen.Small ->
-            smallScreenFontSizes
 
 
 topLevelSpacing : Int
@@ -198,7 +124,7 @@ view : List (Element.Attribute Document) -> Document -> Element Document
 view attributes (Document document) =
     let
         fontSize =
-            Font.size (fontSizes document.screenClass).body
+            Font.size (Font.sizes document.screenClass).body
 
         width =
             Element.width (Element.px document.width)
@@ -215,7 +141,7 @@ view attributes (Document document) =
             Region.mainContent
     in
     Element.el
-        (merriweather :: fontSize :: width :: padding :: mainContent :: attributes)
+        (Font.merriweather :: fontSize :: width :: padding :: mainContent :: attributes)
         (viewChunks { topLevel = True, screenClass = document.screenClass } document.chunks
             |> Element.map
                 (\( id, widget ) ->
@@ -310,11 +236,11 @@ bulletIcon { screenClass, topLevel } =
         (Element.html <|
             Svg.svg
                 [ Svg.Attributes.width (String.fromInt (2 * halfWidth))
-                , Svg.Attributes.height (String.fromInt (fontSizes screenClass).body)
+                , Svg.Attributes.height (String.fromInt (Font.sizes screenClass).body)
                 ]
                 [ Svg.circle
                     [ Svg.Attributes.cx (String.fromInt halfWidth)
-                    , Svg.Attributes.cy (String.fromFloat (toFloat (fontSizes screenClass).body - height))
+                    , Svg.Attributes.cy (String.fromFloat (toFloat (Font.sizes screenClass).body - height))
                     , Svg.Attributes.r (String.fromFloat radius)
                     , Svg.Attributes.fill "black"
                     , Svg.Attributes.stroke "none"
@@ -430,9 +356,9 @@ viewTitle screenClass textFragments =
         ]
         (Element.paragraph
             [ Region.heading 1
-            , alegreyaSans
+            , Font.alegreyaSans
             , Font.extraBold
-            , Font.size (fontSizes screenClass).title
+            , Font.size (Font.sizes screenClass).title
             , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
             , Border.color colors.divider
             , Element.width Element.fill
@@ -445,9 +371,9 @@ viewSection : Screen.Class -> List Text -> Element msg
 viewSection screenClass textFragments =
     Element.paragraph
         [ Region.heading 2
-        , alegreyaSans
+        , Font.alegreyaSans
         , Font.extraBold
-        , Font.size (fontSizes screenClass).section
+        , Font.size (Font.sizes screenClass).section
         , Element.paddingEach { top = 12, bottom = 0, left = 0, right = 0 }
         ]
         (renderText screenClass SectionContext textFragments)
@@ -457,9 +383,9 @@ viewSubsection : Screen.Class -> List Text -> Element msg
 viewSubsection screenClass textFragments =
     Element.paragraph
         [ Region.heading 3
-        , alegreyaSans
+        , Font.alegreyaSans
         , Font.extraBold
-        , Font.size (fontSizes screenClass).subsection
+        , Font.size (Font.sizes screenClass).subsection
         , Element.paddingEach { top = 6, bottom = 0, left = 0, right = 0 }
         ]
         (renderText screenClass SubsectionContext textFragments)
@@ -484,9 +410,9 @@ viewCodeBlock screenClass code =
     Element.column
         [ Border.rounded 5
         , Element.paddingXY 12 10
-        , sourceCodePro
+        , Font.sourceCodePro
         , Background.color colors.codeBlockBackground
-        , Font.size (fontSizes screenClass).codeBlockCode
+        , Font.size (Font.sizes screenClass).codeBlockCode
         , Element.scrollbarX
         ]
         (List.map viewCodeBlockLine (String.lines (String.trim code)))
@@ -541,21 +467,25 @@ toPlainText textFragment =
 
 codeFontSize : Screen.Class -> TextContext -> Int
 codeFontSize screenClass context =
+    let
+        fontSizes =
+            Font.sizes screenClass
+    in
     case context of
         TitleContext ->
-            (fontSizes screenClass).titleCode
+            fontSizes.titleCode
 
         SectionContext ->
-            (fontSizes screenClass).sectionCode
+            fontSizes.sectionCode
 
         SubsectionContext ->
-            (fontSizes screenClass).subsectionCode
+            fontSizes.subsectionCode
 
         ParagraphContext ->
-            (fontSizes screenClass).bodyCode
+            fontSizes.bodyCode
 
         CodeBlockContext ->
-            (fontSizes screenClass).codeBlockCode
+            fontSizes.codeBlockCode
 
 
 inlineCodeBackgroundAttributes : List (Element.Attribute msg)
@@ -601,7 +531,7 @@ renderTextFragment screenClass context fragment =
                             ( [ Font.bold ], Element.text string )
 
                         InlineCode chunks ->
-                            ( sourceCodePro
+                            ( Font.sourceCodePro
                                 :: Font.size (codeFontSize screenClass context)
                                 :: inlineCodeBackgroundAttributes
                             , Element.text <|
@@ -630,7 +560,7 @@ renderTextFragment screenClass context fragment =
                         []
             in
             Element.row
-                (sourceCodePro :: Font.size fontSize :: backgroundAttributes)
+                (Font.sourceCodePro :: Font.size fontSize :: backgroundAttributes)
                 (List.map (inlineCodeElement fontSize) chunks)
 
         Image properties ->
