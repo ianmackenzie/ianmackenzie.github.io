@@ -39,6 +39,8 @@ type alias Sizes =
     , subsectionCode : Int
     , bodyCode : Int
     , codeBlockCode : Int
+    , navText : Int
+    , navTitle : Int
     }
 
 
@@ -53,6 +55,8 @@ largeScreenSizes =
     , subsectionCode = 22
     , bodyCode = 14
     , codeBlockCode = 14
+    , navText = 16
+    , navTitle = 24
     }
 
 
@@ -67,6 +71,8 @@ smallScreenSizes =
     , subsectionCode = 18
     , bodyCode = 14
     , codeBlockCode = 12
+    , navText = 14
+    , navTitle = 22
     }
 
 
