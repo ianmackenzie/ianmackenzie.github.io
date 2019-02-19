@@ -628,7 +628,7 @@ parseText inlines accumulated =
                                     }
 
                         _ ->
-                            Err ("Link label must currently be a single plain text, italic, bold or inline code fragment, got " ++ Debug.toString urlInlines)
+                            Err "Link label must currently be a single plain text, italic, bold or inline code fragment, or an image"
 
                 Inline.Image url _ imageInlines ->
                     prepend (Image { url = url, description = Inline.extractText imageInlines })

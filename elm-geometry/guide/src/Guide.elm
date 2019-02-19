@@ -67,7 +67,7 @@ handleMarkdown screen page result =
                     LoadError message
 
         Err error ->
-            LoadError (Debug.toString error)
+            LoadError "Network error"
 
 
 loadPage : Screen -> Page -> Cmd Msg
