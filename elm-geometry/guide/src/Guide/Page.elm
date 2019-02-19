@@ -58,7 +58,7 @@ displayedUrl page maybeFragment =
         Readme { url } ->
             Url.Builder.custom Url.Builder.Relative
                 []
-                []
+                [ Url.Builder.string "page" "README" ]
                 maybeFragment
 
         Page properties ->
