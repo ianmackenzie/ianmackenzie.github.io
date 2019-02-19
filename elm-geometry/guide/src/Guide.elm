@@ -35,7 +35,7 @@ stripWidth =
 
 navWidth : Int
 navWidth =
-    200
+    300
 
 
 documentAvailableWidth : Screen -> Int
