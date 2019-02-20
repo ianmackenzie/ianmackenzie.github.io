@@ -50,8 +50,9 @@ and then add a type annotation to `point` asserting that it is defined in
 coordinates relative to the top-left corner of the screen:
 
 ```elm
-{-| A coordinate system where (0, 0) is the top left corner of the screen,
-positive X is to the right and positive Y is down.
+{-| A coordinate system where (0, 0) is the top left
+corner of the screen, positive X is to the right and
+positive Y is down.
 -}
 type TopLeftCoordinates =
     TopLeftCoordinates
