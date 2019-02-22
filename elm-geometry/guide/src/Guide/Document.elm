@@ -24,7 +24,6 @@ import Svg.Attributes
 type Document
     = Document
         { title : String
-        , width : Int
         , chunks : List CompiledChunk
         , screenClass : Screen.Class
         }
@@ -99,6 +98,16 @@ bulletSpacing =
     8
 
 
+maxWidth : Int
+maxWidth =
+    640
+
+
+gutterPadding : Int
+gutterPadding =
+    12
+
+
 title : Document -> String
 title (Document document) =
     document.title
@@ -111,13 +120,13 @@ view attributes (Document document) =
             Font.size (Font.sizes document.screenClass).body
 
         width =
-            Element.width (Element.px document.width)
+            Element.width (Element.fill |> Element.maximum maxWidth)
 
         padding =
             Element.paddingEach
                 { top = 0
-                , left = 0
-                , right = 0
+                , left = gutterPadding
+                , right = gutterPadding
                 , bottom = topLevelSpacing
                 }
 
@@ -132,7 +141,6 @@ view attributes (Document document) =
                     Document
                         { title = document.title
                         , chunks = updateWidget id widget document.chunks
-                        , width = document.width
                         , screenClass = document.screenClass
                         }
                 )
@@ -731,8 +739,8 @@ parseChunks config blocks accumulated =
             Ok (List.reverse accumulated)
 
 
-parse : { availableWidth : Int, screenClass : Screen.Class, widgets : List ( String, Widget ) } -> String -> Result String Document
-parse { availableWidth, screenClass, widgets } markdown =
+parse : { screenClass : Screen.Class, widgets : List ( String, Widget ) } -> String -> Result String Document
+parse { screenClass, widgets } markdown =
     let
         options =
             { softAsHardLineBreak = False
@@ -741,9 +749,6 @@ parse { availableWidth, screenClass, widgets } markdown =
 
         blocks =
             Block.parse (Just options) markdown
-
-        width =
-            min (availableWidth - 24) 640
     in
     case blocks of
         (Block.Heading _ 1 inlines) :: rest ->
@@ -752,7 +757,6 @@ parse { availableWidth, screenClass, widgets } markdown =
                     Document
                         { title = Inline.extractText inlines
                         , chunks = compile screenClass (Title titleText :: bodyChunks)
-                        , width = width
                         , screenClass = screenClass
                         }
                 )

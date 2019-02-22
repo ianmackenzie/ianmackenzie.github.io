@@ -17,7 +17,7 @@ import Guide.Color as Color
 import Guide.Document as Document exposing (Document)
 import Guide.Font as Font
 import Guide.Page as Page exposing (Page)
-import Guide.Screen as Screen exposing (Screen)
+import Guide.Screen as Screen
 import Guide.Widget as Widget exposing (Widget)
 import Html exposing (Html)
 import Http
@@ -33,34 +33,18 @@ type alias Flags =
     }
 
 
-stripWidth : Int
-stripWidth =
-    10
-
-
 navWidth : Int
 navWidth =
     300
 
 
-documentAvailableWidth : Screen -> Int
-documentAvailableWidth screen =
-    case screen.class of
-        Screen.Small ->
-            screen.width - stripWidth
-
-        Screen.Large ->
-            screen.width - navWidth
-
-
-handleMarkdown : Screen -> Page -> Result Http.Error String -> Msg
-handleMarkdown screen page result =
+handleMarkdown : Screen.Class -> Page -> Result Http.Error String -> Msg
+handleMarkdown screenClass page result =
     case result of
         Ok markdown ->
             let
                 documentConfig =
-                    { availableWidth = documentAvailableWidth screen
-                    , screenClass = screen.class
+                    { screenClass = screenClass
                     , widgets = []
                     }
             in
@@ -75,11 +59,11 @@ handleMarkdown screen page result =
             LoadError "Network error"
 
 
-loadPage : Screen -> List String -> Page -> Cmd Msg
-loadPage screen rootPath page =
+loadPage : Screen.Class -> List String -> Page -> Cmd Msg
+loadPage screenClass rootPath page =
     Http.get
         { url = Page.sourceUrl rootPath page
-        , expect = Http.expectString (handleMarkdown screen page)
+        , expect = Http.expectString (handleMarkdown screenClass page)
         }
 
 
@@ -90,7 +74,7 @@ type State
 
 
 type alias Model =
-    { screen : Screen
+    { screenClass : Screen.Class
     , navigationKey : Navigation.Key
     , rootPath : List String
     , title : String
@@ -111,11 +95,11 @@ type alias Program =
     Platform.Program Flags Model Msg
 
 
-handleNewUrl : List String -> List Page -> Screen -> Url -> ( State, Cmd Msg )
-handleNewUrl rootPath pages screen url =
+handleNewUrl : List String -> List Page -> Screen.Class -> Url -> ( State, Cmd Msg )
+handleNewUrl rootPath pages screenClass url =
     case Page.matching { url = url, rootPath = rootPath } pages of
         Just { page, fragment } ->
-            ( Loading page, loadPage screen rootPath page )
+            ( Loading page, loadPage screenClass rootPath page )
 
         Nothing ->
             let
@@ -128,19 +112,19 @@ handleNewUrl rootPath pages screen url =
 init : String -> Page -> List Page -> Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
 init title readmePage allPages flags url navigationKey =
     let
-        screen =
-            Screen.init { width = flags.width }
+        screenClass =
+            Screen.classify { width = flags.width }
 
         rootPath =
             url.path |> String.split "/" |> List.filter (not << String.isEmpty)
 
         ( state, command ) =
-            handleNewUrl rootPath allPages screen url
+            handleNewUrl rootPath allPages screenClass url
     in
     ( { title = title
       , pages = allPages
       , state = state
-      , screen = screen
+      , screenClass = screenClass
       , navigationKey = navigationKey
       , rootPath = rootPath
       }
@@ -169,7 +153,7 @@ navTitle model =
     Element.el
         [ Font.color Color.black
         , Font.bold
-        , Font.size (Font.sizes model.screen.class).navTitle
+        , Font.size (Font.sizes model.screenClass).navTitle
         , Border.widthEach { top = 0, bottom = 1, left = 0, right = 0 }
         , Element.paddingEach { top = 0, bottom = 8, left = 0, right = 0 }
         , Border.color Color.dividerLine
@@ -190,7 +174,7 @@ viewNav model currentPage =
                 , Border.color Color.navBorder
                 , Font.alegreyaSans
                 , Font.color Color.linkText
-                , Font.size (Font.sizes model.screen.class).navText
+                , Font.size (Font.sizes model.screenClass).navText
                 , Font.regular
                 , Element.spacing 8
                 , Element.padding 8
@@ -263,7 +247,7 @@ update message model =
         UrlChanged url ->
             let
                 ( state, command ) =
-                    handleNewUrl model.rootPath model.pages model.screen url
+                    handleNewUrl model.rootPath model.pages model.screenClass url
             in
             ( { model | state = state }, command )
 

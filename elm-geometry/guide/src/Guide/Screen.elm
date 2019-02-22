@@ -1,10 +1,4 @@
-module Guide.Screen exposing (Class(..), Screen, init)
-
-
-type alias Screen =
-    { width : Int
-    , class : Class
-    }
+module Guide.Screen exposing (Class(..), classify)
 
 
 type Class
@@ -12,13 +6,10 @@ type Class
     | Large
 
 
-init : { width : Int } -> Screen
-init { width } =
-    { width = width
-    , class =
-        if width > 600 then
-            Large
+classify : { width : Int } -> Class
+classify { width } =
+    if width > 600 then
+        Large
 
-        else
-            Small
-    }
+    else
+        Small
