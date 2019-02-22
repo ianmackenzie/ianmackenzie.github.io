@@ -42,28 +42,28 @@ with given =
     Page { title = given.title, widgets = Dict.fromList given.widgets }
 
 
-sourceUrl : Page -> String
-sourceUrl page =
+sourceUrl : List String -> Page -> String
+sourceUrl rootPath page =
     case page of
         Readme { url } ->
             url
 
         Page properties ->
-            Url.Builder.relative [ "pages", properties.title ++ ".md" ] []
+            Url.Builder.absolute (rootPath ++ [ "pages", properties.title ++ ".md" ]) []
 
 
-displayedUrl : Page -> Maybe String -> String
-displayedUrl page maybeFragment =
+displayedUrl : List String -> Page -> Maybe String -> String
+displayedUrl rootPath page maybeFragment =
     case page of
         Readme { url } ->
-            Url.Builder.custom Url.Builder.Relative
-                []
+            Url.Builder.custom Url.Builder.Absolute
+                rootPath
                 [ Url.Builder.string "page" "README" ]
                 maybeFragment
 
         Page properties ->
-            Url.Builder.custom Url.Builder.Relative
-                []
+            Url.Builder.custom Url.Builder.Absolute
+                rootPath
                 [ Url.Builder.string "page" properties.title ]
                 maybeFragment
 
@@ -94,10 +94,16 @@ type alias Route =
     }
 
 
-urlParser : Url.Parser.Parser (Route -> a) a
-urlParser =
+urlParser : List String -> Url.Parser.Parser (Route -> a) a
+urlParser rootPath =
+    let
+        rootParser =
+            List.map Url.Parser.s rootPath
+                |> List.foldl (\segment current -> current </> segment) Url.Parser.top
+    in
     Url.Parser.map Route <|
-        Url.Parser.query (Url.Parser.Query.string "page")
+        rootParser
+            </> Url.Parser.query (Url.Parser.Query.string "page")
             </> Url.Parser.fragment identity
 
 
@@ -114,9 +120,9 @@ matchesQuery query page =
             False
 
 
-matching : Url -> List Page -> Maybe { page : Page, fragment : Maybe String }
-matching url pages =
-    case Url.Parser.parse urlParser { url | path = "/" } of
+matching : { url : Url, rootPath : List String } -> List Page -> Maybe { page : Page, fragment : Maybe String }
+matching { url, rootPath } pages =
+    case Url.Parser.parse (urlParser rootPath) url of
         Just { query, fragment } ->
             case List.filter (matchesQuery query) pages of
                 [ page ] ->

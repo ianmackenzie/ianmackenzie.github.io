@@ -75,10 +75,10 @@ handleMarkdown screen page result =
             LoadError "Network error"
 
 
-loadPage : Screen -> Page -> Cmd Msg
-loadPage screen page =
+loadPage : Screen -> List String -> Page -> Cmd Msg
+loadPage screen rootPath page =
     Http.get
-        { url = Page.sourceUrl page
+        { url = Page.sourceUrl rootPath page
         , expect = Http.expectString (handleMarkdown screen page)
         }
 
@@ -92,6 +92,7 @@ type State
 type alias Model =
     { screen : Screen
     , navigationKey : Navigation.Key
+    , rootPath : List String
     , title : String
     , pages : List Page
     , state : State
@@ -110,11 +111,11 @@ type alias Program =
     Platform.Program Flags Model Msg
 
 
-handleNewUrl : List Page -> Screen -> Url -> ( State, Cmd Msg )
-handleNewUrl pages screen url =
-    case Page.matching url pages of
+handleNewUrl : List String -> List Page -> Screen -> Url -> ( State, Cmd Msg )
+handleNewUrl rootPath pages screen url =
+    case Page.matching { url = url, rootPath = rootPath } pages of
         Just { page, fragment } ->
-            ( Loading page, loadPage screen page )
+            ( Loading page, loadPage screen rootPath page )
 
         Nothing ->
             let
@@ -130,21 +131,25 @@ init title readmePage allPages flags url navigationKey =
         screen =
             Screen.init { width = flags.width }
 
+        rootPath =
+            url.path |> String.split "/" |> List.filter (not << String.isEmpty)
+
         ( state, command ) =
-            handleNewUrl allPages screen url
+            handleNewUrl rootPath allPages screen url
     in
     ( { title = title
       , pages = allPages
       , state = state
       , screen = screen
       , navigationKey = navigationKey
+      , rootPath = rootPath
       }
     , command
     )
 
 
-toPageLink : Page -> Page -> Element msg
-toPageLink currentPage page =
+toPageLink : List String -> Page -> Page -> Element msg
+toPageLink rootPath currentPage page =
     let
         attributes =
             if page == currentPage then
@@ -154,7 +159,7 @@ toPageLink currentPage page =
                 []
     in
     Element.link attributes
-        { url = Page.displayedUrl page Nothing
+        { url = Page.displayedUrl rootPath page Nothing
         , label = Element.text (Page.title page)
         }
 
@@ -190,7 +195,7 @@ viewNav model currentPage =
                 , Element.spacing 8
                 , Element.padding 8
                 ]
-                (navTitle model :: List.map (toPageLink currentPage) model.pages)
+                (navTitle model :: List.map (toPageLink model.rootPath currentPage) model.pages)
     in
     Element.el
         [ Element.height Element.fill
@@ -258,7 +263,7 @@ update message model =
         UrlChanged url ->
             let
                 ( state, command ) =
-                    handleNewUrl model.pages model.screen url
+                    handleNewUrl model.rootPath model.pages model.screen url
             in
             ( { model | state = state }, command )
 
