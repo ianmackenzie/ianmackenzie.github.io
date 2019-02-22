@@ -71,8 +71,8 @@ smallScreenSizes =
     , subsectionCode = 18
     , bodyCode = 14
     , codeBlockCode = 12
-    , navText = 14
-    , navTitle = 22
+    , navText = 18
+    , navTitle = 32
     }
 
 

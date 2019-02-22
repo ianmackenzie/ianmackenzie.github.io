@@ -68,7 +68,8 @@ loadPage screenClass rootPath page =
 
 
 type State
-    = Loading Page
+    = Navigating
+    | Loading Page
     | Error String
     | Loaded Page Document
 
@@ -78,7 +79,8 @@ type alias Model =
     , navigationKey : Navigation.Key
     , rootPath : List String
     , title : String
-    , pages : List Page
+    , readmePage : Page
+    , allPages : List Page
     , state : State
     }
 
@@ -95,13 +97,28 @@ type alias Program =
     Platform.Program Flags Model Msg
 
 
-handleNewUrl : List String -> List Page -> Screen.Class -> Url -> ( State, Cmd Msg )
-handleNewUrl rootPath pages screenClass url =
-    case Page.matching { url = url, rootPath = rootPath } pages of
-        Just { page, fragment } ->
+handleNewUrl : List String -> Page -> List Page -> Screen.Class -> Url -> ( State, Cmd Msg )
+handleNewUrl rootPath readmePage allPages screenClass url =
+    case Debug.log "match" (Page.matching { url = url, rootPath = rootPath } allPages) of
+        Ok (Page.Match { page, fragment }) ->
             ( Loading page, loadPage screenClass rootPath page )
 
-        Nothing ->
+        Ok Page.Unspecified ->
+            case screenClass of
+                Screen.Large ->
+                    ( Loading readmePage, loadPage screenClass rootPath readmePage )
+
+                Screen.Small ->
+                    ( Navigating, Cmd.none )
+
+        Err (Page.NotFound title) ->
+            let
+                errorMessage =
+                    "Page \"" ++ title ++ "\" not found"
+            in
+            ( Error errorMessage, Cmd.none )
+
+        Err Page.BadUrl ->
             let
                 errorMessage =
                     "No page matching " ++ Url.toString url
@@ -119,10 +136,11 @@ init title readmePage allPages flags url navigationKey =
             url.path |> String.split "/" |> List.filter (not << String.isEmpty)
 
         ( state, command ) =
-            handleNewUrl rootPath allPages screenClass url
+            handleNewUrl rootPath readmePage allPages screenClass url
     in
     ( { title = title
-      , pages = allPages
+      , readmePage = readmePage
+      , allPages = allPages
       , state = state
       , screenClass = screenClass
       , navigationKey = navigationKey
@@ -132,11 +150,11 @@ init title readmePage allPages flags url navigationKey =
     )
 
 
-toPageLink : List String -> Page -> Page -> Element msg
+toPageLink : List String -> Maybe Page -> Page -> Element msg
 toPageLink rootPath currentPage page =
     let
         attributes =
-            if page == currentPage then
+            if currentPage == Just page then
                 [ Font.bold ]
 
             else
@@ -150,7 +168,7 @@ toPageLink rootPath currentPage page =
 
 navTitle : Model -> Element msg
 navTitle model =
-    Element.el
+    Element.paragraph
         [ Font.color Color.black
         , Font.bold
         , Font.size (Font.sizes model.screenClass).navTitle
@@ -159,10 +177,10 @@ navTitle model =
         , Border.color Color.dividerLine
         , Element.width Element.fill
         ]
-        (Element.text model.title)
+        [ Element.text model.title ]
 
 
-viewNav : Model -> Page -> Element msg
+viewNav : Model -> Maybe Page -> Element msg
 viewNav model currentPage =
     let
         navElement =
@@ -176,14 +194,22 @@ viewNav model currentPage =
                 , Font.color Color.linkText
                 , Font.size (Font.sizes model.screenClass).navText
                 , Font.regular
-                , Element.spacing 8
-                , Element.padding 8
+                , Element.spacing 12
+                , Element.padding 12
                 ]
-                (navTitle model :: List.map (toPageLink model.rootPath currentPage) model.pages)
+                (navTitle model :: List.map (toPageLink model.rootPath currentPage) model.allPages)
+
+        elementWidth =
+            case model.screenClass of
+                Screen.Large ->
+                    Element.px navWidth
+
+                Screen.Small ->
+                    Element.fill
     in
     Element.el
         [ Element.height Element.fill
-        , Element.width (Element.px navWidth)
+        , Element.width elementWidth
         , Element.clipY
         , Element.scrollbarY
         ]
@@ -212,20 +238,42 @@ view model =
     , body =
         [ Element.layout [ Element.width Element.fill, Element.height Element.fill ] <|
             case model.state of
+                Navigating ->
+                    case model.screenClass of
+                        Screen.Large ->
+                            Element.row
+                                [ Element.height Element.fill
+                                , Element.width Element.fill
+                                ]
+                                [ viewNav model (Just model.readmePage), Element.none ]
+
+                        Screen.Small ->
+                            viewNav model Nothing
+
                 Loading page ->
-                    Element.row
-                        [ Element.height Element.fill
-                        , Element.width Element.fill
-                        ]
-                        [ viewNav model page, Element.none ]
+                    case model.screenClass of
+                        Screen.Large ->
+                            Element.row
+                                [ Element.height Element.fill
+                                , Element.width Element.fill
+                                ]
+                                [ viewNav model (Just page), Element.none ]
+
+                        Screen.Small ->
+                            viewNav model (Just page)
 
                 Loaded page document ->
-                    Element.el
-                        [ Element.height Element.fill
-                        , Element.width Element.fill
-                        , Element.inFront (Element.el [ Element.alignLeft, Element.height Element.fill ] (viewNav model page))
-                        ]
-                        (viewDocument model page document)
+                    case model.screenClass of
+                        Screen.Large ->
+                            Element.el
+                                [ Element.height Element.fill
+                                , Element.width Element.fill
+                                , Element.inFront (Element.el [ Element.alignLeft, Element.height Element.fill ] (viewNav model (Just page)))
+                                ]
+                                (viewDocument model page document)
+
+                        Screen.Small ->
+                            viewDocument model page document
 
                 Error message ->
                     Element.text message
@@ -247,7 +295,12 @@ update message model =
         UrlChanged url ->
             let
                 ( state, command ) =
-                    handleNewUrl model.rootPath model.pages model.screenClass url
+                    handleNewUrl
+                        model.rootPath
+                        model.readmePage
+                        model.allPages
+                        model.screenClass
+                        url
             in
             ( { model | state = state }, command )
 

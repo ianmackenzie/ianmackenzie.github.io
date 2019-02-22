@@ -123,12 +123,7 @@ view attributes (Document document) =
             Element.width (Element.fill |> Element.maximum maxWidth)
 
         padding =
-            Element.paddingEach
-                { top = 0
-                , left = gutterPadding
-                , right = gutterPadding
-                , bottom = topLevelSpacing
-                }
+            Element.padding gutterPadding
 
         mainContent =
             Region.mainContent
@@ -344,7 +339,7 @@ viewTitle : Screen.Class -> List Text -> Element msg
 viewTitle screenClass textFragments =
     Element.el
         [ Element.width Element.fill
-        , Element.paddingEach { bottom = 8, top = 8, left = 0, right = 0 }
+        , Element.paddingEach { bottom = 8, top = 0, left = 0, right = 0 }
         ]
         (Element.paragraph
             [ Region.heading 1
@@ -352,6 +347,7 @@ viewTitle screenClass textFragments =
             , Font.extraBold
             , Font.size (Font.sizes screenClass).title
             , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+            , Element.paddingEach { top = 0, bottom = 8, left = 0, right = 0 }
             , Border.color Color.dividerLine
             , Element.width Element.fill
             ]

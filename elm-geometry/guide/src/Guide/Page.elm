@@ -2,7 +2,7 @@ module Guide.Page exposing
     ( Page
     , readme, with
     , sourceUrl, displayedUrl, title, widgets
-    , matching
+    , Match(..), Error(..), matching
     )
 
 {-|
@@ -13,7 +13,7 @@ module Guide.Page exposing
 
 @docs sourceUrl, displayedUrl, title, widgets
 
-@docs matching
+@docs Match, Error, matching
 
 -}
 
@@ -107,29 +107,36 @@ urlParser rootPath =
             </> Url.Parser.fragment identity
 
 
-matchesQuery : Maybe String -> Page -> Bool
+matchesQuery : String -> Page -> Bool
 matchesQuery query page =
-    case ( query, page ) of
-        ( Nothing, Readme _ ) ->
-            True
-
-        ( Just queryValue, _ ) ->
-            queryValue == title page
-
-        _ ->
-            False
+    query == title page
 
 
-matching : { url : Url, rootPath : List String } -> List Page -> Maybe { page : Page, fragment : Maybe String }
+type Match
+    = Match { page : Page, fragment : Maybe String }
+    | Unspecified
+
+
+type Error
+    = NotFound String
+    | BadUrl
+
+
+matching : { url : Url, rootPath : List String } -> List Page -> Result Error Match
 matching { url, rootPath } pages =
     case Url.Parser.parse (urlParser rootPath) url of
         Just { query, fragment } ->
-            case List.filter (matchesQuery query) pages of
-                [ page ] ->
-                    Just { page = page, fragment = fragment }
+            case query of
+                Just pageTitle ->
+                    case List.filter (matchesQuery pageTitle) pages of
+                        [ page ] ->
+                            Ok (Match { page = page, fragment = fragment })
 
-                _ ->
-                    Nothing
+                        _ ->
+                            Err (NotFound pageTitle)
+
+                Nothing ->
+                    Ok Unspecified
 
         Nothing ->
-            Nothing
+            Err BadUrl
