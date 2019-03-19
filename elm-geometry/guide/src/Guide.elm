@@ -237,34 +237,24 @@ view model =
     { title = model.title
     , body =
         [ Element.layout [ Element.width Element.fill, Element.height Element.fill ] <|
-            case model.state of
-                Navigating ->
-                    case model.screenClass of
-                        Screen.Large ->
+            case model.screenClass of
+                Screen.Large ->
+                    case model.state of
+                        Navigating ->
                             Element.row
                                 [ Element.height Element.fill
                                 , Element.width Element.fill
                                 ]
                                 [ viewNav model (Just model.readmePage), Element.none ]
 
-                        Screen.Small ->
-                            viewNav model Nothing
-
-                Loading page ->
-                    case model.screenClass of
-                        Screen.Large ->
+                        Loading page ->
                             Element.row
                                 [ Element.height Element.fill
                                 , Element.width Element.fill
                                 ]
                                 [ viewNav model (Just page), Element.none ]
 
-                        Screen.Small ->
-                            viewNav model (Just page)
-
-                Loaded page document ->
-                    case model.screenClass of
-                        Screen.Large ->
+                        Loaded page document ->
                             Element.el
                                 [ Element.height Element.fill
                                 , Element.width Element.fill
@@ -272,11 +262,22 @@ view model =
                                 ]
                                 (viewDocument model page document)
 
-                        Screen.Small ->
+                        Error message ->
+                            Element.text message
+
+                Screen.Small ->
+                    case model.state of
+                        Navigating ->
+                            viewNav model Nothing
+
+                        Loading page ->
+                            viewNav model (Just page)
+
+                        Loaded page document ->
                             viewDocument model page document
 
-                Error message ->
-                    Element.text message
+                        Error message ->
+                            Element.text message
         ]
     }
 
