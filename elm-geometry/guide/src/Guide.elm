@@ -130,7 +130,7 @@ init : String -> Page -> List Page -> Flags -> Url -> Navigation.Key -> ( Model,
 init title readmePage allPages flags url navigationKey =
     let
         screenClass =
-            Screen.classify { width = flags.width }
+            Screen.classify flags.width
 
         rootPath =
             url.path |> String.split "/" |> List.filter (not << String.isEmpty)

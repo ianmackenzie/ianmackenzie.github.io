@@ -6,8 +6,8 @@ type Class
     | Large
 
 
-classify : { width : Int } -> Class
-classify { width } =
+classify : Int -> Class
+classify width =
     if width > 600 then
         Large
 
