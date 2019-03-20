@@ -74,7 +74,7 @@ loadPage screenClass rootPath page =
 
 type State
     = Navigating
-    | Loading Page
+    | Loading
     | Error String
     | Loaded Page Document
 
@@ -102,16 +102,16 @@ type alias Program =
     Platform.Program Flags Model Msg
 
 
-handleNewUrl : List String -> Page -> List Page -> Screen.Class -> Url -> ( State, Cmd Msg )
-handleNewUrl rootPath readmePage allPages screenClass url =
+handleNewUrl : State -> List String -> Page -> List Page -> Screen.Class -> Url -> ( State, Cmd Msg )
+handleNewUrl currentState rootPath readmePage allPages screenClass url =
     case Debug.log "match" (Page.matching { url = url, rootPath = rootPath } allPages) of
         Ok (Page.Match { page, fragment }) ->
-            ( Loading page, loadPage screenClass rootPath page )
+            ( currentState, loadPage screenClass rootPath page )
 
         Ok Page.Unspecified ->
             case screenClass of
                 Screen.Large ->
-                    ( Loading readmePage, loadPage screenClass rootPath readmePage )
+                    ( currentState, loadPage screenClass rootPath readmePage )
 
                 Screen.Small ->
                     ( Navigating, Cmd.none )
@@ -141,7 +141,7 @@ init title readmePage allPages flags url navigationKey =
             url.path |> String.split "/" |> List.filter (not << String.isEmpty)
 
         ( state, command ) =
-            handleNewUrl rootPath readmePage allPages screenClass url
+            handleNewUrl Loading rootPath readmePage allPages screenClass url
     in
     ( { title = title
       , readmePage = readmePage
@@ -252,12 +252,12 @@ view model =
                                 ]
                                 [ viewNav model (Just model.readmePage), Element.none ]
 
-                        Loading page ->
+                        Loading ->
                             Element.row
                                 [ Element.height Element.fill
                                 , Element.width Element.fill
                                 ]
-                                [ viewNav model (Just page), Element.none ]
+                                [ viewNav model Nothing, Element.none ]
 
                         Loaded page document ->
                             Element.el
@@ -275,8 +275,8 @@ view model =
                         Navigating ->
                             viewNav model Nothing
 
-                        Loading page ->
-                            viewNav model (Just page)
+                        Loading ->
+                            Element.none
 
                         Loaded page document ->
                             viewDocument model page document
@@ -300,30 +300,22 @@ update message model =
 
         UrlChanged url ->
             let
-                ( state, command ) =
+                ( newState, command ) =
                     handleNewUrl
+                        model.state
                         model.rootPath
                         model.readmePage
                         model.allPages
                         model.screenClass
                         url
             in
-            ( { model | state = state }, command )
+            ( { model | state = newState }, command )
 
         LoadError string ->
             ( { model | state = Error string }, Cmd.none )
 
         DocumentLoaded documentPage document ->
-            case model.state of
-                Loading loadingPage ->
-                    if documentPage == loadingPage then
-                        ( { model | state = Loaded documentPage document }, Cmd.none )
-
-                    else
-                        ( model, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
+            ( { model | state = Loaded documentPage document }, Cmd.none )
 
         DocumentUpdated newDocument ->
             case model.state of

@@ -4646,11 +4646,9 @@ var author$project$Guide$UrlChanged = function (a) {
 var author$project$Guide$UrlRequested = function (a) {
 	return {$: 'UrlRequested', a: a};
 };
+var author$project$Guide$Loading = {$: 'Loading'};
 var author$project$Guide$Error = function (a) {
 	return {$: 'Error', a: a};
-};
-var author$project$Guide$Loading = function (a) {
-	return {$: 'Loading', a: a};
 };
 var author$project$Guide$Navigating = {$: 'Navigating'};
 var author$project$Guide$DocumentLoaded = F2(
@@ -11388,14 +11386,20 @@ var author$project$Guide$Document$viewTitle = F3(
 								mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill)
 							]),
 						A3(author$project$Guide$Document$renderText, screenClass, author$project$Guide$Document$TitleContext, textFragments)),
-						A2(
-						mdgriffith$elm_ui$Element$link,
-						_List_fromArray(
-							[
-								mdgriffith$elm_ui$Element$alignTop,
-								mdgriffith$elm_ui$Element$Font$size(32)
-							]),
-						{label: author$project$Guide$Document$hamburgerIcon, url: rootUrl})
+						function () {
+						if (screenClass.$ === 'Small') {
+							return A2(
+								mdgriffith$elm_ui$Element$link,
+								_List_fromArray(
+									[
+										mdgriffith$elm_ui$Element$alignTop,
+										mdgriffith$elm_ui$Element$Font$size(32)
+									]),
+								{label: author$project$Guide$Document$hamburgerIcon, url: rootUrl});
+						} else {
+							return mdgriffith$elm_ui$Element$none;
+						}
+					}()
 					])));
 	});
 var author$project$Guide$Document$compileBullets = F4(
@@ -16726,8 +16730,8 @@ var elm$url$Url$toString = function (url) {
 					_Utils_ap(http, url.host)),
 				url.path)));
 };
-var author$project$Guide$handleNewUrl = F5(
-	function (rootPath, readmePage, allPages, screenClass, url) {
+var author$project$Guide$handleNewUrl = F6(
+	function (currentState, rootPath, readmePage, allPages, screenClass, url) {
 		var _n0 = A2(
 			elm$core$Debug$log,
 			'match',
@@ -16740,13 +16744,13 @@ var author$project$Guide$handleNewUrl = F5(
 				var page = _n0.a.a.page;
 				var fragment = _n0.a.a.fragment;
 				return _Utils_Tuple2(
-					author$project$Guide$Loading(page),
+					currentState,
 					A3(author$project$Guide$loadPage, screenClass, rootPath, page));
 			} else {
 				var _n1 = _n0.a;
 				if (screenClass.$ === 'Large') {
 					return _Utils_Tuple2(
-						author$project$Guide$Loading(readmePage),
+						currentState,
 						A3(author$project$Guide$loadPage, screenClass, rootPath, readmePage));
 				} else {
 					return _Utils_Tuple2(author$project$Guide$Navigating, elm$core$Platform$Cmd$none);
@@ -16779,7 +16783,7 @@ var author$project$Guide$init = F6(
 			elm$core$List$filter,
 			A2(elm$core$Basics$composeL, elm$core$Basics$not, elm$core$String$isEmpty),
 			A2(elm$core$String$split, '/', url.path));
-		var _n0 = A5(author$project$Guide$handleNewUrl, rootPath, readmePage, allPages, screenClass, url);
+		var _n0 = A6(author$project$Guide$handleNewUrl, author$project$Guide$Loading, rootPath, readmePage, allPages, screenClass, url);
 		var state = _n0.a;
 		var command = _n0.b;
 		return _Utils_Tuple2(
@@ -17000,13 +17004,13 @@ var author$project$Guide$update = F2(
 				}
 			case 'UrlChanged':
 				var url = message.a;
-				var _n2 = A5(author$project$Guide$handleNewUrl, model.rootPath, model.readmePage, model.allPages, model.screenClass, url);
-				var state = _n2.a;
+				var _n2 = A6(author$project$Guide$handleNewUrl, model.state, model.rootPath, model.readmePage, model.allPages, model.screenClass, url);
+				var newState = _n2.a;
 				var command = _n2.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{state: state}),
+						{state: newState}),
 					command);
 			case 'LoadError':
 				var string = message.a;
@@ -17020,25 +17024,19 @@ var author$project$Guide$update = F2(
 			case 'DocumentLoaded':
 				var documentPage = message.a;
 				var document = message.b;
-				var _n3 = model.state;
-				if (_n3.$ === 'Loading') {
-					var loadingPage = _n3.a;
-					return _Utils_eq(documentPage, loadingPage) ? _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								state: A2(author$project$Guide$Loaded, documentPage, document)
-							}),
-						elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				} else {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				}
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							state: A2(author$project$Guide$Loaded, documentPage, document)
+						}),
+					elm$core$Platform$Cmd$none);
 			default:
 				var newDocument = message.a;
-				var _n4 = model.state;
-				if (_n4.$ === 'Loaded') {
-					var page = _n4.a;
-					var currentDocument = _n4.b;
+				var _n3 = model.state;
+				if (_n3.$ === 'Loaded') {
+					var page = _n3.a;
+					var currentDocument = _n3.b;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -17794,7 +17792,6 @@ var author$project$Guide$view = function (model) {
 											mdgriffith$elm_ui$Element$none
 										]));
 							case 'Loading':
-								var page = _n1.a;
 								return A2(
 									mdgriffith$elm_ui$Element$row,
 									_List_fromArray(
@@ -17804,10 +17801,7 @@ var author$project$Guide$view = function (model) {
 										]),
 									_List_fromArray(
 										[
-											A2(
-											author$project$Guide$viewNav,
-											model,
-											elm$core$Maybe$Just(page)),
+											A2(author$project$Guide$viewNav, model, elm$core$Maybe$Nothing),
 											mdgriffith$elm_ui$Element$none
 										]));
 							case 'Loaded':
@@ -17843,11 +17837,7 @@ var author$project$Guide$view = function (model) {
 							case 'Navigating':
 								return A2(author$project$Guide$viewNav, model, elm$core$Maybe$Nothing);
 							case 'Loading':
-								var page = _n2.a;
-								return A2(
-									author$project$Guide$viewNav,
-									model,
-									elm$core$Maybe$Just(page));
+								return mdgriffith$elm_ui$Element$none;
 							case 'Loaded':
 								var page = _n2.a;
 								var document = _n2.b;
