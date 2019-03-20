@@ -17906,7 +17906,7 @@ var author$project$Main$main = author$project$Guide$program(
 			[
 				{title: 'Units and coordinate systems', widgets: _List_Nil}
 			]),
-		readmeUrl: 'https://cdn.jsdelivr.net/gh/ianmackenzie/elm-geometry/README.md',
+		readmeUrl: 'https://cdn.jsdelivr.net/gh/ianmackenzie/elm-geometry@coordinate-systems/README.md',
 		title: 'elm-geometry'
 	});
 _Platform_export({'Main':{'init':author$project$Main$main(
