@@ -38,14 +38,15 @@ navWidth =
     300
 
 
-handleMarkdown : Screen.Class -> Page -> Result Http.Error String -> Msg
-handleMarkdown screenClass page result =
+handleMarkdown : Screen.Class -> Page -> String -> Result Http.Error String -> Msg
+handleMarkdown screenClass page rootUrl result =
     case result of
         Ok markdown ->
             let
                 documentConfig =
                     { screenClass = screenClass
                     , widgets = []
+                    , rootUrl = rootUrl
                     }
             in
             case Document.parse documentConfig markdown of
@@ -61,9 +62,13 @@ handleMarkdown screenClass page result =
 
 loadPage : Screen.Class -> List String -> Page -> Cmd Msg
 loadPage screenClass rootPath page =
+    let
+        rootUrl =
+            Url.Builder.absolute rootPath []
+    in
     Http.get
         { url = Page.sourceUrl rootPath page
-        , expect = Http.expectString (handleMarkdown screenClass page)
+        , expect = Http.expectString (handleMarkdown screenClass page rootUrl)
         }
 
 

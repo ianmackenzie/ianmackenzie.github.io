@@ -1,11 +1,13 @@
 module Guide.Document exposing (Document, parse, title, view)
 
+import BoundingBox2d
 import Dict exposing (Dict)
 import Element exposing (Element)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Region as Region
+import Geometry.Svg as Svg
 import Guide.Color as Color
 import Guide.Font as Font
 import Guide.Screen as Screen
@@ -40,7 +42,7 @@ type CompiledChunk
 
 
 type Chunk
-    = Title (List Text)
+    = Title (List Text) String
     | Section (List Text)
     | Subsection (List Text)
     | Paragraph (List Text)
@@ -286,8 +288,8 @@ compileHelp screenClass chunks widgetId accumulated =
                     compileHelp screenClass rest widgetId (compiledChunk :: accumulated)
             in
             case first of
-                Title textFragments ->
-                    prepend (Static TitleContext (viewTitle screenClass textFragments))
+                Title textFragments rootUrl ->
+                    prepend (Static TitleContext (viewTitle screenClass textFragments rootUrl))
 
                 Section textFragments ->
                     prepend (Static SectionContext (viewSection screenClass textFragments))
@@ -335,23 +337,62 @@ compileBullets screenClass bullets widgetId accumulated =
             ( List.reverse accumulated, widgetId )
 
 
-viewTitle : Screen.Class -> List Text -> Element msg
-viewTitle screenClass textFragments =
+hamburgerIcon : Element msg
+hamburgerIcon =
+    let
+        width =
+            20
+
+        height =
+            toFloat (Font.sizes Screen.Small).title
+
+        rectangle bottomY topY =
+            Svg.boundingBox2d [] <|
+                BoundingBox2d.fromExtrema
+                    { minX = 2
+                    , maxX = 18
+                    , minY = height - topY
+                    , maxY = height - bottomY
+                    }
+    in
+    Element.html <|
+        Svg.svg
+            [ Svg.Attributes.width (String.fromFloat width)
+            , Svg.Attributes.height (String.fromFloat height)
+            , Svg.Attributes.stroke "none"
+            , Svg.Attributes.fill "black"
+            ]
+            [ rectangle 6 8
+            , rectangle 12 14
+            , rectangle 18 20
+            ]
+
+
+viewTitle : Screen.Class -> List Text -> String -> Element msg
+viewTitle screenClass textFragments rootUrl =
     Element.el
         [ Element.width Element.fill
         , Element.paddingEach { bottom = 8, top = 0, left = 0, right = 0 }
         ]
-        (Element.paragraph
-            [ Region.heading 1
-            , Font.alegreyaSans
-            , Font.extraBold
-            , Font.size (Font.sizes screenClass).title
+        (Element.row
+            [ Element.width Element.fill
             , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
             , Element.paddingEach { top = 0, bottom = 8, left = 0, right = 0 }
             , Border.color Color.dividerLine
-            , Element.width Element.fill
             ]
-            (renderText screenClass TitleContext textFragments)
+            [ Element.paragraph
+                [ Region.heading 1
+                , Font.alegreyaSans
+                , Font.extraBold
+                , Font.size (Font.sizes screenClass).title
+                , Element.width Element.fill
+                ]
+                (renderText screenClass TitleContext textFragments)
+            , Element.link [ Element.alignTop, Font.size 32 ]
+                { url = rootUrl
+                , label = hamburgerIcon
+                }
+            ]
         )
 
 
@@ -735,8 +776,8 @@ parseChunks config blocks accumulated =
             Ok (List.reverse accumulated)
 
 
-parse : { screenClass : Screen.Class, widgets : List ( String, Widget ) } -> String -> Result String Document
-parse { screenClass, widgets } markdown =
+parse : { screenClass : Screen.Class, widgets : List ( String, Widget ), rootUrl : String } -> String -> Result String Document
+parse { screenClass, widgets, rootUrl } markdown =
     let
         options =
             { softAsHardLineBreak = False
@@ -752,7 +793,7 @@ parse { screenClass, widgets } markdown =
                 (\titleText bodyChunks ->
                     Document
                         { title = Inline.extractText inlines
-                        , chunks = compile screenClass (Title titleText :: bodyChunks)
+                        , chunks = compile screenClass (Title titleText rootUrl :: bodyChunks)
                         , screenClass = screenClass
                         }
                 )

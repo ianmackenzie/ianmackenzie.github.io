@@ -4663,9 +4663,10 @@ var author$project$Guide$LoadError = function (a) {
 var author$project$Guide$Document$Document = function (a) {
 	return {$: 'Document', a: a};
 };
-var author$project$Guide$Document$Title = function (a) {
-	return {$: 'Title', a: a};
-};
+var author$project$Guide$Document$Title = F2(
+	function (a, b) {
+		return {$: 'Title', a: a, b: b};
+	});
 var author$project$Guide$Document$CodeBlockContext = {$: 'CodeBlockContext'};
 var author$project$Guide$Document$CompiledBullets = function (a) {
 	return {$: 'CompiledBullets', a: a};
@@ -11206,6 +11207,96 @@ var author$project$Guide$Document$viewSubsection = F2(
 			A3(author$project$Guide$Document$renderText, screenClass, author$project$Guide$Document$SubsectionContext, textFragments));
 	});
 var author$project$Guide$Color$dividerLine = author$project$Guide$Color$lightGrey;
+var author$project$Guide$Screen$Small = {$: 'Small'};
+var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
+var elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var ianmackenzie$elm_geometry$Geometry$Types$BoundingBox2d = function (a) {
+	return {$: 'BoundingBox2d', a: a};
+};
+var ianmackenzie$elm_geometry$BoundingBox2d$fromExtrema = function (extrema_) {
+	return ((_Utils_cmp(extrema_.minX, extrema_.maxX) < 1) && (_Utils_cmp(extrema_.minY, extrema_.maxY) < 1)) ? ianmackenzie$elm_geometry$Geometry$Types$BoundingBox2d(extrema_) : ianmackenzie$elm_geometry$Geometry$Types$BoundingBox2d(
+		{
+			maxX: A2(elm$core$Basics$max, extrema_.minX, extrema_.maxX),
+			maxY: A2(elm$core$Basics$max, extrema_.minY, extrema_.maxY),
+			minX: A2(elm$core$Basics$min, extrema_.minX, extrema_.maxX),
+			minY: A2(elm$core$Basics$min, extrema_.minY, extrema_.maxY)
+		});
+};
+var elm$svg$Svg$rect = elm$svg$Svg$trustedNode('rect');
+var elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var ianmackenzie$elm_geometry$BoundingBox2d$extrema = function (_n0) {
+	var extrema_ = _n0.a;
+	return extrema_;
+};
+var ianmackenzie$elm_geometry_svg$Geometry$Svg$boundingBox2d = F2(
+	function (attributes, boundingBox) {
+		var _n0 = ianmackenzie$elm_geometry$BoundingBox2d$extrema(boundingBox);
+		var minX = _n0.minX;
+		var minY = _n0.minY;
+		var maxX = _n0.maxX;
+		var maxY = _n0.maxY;
+		var width = elm$svg$Svg$Attributes$width(
+			elm$core$String$fromFloat(maxX - minX));
+		var x = elm$svg$Svg$Attributes$x(
+			elm$core$String$fromFloat(minX));
+		var height = elm$svg$Svg$Attributes$height(
+			elm$core$String$fromFloat(maxY - minY));
+		var y = elm$svg$Svg$Attributes$y(
+			elm$core$String$fromFloat(minY));
+		return A2(
+			elm$svg$Svg$rect,
+			A2(
+				elm$core$List$cons,
+				x,
+				A2(
+					elm$core$List$cons,
+					y,
+					A2(
+						elm$core$List$cons,
+						width,
+						A2(elm$core$List$cons, height, attributes)))),
+			_List_Nil);
+	});
+var author$project$Guide$Document$hamburgerIcon = function () {
+	var width = 20;
+	var height = author$project$Guide$Font$sizes(author$project$Guide$Screen$Small).title;
+	var rectangle = F2(
+		function (bottomY, topY) {
+			return A2(
+				ianmackenzie$elm_geometry_svg$Geometry$Svg$boundingBox2d,
+				_List_Nil,
+				ianmackenzie$elm_geometry$BoundingBox2d$fromExtrema(
+					{maxX: 18, maxY: height - bottomY, minX: 2, minY: height - topY}));
+		});
+	return mdgriffith$elm_ui$Element$html(
+		A2(
+			elm$svg$Svg$svg,
+			_List_fromArray(
+				[
+					elm$svg$Svg$Attributes$width(
+					elm$core$String$fromFloat(width)),
+					elm$svg$Svg$Attributes$height(
+					elm$core$String$fromFloat(height)),
+					elm$svg$Svg$Attributes$stroke('none'),
+					elm$svg$Svg$Attributes$fill('black')
+				]),
+			_List_fromArray(
+				[
+					A2(rectangle, 6, 8),
+					A2(rectangle, 12, 14),
+					A2(rectangle, 18, 20)
+				])));
+}();
+var mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
+	return {$: 'AlignY', a: a};
+};
+var mdgriffith$elm_ui$Internal$Model$Top = {$: 'Top'};
+var mdgriffith$elm_ui$Element$alignTop = mdgriffith$elm_ui$Internal$Model$AlignY(mdgriffith$elm_ui$Internal$Model$Top);
 var mdgriffith$elm_ui$Internal$Flag$borderColor = mdgriffith$elm_ui$Internal$Flag$flag(28);
 var mdgriffith$elm_ui$Element$Border$color = function (clr) {
 	return A2(
@@ -11262,8 +11353,8 @@ var mdgriffith$elm_ui$Element$Border$widthEach = function (_n0) {
 			bottom,
 			left));
 };
-var author$project$Guide$Document$viewTitle = F2(
-	function (screenClass, textFragments) {
+var author$project$Guide$Document$viewTitle = F3(
+	function (screenClass, textFragments, rootUrl) {
 		return A2(
 			mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
@@ -11273,22 +11364,39 @@ var author$project$Guide$Document$viewTitle = F2(
 					{bottom: 8, left: 0, right: 0, top: 0})
 				]),
 			A2(
-				mdgriffith$elm_ui$Element$paragraph,
+				mdgriffith$elm_ui$Element$row,
 				_List_fromArray(
 					[
-						mdgriffith$elm_ui$Element$Region$heading(1),
-						author$project$Guide$Font$alegreyaSans,
-						mdgriffith$elm_ui$Element$Font$extraBold,
-						mdgriffith$elm_ui$Element$Font$size(
-						author$project$Guide$Font$sizes(screenClass).title),
+						mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill),
 						mdgriffith$elm_ui$Element$Border$widthEach(
 						{bottom: 1, left: 0, right: 0, top: 0}),
 						mdgriffith$elm_ui$Element$paddingEach(
 						{bottom: 8, left: 0, right: 0, top: 0}),
-						mdgriffith$elm_ui$Element$Border$color(author$project$Guide$Color$dividerLine),
-						mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill)
+						mdgriffith$elm_ui$Element$Border$color(author$project$Guide$Color$dividerLine)
 					]),
-				A3(author$project$Guide$Document$renderText, screenClass, author$project$Guide$Document$TitleContext, textFragments)));
+				_List_fromArray(
+					[
+						A2(
+						mdgriffith$elm_ui$Element$paragraph,
+						_List_fromArray(
+							[
+								mdgriffith$elm_ui$Element$Region$heading(1),
+								author$project$Guide$Font$alegreyaSans,
+								mdgriffith$elm_ui$Element$Font$extraBold,
+								mdgriffith$elm_ui$Element$Font$size(
+								author$project$Guide$Font$sizes(screenClass).title),
+								mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill)
+							]),
+						A3(author$project$Guide$Document$renderText, screenClass, author$project$Guide$Document$TitleContext, textFragments)),
+						A2(
+						mdgriffith$elm_ui$Element$link,
+						_List_fromArray(
+							[
+								mdgriffith$elm_ui$Element$alignTop,
+								mdgriffith$elm_ui$Element$Font$size(32)
+							]),
+						{label: author$project$Guide$Document$hamburgerIcon, url: rootUrl})
+					])));
 	});
 var author$project$Guide$Document$compileBullets = F4(
 	function (screenClass, bullets, widgetId, accumulated) {
@@ -11334,11 +11442,12 @@ var author$project$Guide$Document$compileHelp = F4(
 				switch (first.$) {
 					case 'Title':
 						var textFragments = first.a;
+						var rootUrl = first.b;
 						return prepend(
 							A2(
 								author$project$Guide$Document$Static,
 								author$project$Guide$Document$TitleContext,
-								A2(author$project$Guide$Document$viewTitle, screenClass, textFragments)));
+								A3(author$project$Guide$Document$viewTitle, screenClass, textFragments, rootUrl)));
 					case 'Section':
 						var textFragments = first.a;
 						return prepend(
@@ -15493,6 +15602,7 @@ var author$project$Guide$Document$parse = F2(
 	function (_n0, markdown) {
 		var screenClass = _n0.screenClass;
 		var widgets = _n0.widgets;
+		var rootUrl = _n0.rootUrl;
 		var options = {rawHtml: pablohirafuji$elm_markdown$Markdown$Config$ParseUnsafe, softAsHardLineBreak: false};
 		var blocks = A2(
 			pablohirafuji$elm_markdown$Markdown$Block$parse,
@@ -15513,7 +15623,7 @@ var author$project$Guide$Document$parse = F2(
 									screenClass,
 									A2(
 										elm$core$List$cons,
-										author$project$Guide$Document$Title(titleText),
+										A2(author$project$Guide$Document$Title, titleText, rootUrl),
 										bodyChunks)),
 								screenClass: screenClass,
 								title: pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines)
@@ -15532,11 +15642,11 @@ var author$project$Guide$Document$parse = F2(
 			return elm$core$Result$Err('Markdown document must start with a level 1 header');
 		}
 	});
-var author$project$Guide$handleMarkdown = F3(
-	function (screenClass, page, result) {
+var author$project$Guide$handleMarkdown = F4(
+	function (screenClass, page, rootUrl, result) {
 		if (result.$ === 'Ok') {
 			var markdown = result.a;
-			var documentConfig = {screenClass: screenClass, widgets: _List_Nil};
+			var documentConfig = {rootUrl: rootUrl, screenClass: screenClass, widgets: _List_Nil};
 			var _n1 = A2(author$project$Guide$Document$parse, documentConfig, markdown);
 			if (_n1.$ === 'Ok') {
 				var document = _n1.a;
@@ -16215,10 +16325,11 @@ var elm$http$Http$get = function (r) {
 };
 var author$project$Guide$loadPage = F3(
 	function (screenClass, rootPath, page) {
+		var rootUrl = A2(elm$url$Url$Builder$absolute, rootPath, _List_Nil);
 		return elm$http$Http$get(
 			{
 				expect: elm$http$Http$expectString(
-					A2(author$project$Guide$handleMarkdown, screenClass, page)),
+					A3(author$project$Guide$handleMarkdown, screenClass, page, rootUrl)),
 				url: A2(author$project$Guide$Page$sourceUrl, rootPath, page)
 			});
 	});
@@ -16658,15 +16769,12 @@ var author$project$Guide$handleNewUrl = F5(
 		}
 	});
 var author$project$Guide$Screen$Large = {$: 'Large'};
-var author$project$Guide$Screen$Small = {$: 'Small'};
-var author$project$Guide$Screen$classify = function (_n0) {
-	var width = _n0.width;
+var author$project$Guide$Screen$classify = function (width) {
 	return (width > 600) ? author$project$Guide$Screen$Large : author$project$Guide$Screen$Small;
 };
 var author$project$Guide$init = F6(
 	function (title, readmePage, allPages, flags, url, navigationKey) {
-		var screenClass = author$project$Guide$Screen$classify(
-			{width: flags.width});
+		var screenClass = author$project$Guide$Screen$classify(flags.width);
 		var rootPath = A2(
 			elm$core$List$filter,
 			A2(elm$core$Basics$composeL, elm$core$Basics$not, elm$core$String$isEmpty),
@@ -16971,16 +17079,10 @@ var author$project$Guide$Document$updateWidget = F3(
 			},
 			chunks);
 	});
-var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var elm$svg$Svg$circle = elm$svg$Svg$trustedNode('circle');
-var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
 var elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
-var elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
-var elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
-var elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
-var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var author$project$Guide$Document$bulletIcon = function (_n0) {
 	var screenClass = _n0.screenClass;
 	var topLevel = _n0.topLevel;
@@ -17095,11 +17197,6 @@ var author$project$Guide$Widget$view = F2(
 		var element = _n0.a;
 		return A2(mdgriffith$elm_ui$Element$map, toMessage, element);
 	});
-var mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
-	return {$: 'AlignY', a: a};
-};
-var mdgriffith$elm_ui$Internal$Model$Top = {$: 'Top'};
-var mdgriffith$elm_ui$Element$alignTop = mdgriffith$elm_ui$Internal$Model$AlignY(mdgriffith$elm_ui$Internal$Model$Top);
 var mdgriffith$elm_ui$Internal$Model$Max = F2(
 	function (a, b) {
 		return {$: 'Max', a: a, b: b};
@@ -17676,11 +17773,11 @@ var author$project$Guide$view = function (model) {
 						mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$fill)
 					]),
 				function () {
-					var _n0 = model.state;
-					switch (_n0.$) {
-						case 'Navigating':
-							var _n1 = model.screenClass;
-							if (_n1.$ === 'Large') {
+					var _n0 = model.screenClass;
+					if (_n0.$ === 'Large') {
+						var _n1 = model.state;
+						switch (_n1.$) {
+							case 'Navigating':
 								return A2(
 									mdgriffith$elm_ui$Element$row,
 									_List_fromArray(
@@ -17696,13 +17793,8 @@ var author$project$Guide$view = function (model) {
 											elm$core$Maybe$Just(model.readmePage)),
 											mdgriffith$elm_ui$Element$none
 										]));
-							} else {
-								return A2(author$project$Guide$viewNav, model, elm$core$Maybe$Nothing);
-							}
-						case 'Loading':
-							var page = _n0.a;
-							var _n2 = model.screenClass;
-							if (_n2.$ === 'Large') {
+							case 'Loading':
+								var page = _n1.a;
 								return A2(
 									mdgriffith$elm_ui$Element$row,
 									_List_fromArray(
@@ -17718,17 +17810,9 @@ var author$project$Guide$view = function (model) {
 											elm$core$Maybe$Just(page)),
 											mdgriffith$elm_ui$Element$none
 										]));
-							} else {
-								return A2(
-									author$project$Guide$viewNav,
-									model,
-									elm$core$Maybe$Just(page));
-							}
-						case 'Loaded':
-							var page = _n0.a;
-							var document = _n0.b;
-							var _n3 = model.screenClass;
-							if (_n3.$ === 'Large') {
+							case 'Loaded':
+								var page = _n1.a;
+								var document = _n1.b;
 								return A2(
 									mdgriffith$elm_ui$Element$el,
 									_List_fromArray(
@@ -17749,12 +17833,29 @@ var author$project$Guide$view = function (model) {
 													elm$core$Maybe$Just(page))))
 										]),
 									A3(author$project$Guide$viewDocument, model, page, document));
-							} else {
+							default:
+								var message = _n1.a;
+								return mdgriffith$elm_ui$Element$text(message);
+						}
+					} else {
+						var _n2 = model.state;
+						switch (_n2.$) {
+							case 'Navigating':
+								return A2(author$project$Guide$viewNav, model, elm$core$Maybe$Nothing);
+							case 'Loading':
+								var page = _n2.a;
+								return A2(
+									author$project$Guide$viewNav,
+									model,
+									elm$core$Maybe$Just(page));
+							case 'Loaded':
+								var page = _n2.a;
+								var document = _n2.b;
 								return A3(author$project$Guide$viewDocument, model, page, document);
-							}
-						default:
-							var message = _n0.a;
-							return mdgriffith$elm_ui$Element$text(message);
+							default:
+								var message = _n2.a;
+								return mdgriffith$elm_ui$Element$text(message);
+						}
 					}
 				}())
 			]),

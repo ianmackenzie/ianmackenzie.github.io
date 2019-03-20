@@ -14,6 +14,8 @@
             "elm/svg": "1.0.1",
             "elm/url": "1.0.0",
             "elm-community/result-extra": "2.2.1",
+            "ianmackenzie/elm-geometry": "1.2.1",
+            "ianmackenzie/elm-geometry-svg": "1.0.2",
             "mdgriffith/elm-ui": "1.1.0",
             "pablohirafuji/elm-markdown": "2.0.5"
         },
@@ -22,7 +24,10 @@
             "elm/file": "1.0.4",
             "elm/json": "1.1.2",
             "elm/time": "1.0.0",
-            "elm/virtual-dom": "1.0.2"
+            "elm/virtual-dom": "1.0.2",
+            "ianmackenzie/elm-float-extra": "1.0.1",
+            "ianmackenzie/elm-interval": "1.0.1",
+            "ianmackenzie/elm-triangular-mesh": "1.0.2"
         }
     },
     "test-dependencies": {
