@@ -388,10 +388,15 @@ viewTitle screenClass textFragments rootUrl =
                 , Element.width Element.fill
                 ]
                 (renderText screenClass TitleContext textFragments)
-            , Element.link [ Element.alignTop, Font.size 32 ]
-                { url = rootUrl
-                , label = hamburgerIcon
-                }
+            , case screenClass of
+                Screen.Small ->
+                    Element.link [ Element.alignTop, Font.size 32 ]
+                        { url = rootUrl
+                        , label = hamburgerIcon
+                        }
+
+                Screen.Large ->
+                    Element.none
             ]
         )
 
