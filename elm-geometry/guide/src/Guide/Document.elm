@@ -155,7 +155,7 @@ viewChunk config chunk =
             viewBullets config bullets
 
 
-viewChunks : { topLevel : Bool, screenClass : Screen.Class } -> List CompiledChunk -> Element Msg
+viewChunks : ViewConfig -> List CompiledChunk -> Element Msg
 viewChunks config chunks =
     let
         spacing =
