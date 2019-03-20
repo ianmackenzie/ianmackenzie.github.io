@@ -362,9 +362,9 @@ hamburgerIcon =
             , Svg.Attributes.stroke "none"
             , Svg.Attributes.fill "black"
             ]
-            [ rectangle 6 8
-            , rectangle 12 14
-            , rectangle 18 20
+            [ rectangle 7 9
+            , rectangle 13 15
+            , rectangle 19 21
             ]
 
 

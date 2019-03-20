@@ -11287,9 +11287,9 @@ var author$project$Guide$Document$hamburgerIcon = function () {
 				]),
 			_List_fromArray(
 				[
-					A2(rectangle, 6, 8),
-					A2(rectangle, 12, 14),
-					A2(rectangle, 18, 20)
+					A2(rectangle, 7, 9),
+					A2(rectangle, 13, 15),
+					A2(rectangle, 19, 21)
 				])));
 }();
 var mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
