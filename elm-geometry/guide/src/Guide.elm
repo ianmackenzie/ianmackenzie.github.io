@@ -83,7 +83,8 @@ type alias Model =
     { screenClass : Screen.Class
     , navigationKey : Navigation.Key
     , rootPath : List String
-    , title : String
+    , author : String
+    , packageName : String
     , readmePage : Page
     , allPages : List Page
     , state : State
@@ -131,8 +132,8 @@ handleNewUrl currentState rootPath readmePage allPages screenClass url =
             ( Error errorMessage, Cmd.none )
 
 
-init : String -> Page -> List Page -> Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
-init title readmePage allPages flags url navigationKey =
+init : String -> String -> Page -> List Page -> Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
+init author packageName readmePage allPages flags url navigationKey =
     let
         screenClass =
             Screen.classify flags.width
@@ -143,7 +144,8 @@ init title readmePage allPages flags url navigationKey =
         ( state, command ) =
             handleNewUrl Loading rootPath readmePage allPages screenClass url
     in
-    ( { title = title
+    ( { author = author
+      , packageName = packageName
       , readmePage = readmePage
       , allPages = allPages
       , state = state
@@ -182,7 +184,33 @@ navTitle model =
         , Border.color Color.dividerLine
         , Element.width Element.fill
         ]
-        [ Element.text model.title ]
+        [ Element.text model.packageName ]
+
+
+packageDocLink : Model -> Element msg
+packageDocLink model =
+    Element.paragraph
+        [ Font.alegreyaSans
+        , Font.color Color.linkText
+        , Font.size (Font.sizes model.screenClass).navText
+        , Font.regular
+        , Border.widthEach { top = 1, bottom = 0, left = 0, right = 0 }
+        , Element.paddingEach { top = 8, bottom = 0, left = 0, right = 0 }
+        , Border.color Color.dividerLine
+        , Element.width Element.fill
+        ]
+        [ Element.link []
+            { url =
+                Url.Builder.crossOrigin "https://package.elm-lang.org"
+                    [ "packages"
+                    , model.author
+                    , model.packageName
+                    , "latest"
+                    ]
+                    []
+            , label = Element.text "Package documentation"
+            }
+        ]
 
 
 viewNav : Model -> Maybe Page -> Element msg
@@ -202,7 +230,12 @@ viewNav model currentPage =
                 , Element.spacing 12
                 , Element.padding 12
                 ]
-                (navTitle model :: List.map (toPageLink model.rootPath currentPage) model.allPages)
+                (List.concat
+                    [ [ navTitle model ]
+                    , List.map (toPageLink model.rootPath currentPage) model.allPages
+                    , [ packageDocLink model ]
+                    ]
+                )
 
         elementWidth =
             case model.screenClass of
@@ -239,7 +272,7 @@ viewDocument model currentPage loadedDocument =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = model.title
+    { title = model.packageName
     , body =
         [ Element.layout [ Element.width Element.fill, Element.height Element.fill ] <|
             case model.screenClass of
@@ -332,12 +365,13 @@ subscriptions model =
 
 
 program :
-    { title : String
+    { author : String
+    , packageName : String
     , readmeUrl : String
     , pages : List { title : String, widgets : List ( String, Widget ) }
     }
     -> Program
-program { title, readmeUrl, pages } =
+program { author, packageName, readmeUrl, pages } =
     let
         readmePage =
             Page.readme { url = readmeUrl }
@@ -346,7 +380,7 @@ program { title, readmeUrl, pages } =
             readmePage :: List.map Page.with pages
     in
     Browser.application
-        { init = init title readmePage allPages
+        { init = init author packageName readmePage allPages
         , view = view
         , update = update
         , subscriptions = subscriptions
