@@ -17380,16 +17380,21 @@ var author$project$Guide$viewDocument = F3(
 				_List_fromArray(
 					[mdgriffith$elm_ui$Element$centerX]),
 				loadedDocument));
-		return A2(
-			mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[
-					mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$fill),
-					mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill),
-					mdgriffith$elm_ui$Element$clipY,
-					mdgriffith$elm_ui$Element$scrollbarY
-				]),
-			documentElement);
+		var _n0 = model.screenClass;
+		if (_n0.$ === 'Large') {
+			return A2(
+				mdgriffith$elm_ui$Element$el,
+				_List_fromArray(
+					[
+						mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$fill),
+						mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill),
+						mdgriffith$elm_ui$Element$clipY,
+						mdgriffith$elm_ui$Element$scrollbarY
+					]),
+				documentElement);
+		} else {
+			return documentElement;
+		}
 	});
 var author$project$Guide$Color$black = A3(mdgriffith$elm_ui$Element$rgb255, 0, 0, 0);
 var author$project$Guide$navTitle = function (model) {

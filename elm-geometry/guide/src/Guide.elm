@@ -261,13 +261,18 @@ viewDocument model currentPage loadedDocument =
             Document.view [ Element.centerX ] loadedDocument
                 |> Element.map DocumentUpdated
     in
-    Element.el
-        [ Element.height Element.fill
-        , Element.width Element.fill
-        , Element.clipY
-        , Element.scrollbarY
-        ]
-        documentElement
+    case model.screenClass of
+        Screen.Large ->
+            Element.el
+                [ Element.height Element.fill
+                , Element.width Element.fill
+                , Element.clipY
+                , Element.scrollbarY
+                ]
+                documentElement
+
+        Screen.Small ->
+            documentElement
 
 
 view : Model -> Browser.Document Msg
