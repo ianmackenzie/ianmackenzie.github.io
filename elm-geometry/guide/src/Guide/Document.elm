@@ -385,6 +385,7 @@ viewTitle screenClass textFragments rootUrl =
                 , Font.alegreyaSans
                 , Font.extraBold
                 , Font.size (Font.sizes screenClass).title
+                , Element.spacing (Font.sizes screenClass).titleLineSpacing
                 , Element.width Element.fill
                 ]
                 (renderText screenClass TitleContext textFragments)
@@ -408,6 +409,7 @@ viewSection screenClass textFragments =
         , Font.alegreyaSans
         , Font.extraBold
         , Font.size (Font.sizes screenClass).section
+        , Element.spacing (Font.sizes screenClass).sectionLineSpacing
         , Element.paddingEach { top = 12, bottom = 0, left = 0, right = 0 }
         ]
         (renderText screenClass SectionContext textFragments)
@@ -420,6 +422,7 @@ viewSubsection screenClass textFragments =
         , Font.alegreyaSans
         , Font.extraBold
         , Font.size (Font.sizes screenClass).subsection
+        , Element.spacing (Font.sizes screenClass).subsectionLineSpacing
         , Element.paddingEach { top = 6, bottom = 0, left = 0, right = 0 }
         ]
         (renderText screenClass SubsectionContext textFragments)
@@ -427,7 +430,8 @@ viewSubsection screenClass textFragments =
 
 viewParagraph : Screen.Class -> List Text -> Element msg
 viewParagraph screenClass textFragments =
-    Element.paragraph [] (renderText screenClass ParagraphContext textFragments)
+    Element.paragraph [ Element.spacing (Font.sizes screenClass).bodyLineSpacing ]
+        (renderText screenClass ParagraphContext textFragments)
 
 
 viewCodeBlockLine : String -> Element msg
@@ -447,6 +451,7 @@ viewCodeBlock screenClass code =
         , Font.sourceCodePro
         , Background.color Color.codeBlockBackground
         , Font.size (Font.sizes screenClass).codeBlockCode
+        , Element.spacing (Font.sizes screenClass).codeBlockLineSpacing
         , Element.scrollbarX
         ]
         (List.map viewCodeBlockLine (String.lines (String.trim code)))
