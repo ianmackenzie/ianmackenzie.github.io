@@ -7,6 +7,7 @@ module Guide exposing (Program, program)
 -}
 
 import Browser exposing (UrlRequest)
+import Browser.Dom
 import Browser.Navigation as Navigation
 import Dict
 import Element exposing (Element)
@@ -20,7 +21,9 @@ import Guide.Page as Page exposing (Page)
 import Guide.Screen as Screen
 import Guide.Widget as Widget exposing (Widget)
 import Html exposing (Html)
+import Html.Attributes
 import Http
+import Task
 import Url exposing (Url)
 import Url.Builder
 import Url.Parser exposing ((</>))
@@ -38,8 +41,8 @@ navWidth =
     300
 
 
-handleMarkdown : Screen.Class -> Page -> String -> Result Http.Error String -> Msg
-handleMarkdown screenClass page rootUrl result =
+handleMarkdown : Screen.Class -> Page -> Maybe String -> String -> Result Http.Error String -> Msg
+handleMarkdown screenClass page fragment rootUrl result =
     case result of
         Ok markdown ->
             let
@@ -51,7 +54,7 @@ handleMarkdown screenClass page rootUrl result =
             in
             case Document.parse documentConfig markdown of
                 Ok document ->
-                    DocumentLoaded page document
+                    DocumentLoaded page fragment document
 
                 Err message ->
                     LoadError message
@@ -60,15 +63,15 @@ handleMarkdown screenClass page rootUrl result =
             LoadError "Network error"
 
 
-loadPage : Screen.Class -> List String -> Page -> Cmd Msg
-loadPage screenClass rootPath page =
+loadPage : Screen.Class -> List String -> Page -> Maybe String -> Cmd Msg
+loadPage screenClass rootPath page fragment =
     let
         rootUrl =
             Url.Builder.absolute rootPath []
     in
     Http.get
         { url = Page.sourceUrl rootPath page
-        , expect = Http.expectString (handleMarkdown screenClass page rootUrl)
+        , expect = Http.expectString (handleMarkdown screenClass page fragment rootUrl)
         }
 
 
@@ -76,7 +79,7 @@ type State
     = Navigating
     | Loading
     | Error String
-    | Loaded Page Document
+    | Loaded Page (Maybe String) Document
 
 
 type alias Model =
@@ -95,24 +98,43 @@ type Msg
     = UrlRequested UrlRequest
     | UrlChanged Url
     | LoadError String
-    | DocumentLoaded Page Document
+    | DocumentLoaded Page (Maybe String) Document
     | DocumentUpdated Document
+    | NoOp
 
 
 type alias Program =
     Platform.Program Flags Model Msg
 
 
+topLevelDocumentId : String
+topLevelDocumentId =
+    "top-level-document-e41c28257f09"
+
+
 handleNewUrl : State -> List String -> Page -> List Page -> Screen.Class -> Url -> ( State, Cmd Msg )
 handleNewUrl currentState rootPath readmePage allPages screenClass url =
-    case Debug.log "match" (Page.matching { url = url, rootPath = rootPath } allPages) of
+    case Page.matching { url = url, rootPath = rootPath } allPages of
         Ok (Page.Match { page, fragment }) ->
-            ( currentState, loadPage screenClass rootPath page )
+            let
+                command =
+                    case currentState of
+                        Loaded currentPage currentFragment currentDocument ->
+                            if page == currentPage then
+                                scrollTo screenClass fragment
+
+                            else
+                                loadPage screenClass rootPath page fragment
+
+                        _ ->
+                            loadPage screenClass rootPath page fragment
+            in
+            ( currentState, command )
 
         Ok Page.Unspecified ->
             case screenClass of
                 Screen.Large ->
-                    ( currentState, loadPage screenClass rootPath readmePage )
+                    ( currentState, loadPage screenClass rootPath readmePage Nothing )
 
                 Screen.Small ->
                     ( Navigating, Cmd.none )
@@ -130,6 +152,38 @@ handleNewUrl currentState rootPath readmePage allPages screenClass url =
                     "No page matching " ++ Url.toString url
             in
             ( Error errorMessage, Cmd.none )
+
+
+scrollTo : Screen.Class -> Maybe String -> Cmd Msg
+scrollTo screenClass fragment =
+    let
+        setViewport y =
+            case screenClass of
+                Screen.Large ->
+                    Browser.Dom.setViewportOf topLevelDocumentId 0 y
+
+                Screen.Small ->
+                    Browser.Dom.setViewport 0 y
+
+        scrollTask =
+            case Debug.log "scrolling to" fragment of
+                Just id ->
+                    Browser.Dom.getElement id
+                        |> Task.andThen (\{ element } -> setViewport element.y)
+
+                Nothing ->
+                    setViewport 0
+    in
+    scrollTask
+        |> Task.attempt
+            (\result ->
+                case result of
+                    Ok () ->
+                        NoOp
+
+                    Err (Browser.Dom.NotFound id) ->
+                        LoadError ("Could not find element on page with id '" ++ id ++ "'")
+            )
 
 
 init : String -> String -> Page -> List Page -> Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
@@ -288,6 +342,7 @@ viewDocument model currentPage loadedDocument =
                 , Element.width Element.fill
                 , Element.clipY
                 , Element.scrollbarY
+                , Element.htmlAttribute (Html.Attributes.id topLevelDocumentId)
                 ]
                 documentElement
 
@@ -317,7 +372,7 @@ view model =
                                 ]
                                 [ viewNav model Nothing, Element.none ]
 
-                        Loaded page document ->
+                        Loaded page fragment document ->
                             Element.el
                                 [ Element.height Element.fill
                                 , Element.width Element.fill
@@ -336,7 +391,7 @@ view model =
                         Loading ->
                             Element.none
 
-                        Loaded page document ->
+                        Loaded page fragment document ->
                             viewDocument model page document
 
                         Error message ->
@@ -372,16 +427,21 @@ update message model =
         LoadError string ->
             ( { model | state = Error string }, Cmd.none )
 
-        DocumentLoaded documentPage document ->
-            ( { model | state = Loaded documentPage document }, Cmd.none )
+        DocumentLoaded documentPage fragment document ->
+            ( { model | state = Loaded documentPage fragment document }
+            , scrollTo model.screenClass fragment
+            )
 
         DocumentUpdated newDocument ->
             case model.state of
-                Loaded page currentDocument ->
-                    ( { model | state = Loaded page newDocument }, Cmd.none )
+                Loaded page fragment currentDocument ->
+                    ( { model | state = Loaded page fragment newDocument }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg

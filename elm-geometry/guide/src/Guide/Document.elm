@@ -402,6 +402,13 @@ viewTitle screenClass textFragments rootUrl =
         )
 
 
+toId : List Text -> String
+toId textFragments =
+    String.concat (List.map toPlainText textFragments)
+        |> String.toLower
+        |> String.replace " " "-"
+
+
 viewSection : Screen.Class -> List Text -> Element msg
 viewSection screenClass textFragments =
     Element.paragraph
@@ -411,6 +418,7 @@ viewSection screenClass textFragments =
         , Font.size (Font.sizes screenClass).section
         , Element.spacing (Font.sizes screenClass).sectionLineSpacing
         , Element.paddingEach { top = 12, bottom = 0, left = 0, right = 0 }
+        , Element.htmlAttribute (Html.Attributes.id (toId textFragments))
         ]
         (renderText screenClass SectionContext textFragments)
 
@@ -424,6 +432,7 @@ viewSubsection screenClass textFragments =
         , Font.size (Font.sizes screenClass).subsection
         , Element.spacing (Font.sizes screenClass).subsectionLineSpacing
         , Element.paddingEach { top = 6, bottom = 0, left = 0, right = 0 }
+        , Element.htmlAttribute (Html.Attributes.id (toId textFragments))
         ]
         (renderText screenClass SubsectionContext textFragments)
 

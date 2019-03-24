@@ -4651,9 +4651,9 @@ var author$project$Guide$Error = function (a) {
 	return {$: 'Error', a: a};
 };
 var author$project$Guide$Navigating = {$: 'Navigating'};
-var author$project$Guide$DocumentLoaded = F2(
-	function (a, b) {
-		return {$: 'DocumentLoaded', a: a, b: b};
+var author$project$Guide$DocumentLoaded = F3(
+	function (a, b, c) {
+		return {$: 'DocumentLoaded', a: a, b: b, c: c};
 	});
 var author$project$Guide$LoadError = function (a) {
 	return {$: 'LoadError', a: a};
@@ -11136,6 +11136,50 @@ var author$project$Guide$Document$viewParagraph = F2(
 				]),
 			A3(author$project$Guide$Document$renderText, screenClass, author$project$Guide$Document$ParagraphContext, textFragments));
 	});
+var author$project$Guide$Document$toPlainText = function (textFragment) {
+	toPlainText:
+	while (true) {
+		switch (textFragment.$) {
+			case 'Plain':
+				var string = textFragment.a;
+				return string;
+			case 'Italic':
+				var string = textFragment.a;
+				return string;
+			case 'Bold':
+				var string = textFragment.a;
+				return string;
+			case 'Link':
+				var displayed = textFragment.a.displayed;
+				var $temp$textFragment = displayed;
+				textFragment = $temp$textFragment;
+				continue toPlainText;
+			case 'InlineCode':
+				var chunks = textFragment.a;
+				return elm$core$String$concat(
+					A2(elm$core$List$map, author$project$Guide$Document$inlineCodeChunkToString, chunks));
+			default:
+				var description = textFragment.a.description;
+				return description;
+		}
+	}
+};
+var elm$core$String$replace = F3(
+	function (before, after, string) {
+		return A2(
+			elm$core$String$join,
+			after,
+			A2(elm$core$String$split, before, string));
+	});
+var author$project$Guide$Document$toId = function (textFragments) {
+	return A3(
+		elm$core$String$replace,
+		' ',
+		'-',
+		elm$core$String$toLower(
+			elm$core$String$concat(
+				A2(elm$core$List$map, author$project$Guide$Document$toPlainText, textFragments))));
+};
 var mdgriffith$elm_ui$Internal$Model$SansSerif = {$: 'SansSerif'};
 var mdgriffith$elm_ui$Element$Font$sansSerif = mdgriffith$elm_ui$Internal$Model$SansSerif;
 var author$project$Guide$Font$alegreyaSans = mdgriffith$elm_ui$Element$Font$family(
@@ -11144,6 +11188,8 @@ var author$project$Guide$Font$alegreyaSans = mdgriffith$elm_ui$Element$Font$fami
 			mdgriffith$elm_ui$Element$Font$typeface('Alegreya Sans'),
 			mdgriffith$elm_ui$Element$Font$sansSerif
 		]));
+var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
+var mdgriffith$elm_ui$Element$htmlAttribute = mdgriffith$elm_ui$Internal$Model$Attr;
 var mdgriffith$elm_ui$Internal$Model$paddingName = F4(
 	function (top, right, bottom, left) {
 		return 'pad-' + (elm$core$String$fromInt(top) + ('-' + (elm$core$String$fromInt(right) + ('-' + (elm$core$String$fromInt(bottom) + ('-' + elm$core$String$fromInt(left)))))));
@@ -11192,7 +11238,10 @@ var author$project$Guide$Document$viewSection = F2(
 					mdgriffith$elm_ui$Element$spacing(
 					author$project$Guide$Font$sizes(screenClass).sectionLineSpacing),
 					mdgriffith$elm_ui$Element$paddingEach(
-					{bottom: 0, left: 0, right: 0, top: 12})
+					{bottom: 0, left: 0, right: 0, top: 12}),
+					mdgriffith$elm_ui$Element$htmlAttribute(
+					elm$html$Html$Attributes$id(
+						author$project$Guide$Document$toId(textFragments)))
 				]),
 			A3(author$project$Guide$Document$renderText, screenClass, author$project$Guide$Document$SectionContext, textFragments));
 	});
@@ -11210,7 +11259,10 @@ var author$project$Guide$Document$viewSubsection = F2(
 					mdgriffith$elm_ui$Element$spacing(
 					author$project$Guide$Font$sizes(screenClass).subsectionLineSpacing),
 					mdgriffith$elm_ui$Element$paddingEach(
-					{bottom: 0, left: 0, right: 0, top: 6})
+					{bottom: 0, left: 0, right: 0, top: 6}),
+					mdgriffith$elm_ui$Element$htmlAttribute(
+					elm$html$Html$Attributes$id(
+						author$project$Guide$Document$toId(textFragments)))
 				]),
 			A3(author$project$Guide$Document$renderText, screenClass, author$project$Guide$Document$SubsectionContext, textFragments));
 	});
@@ -15658,15 +15710,15 @@ var author$project$Guide$Document$parse = F2(
 			return elm$core$Result$Err('Markdown document must start with a level 1 header');
 		}
 	});
-var author$project$Guide$handleMarkdown = F4(
-	function (screenClass, page, rootUrl, result) {
+var author$project$Guide$handleMarkdown = F5(
+	function (screenClass, page, fragment, rootUrl, result) {
 		if (result.$ === 'Ok') {
 			var markdown = result.a;
 			var documentConfig = {rootUrl: rootUrl, screenClass: screenClass, widgets: _List_Nil};
 			var _n1 = A2(author$project$Guide$Document$parse, documentConfig, markdown);
 			if (_n1.$ === 'Ok') {
 				var document = _n1.a;
-				return A2(author$project$Guide$DocumentLoaded, page, document);
+				return A3(author$project$Guide$DocumentLoaded, page, fragment, document);
 			} else {
 				var message = _n1.a;
 				return author$project$Guide$LoadError(message);
@@ -16339,15 +16391,258 @@ var elm$http$Http$get = function (r) {
 	return elm$http$Http$request(
 		{body: elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: elm$core$Maybe$Nothing, tracker: elm$core$Maybe$Nothing, url: r.url});
 };
-var author$project$Guide$loadPage = F3(
-	function (screenClass, rootPath, page) {
+var author$project$Guide$loadPage = F4(
+	function (screenClass, rootPath, page, fragment) {
 		var rootUrl = A2(elm$url$Url$Builder$absolute, rootPath, _List_Nil);
 		return elm$http$Http$get(
 			{
 				expect: elm$http$Http$expectString(
-					A3(author$project$Guide$handleMarkdown, screenClass, page, rootUrl)),
+					A4(author$project$Guide$handleMarkdown, screenClass, page, fragment, rootUrl)),
 				url: A2(author$project$Guide$Page$sourceUrl, rootPath, page)
 			});
+	});
+var author$project$Guide$NoOp = {$: 'NoOp'};
+var author$project$Guide$topLevelDocumentId = 'top-level-document-e41c28257f09';
+var elm$browser$Browser$External = function (a) {
+	return {$: 'External', a: a};
+};
+var elm$browser$Browser$Internal = function (a) {
+	return {$: 'Internal', a: a};
+};
+var elm$browser$Browser$Dom$NotFound = function (a) {
+	return {$: 'NotFound', a: a};
+};
+var elm$core$Basics$never = function (_n0) {
+	never:
+	while (true) {
+		var nvr = _n0.a;
+		var $temp$_n0 = nvr;
+		_n0 = $temp$_n0;
+		continue never;
+	}
+};
+var elm$core$Task$Perform = function (a) {
+	return {$: 'Perform', a: a};
+};
+var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
+var elm$core$Task$map = F2(
+	function (func, taskA) {
+		return A2(
+			elm$core$Task$andThen,
+			function (a) {
+				return elm$core$Task$succeed(
+					func(a));
+			},
+			taskA);
+	});
+var elm$core$Task$spawnCmd = F2(
+	function (router, _n0) {
+		var task = _n0.a;
+		return _Scheduler_spawn(
+			A2(
+				elm$core$Task$andThen,
+				elm$core$Platform$sendToApp(router),
+				task));
+	});
+var elm$core$Task$onEffects = F3(
+	function (router, commands, state) {
+		return A2(
+			elm$core$Task$map,
+			function (_n0) {
+				return _Utils_Tuple0;
+			},
+			elm$core$Task$sequence(
+				A2(
+					elm$core$List$map,
+					elm$core$Task$spawnCmd(router),
+					commands)));
+	});
+var elm$core$Task$onSelfMsg = F3(
+	function (_n0, _n1, _n2) {
+		return elm$core$Task$succeed(_Utils_Tuple0);
+	});
+var elm$core$Task$cmdMap = F2(
+	function (tagger, _n0) {
+		var task = _n0.a;
+		return elm$core$Task$Perform(
+			A2(elm$core$Task$map, tagger, task));
+	});
+_Platform_effectManagers['Task'] = _Platform_createManager(elm$core$Task$init, elm$core$Task$onEffects, elm$core$Task$onSelfMsg, elm$core$Task$cmdMap);
+var elm$core$Task$command = _Platform_leaf('Task');
+var elm$core$Task$perform = F2(
+	function (toMessage, task) {
+		return elm$core$Task$command(
+			elm$core$Task$Perform(
+				A2(elm$core$Task$map, toMessage, task)));
+	});
+var elm$url$Url$Http = {$: 'Http'};
+var elm$url$Url$Https = {$: 'Https'};
+var elm$core$String$indexes = _String_indexes;
+var elm$core$String$contains = _String_contains;
+var elm$url$Url$Url = F6(
+	function (protocol, host, port_, path, query, fragment) {
+		return {fragment: fragment, host: host, path: path, port_: port_, protocol: protocol, query: query};
+	});
+var elm$url$Url$chompBeforePath = F5(
+	function (protocol, path, params, frag, str) {
+		if (elm$core$String$isEmpty(str) || A2(elm$core$String$contains, '@', str)) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var _n0 = A2(elm$core$String$indexes, ':', str);
+			if (!_n0.b) {
+				return elm$core$Maybe$Just(
+					A6(elm$url$Url$Url, protocol, str, elm$core$Maybe$Nothing, path, params, frag));
+			} else {
+				if (!_n0.b.b) {
+					var i = _n0.a;
+					var _n1 = elm$core$String$toInt(
+						A2(elm$core$String$dropLeft, i + 1, str));
+					if (_n1.$ === 'Nothing') {
+						return elm$core$Maybe$Nothing;
+					} else {
+						var port_ = _n1;
+						return elm$core$Maybe$Just(
+							A6(
+								elm$url$Url$Url,
+								protocol,
+								A2(elm$core$String$left, i, str),
+								port_,
+								path,
+								params,
+								frag));
+					}
+				} else {
+					return elm$core$Maybe$Nothing;
+				}
+			}
+		}
+	});
+var elm$url$Url$chompBeforeQuery = F4(
+	function (protocol, params, frag, str) {
+		if (elm$core$String$isEmpty(str)) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var _n0 = A2(elm$core$String$indexes, '/', str);
+			if (!_n0.b) {
+				return A5(elm$url$Url$chompBeforePath, protocol, '/', params, frag, str);
+			} else {
+				var i = _n0.a;
+				return A5(
+					elm$url$Url$chompBeforePath,
+					protocol,
+					A2(elm$core$String$dropLeft, i, str),
+					params,
+					frag,
+					A2(elm$core$String$left, i, str));
+			}
+		}
+	});
+var elm$url$Url$chompBeforeFragment = F3(
+	function (protocol, frag, str) {
+		if (elm$core$String$isEmpty(str)) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var _n0 = A2(elm$core$String$indexes, '?', str);
+			if (!_n0.b) {
+				return A4(elm$url$Url$chompBeforeQuery, protocol, elm$core$Maybe$Nothing, frag, str);
+			} else {
+				var i = _n0.a;
+				return A4(
+					elm$url$Url$chompBeforeQuery,
+					protocol,
+					elm$core$Maybe$Just(
+						A2(elm$core$String$dropLeft, i + 1, str)),
+					frag,
+					A2(elm$core$String$left, i, str));
+			}
+		}
+	});
+var elm$url$Url$chompAfterProtocol = F2(
+	function (protocol, str) {
+		if (elm$core$String$isEmpty(str)) {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var _n0 = A2(elm$core$String$indexes, '#', str);
+			if (!_n0.b) {
+				return A3(elm$url$Url$chompBeforeFragment, protocol, elm$core$Maybe$Nothing, str);
+			} else {
+				var i = _n0.a;
+				return A3(
+					elm$url$Url$chompBeforeFragment,
+					protocol,
+					elm$core$Maybe$Just(
+						A2(elm$core$String$dropLeft, i + 1, str)),
+					A2(elm$core$String$left, i, str));
+			}
+		}
+	});
+var elm$url$Url$fromString = function (str) {
+	return A2(elm$core$String$startsWith, 'http://', str) ? A2(
+		elm$url$Url$chompAfterProtocol,
+		elm$url$Url$Http,
+		A2(elm$core$String$dropLeft, 7, str)) : (A2(elm$core$String$startsWith, 'https://', str) ? A2(
+		elm$url$Url$chompAfterProtocol,
+		elm$url$Url$Https,
+		A2(elm$core$String$dropLeft, 8, str)) : elm$core$Maybe$Nothing);
+};
+var elm$browser$Browser$Dom$getElement = _Browser_getElement;
+var elm$browser$Browser$Dom$setViewport = _Browser_setViewport;
+var elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
+var elm$core$Debug$log = _Debug_log;
+var elm$core$Task$onError = _Scheduler_onError;
+var elm$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return elm$core$Task$command(
+			elm$core$Task$Perform(
+				A2(
+					elm$core$Task$onError,
+					A2(
+						elm$core$Basics$composeL,
+						A2(elm$core$Basics$composeL, elm$core$Task$succeed, resultToMessage),
+						elm$core$Result$Err),
+					A2(
+						elm$core$Task$andThen,
+						A2(
+							elm$core$Basics$composeL,
+							A2(elm$core$Basics$composeL, elm$core$Task$succeed, resultToMessage),
+							elm$core$Result$Ok),
+						task))));
+	});
+var author$project$Guide$scrollTo = F2(
+	function (screenClass, fragment) {
+		var setViewport = function (y) {
+			if (screenClass.$ === 'Large') {
+				return A3(elm$browser$Browser$Dom$setViewportOf, author$project$Guide$topLevelDocumentId, 0, y);
+			} else {
+				return A2(elm$browser$Browser$Dom$setViewport, 0, y);
+			}
+		};
+		var scrollTask = function () {
+			var _n1 = A2(elm$core$Debug$log, 'scrolling to', fragment);
+			if (_n1.$ === 'Just') {
+				var id = _n1.a;
+				return A2(
+					elm$core$Task$andThen,
+					function (_n2) {
+						var element = _n2.element;
+						return setViewport(element.y);
+					},
+					elm$browser$Browser$Dom$getElement(id));
+			} else {
+				return setViewport(0);
+			}
+		}();
+		return A2(
+			elm$core$Task$attempt,
+			function (result) {
+				if (result.$ === 'Ok') {
+					return author$project$Guide$NoOp;
+				} else {
+					var id = result.a.a;
+					return author$project$Guide$LoadError('Could not find element on page with id \'' + (id + '\''));
+				}
+			},
+			scrollTask);
 	});
 var author$project$Guide$Page$BadUrl = {$: 'BadUrl'};
 var author$project$Guide$Page$Match = function (a) {
@@ -16695,7 +16990,6 @@ var author$project$Guide$Page$matching = F2(
 			return elm$core$Result$Err(author$project$Guide$Page$BadUrl);
 		}
 	});
-var elm$core$Debug$log = _Debug_log;
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var elm$url$Url$addPort = F2(
@@ -16745,25 +17039,29 @@ var elm$url$Url$toString = function (url) {
 var author$project$Guide$handleNewUrl = F6(
 	function (currentState, rootPath, readmePage, allPages, screenClass, url) {
 		var _n0 = A2(
-			elm$core$Debug$log,
-			'match',
-			A2(
-				author$project$Guide$Page$matching,
-				{rootPath: rootPath, url: url},
-				allPages));
+			author$project$Guide$Page$matching,
+			{rootPath: rootPath, url: url},
+			allPages);
 		if (_n0.$ === 'Ok') {
 			if (_n0.a.$ === 'Match') {
 				var page = _n0.a.a.page;
 				var fragment = _n0.a.a.fragment;
-				return _Utils_Tuple2(
-					currentState,
-					A3(author$project$Guide$loadPage, screenClass, rootPath, page));
+				var command = function () {
+					if (currentState.$ === 'Loaded') {
+						var currentPage = currentState.a;
+						var currentDocument = currentState.b;
+						return _Utils_eq(page, currentPage) ? A2(author$project$Guide$scrollTo, screenClass, fragment) : A4(author$project$Guide$loadPage, screenClass, rootPath, page, fragment);
+					} else {
+						return A4(author$project$Guide$loadPage, screenClass, rootPath, page, fragment);
+					}
+				}();
+				return _Utils_Tuple2(currentState, command);
 			} else {
-				var _n1 = _n0.a;
+				var _n2 = _n0.a;
 				if (screenClass.$ === 'Large') {
 					return _Utils_Tuple2(
 						currentState,
-						A3(author$project$Guide$loadPage, screenClass, rootPath, readmePage));
+						A4(author$project$Guide$loadPage, screenClass, rootPath, readmePage, elm$core$Maybe$Nothing));
 				} else {
 					return _Utils_Tuple2(author$project$Guide$Navigating, elm$core$Platform$Cmd$none);
 				}
@@ -16776,7 +17074,7 @@ var author$project$Guide$handleNewUrl = F6(
 					author$project$Guide$Error(errorMessage),
 					elm$core$Platform$Cmd$none);
 			} else {
-				var _n3 = _n0.a;
+				var _n4 = _n0.a;
 				var errorMessage = 'No page matching ' + elm$url$Url$toString(url);
 				return _Utils_Tuple2(
 					author$project$Guide$Error(errorMessage),
@@ -16811,188 +17109,6 @@ var author$project$Guide$Loaded = F2(
 	function (a, b) {
 		return {$: 'Loaded', a: a, b: b};
 	});
-var elm$browser$Browser$External = function (a) {
-	return {$: 'External', a: a};
-};
-var elm$browser$Browser$Internal = function (a) {
-	return {$: 'Internal', a: a};
-};
-var elm$browser$Browser$Dom$NotFound = function (a) {
-	return {$: 'NotFound', a: a};
-};
-var elm$core$Basics$never = function (_n0) {
-	never:
-	while (true) {
-		var nvr = _n0.a;
-		var $temp$_n0 = nvr;
-		_n0 = $temp$_n0;
-		continue never;
-	}
-};
-var elm$core$Task$Perform = function (a) {
-	return {$: 'Perform', a: a};
-};
-var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
-var elm$core$Task$map = F2(
-	function (func, taskA) {
-		return A2(
-			elm$core$Task$andThen,
-			function (a) {
-				return elm$core$Task$succeed(
-					func(a));
-			},
-			taskA);
-	});
-var elm$core$Task$spawnCmd = F2(
-	function (router, _n0) {
-		var task = _n0.a;
-		return _Scheduler_spawn(
-			A2(
-				elm$core$Task$andThen,
-				elm$core$Platform$sendToApp(router),
-				task));
-	});
-var elm$core$Task$onEffects = F3(
-	function (router, commands, state) {
-		return A2(
-			elm$core$Task$map,
-			function (_n0) {
-				return _Utils_Tuple0;
-			},
-			elm$core$Task$sequence(
-				A2(
-					elm$core$List$map,
-					elm$core$Task$spawnCmd(router),
-					commands)));
-	});
-var elm$core$Task$onSelfMsg = F3(
-	function (_n0, _n1, _n2) {
-		return elm$core$Task$succeed(_Utils_Tuple0);
-	});
-var elm$core$Task$cmdMap = F2(
-	function (tagger, _n0) {
-		var task = _n0.a;
-		return elm$core$Task$Perform(
-			A2(elm$core$Task$map, tagger, task));
-	});
-_Platform_effectManagers['Task'] = _Platform_createManager(elm$core$Task$init, elm$core$Task$onEffects, elm$core$Task$onSelfMsg, elm$core$Task$cmdMap);
-var elm$core$Task$command = _Platform_leaf('Task');
-var elm$core$Task$perform = F2(
-	function (toMessage, task) {
-		return elm$core$Task$command(
-			elm$core$Task$Perform(
-				A2(elm$core$Task$map, toMessage, task)));
-	});
-var elm$url$Url$Http = {$: 'Http'};
-var elm$url$Url$Https = {$: 'Https'};
-var elm$core$String$indexes = _String_indexes;
-var elm$core$String$contains = _String_contains;
-var elm$url$Url$Url = F6(
-	function (protocol, host, port_, path, query, fragment) {
-		return {fragment: fragment, host: host, path: path, port_: port_, protocol: protocol, query: query};
-	});
-var elm$url$Url$chompBeforePath = F5(
-	function (protocol, path, params, frag, str) {
-		if (elm$core$String$isEmpty(str) || A2(elm$core$String$contains, '@', str)) {
-			return elm$core$Maybe$Nothing;
-		} else {
-			var _n0 = A2(elm$core$String$indexes, ':', str);
-			if (!_n0.b) {
-				return elm$core$Maybe$Just(
-					A6(elm$url$Url$Url, protocol, str, elm$core$Maybe$Nothing, path, params, frag));
-			} else {
-				if (!_n0.b.b) {
-					var i = _n0.a;
-					var _n1 = elm$core$String$toInt(
-						A2(elm$core$String$dropLeft, i + 1, str));
-					if (_n1.$ === 'Nothing') {
-						return elm$core$Maybe$Nothing;
-					} else {
-						var port_ = _n1;
-						return elm$core$Maybe$Just(
-							A6(
-								elm$url$Url$Url,
-								protocol,
-								A2(elm$core$String$left, i, str),
-								port_,
-								path,
-								params,
-								frag));
-					}
-				} else {
-					return elm$core$Maybe$Nothing;
-				}
-			}
-		}
-	});
-var elm$url$Url$chompBeforeQuery = F4(
-	function (protocol, params, frag, str) {
-		if (elm$core$String$isEmpty(str)) {
-			return elm$core$Maybe$Nothing;
-		} else {
-			var _n0 = A2(elm$core$String$indexes, '/', str);
-			if (!_n0.b) {
-				return A5(elm$url$Url$chompBeforePath, protocol, '/', params, frag, str);
-			} else {
-				var i = _n0.a;
-				return A5(
-					elm$url$Url$chompBeforePath,
-					protocol,
-					A2(elm$core$String$dropLeft, i, str),
-					params,
-					frag,
-					A2(elm$core$String$left, i, str));
-			}
-		}
-	});
-var elm$url$Url$chompBeforeFragment = F3(
-	function (protocol, frag, str) {
-		if (elm$core$String$isEmpty(str)) {
-			return elm$core$Maybe$Nothing;
-		} else {
-			var _n0 = A2(elm$core$String$indexes, '?', str);
-			if (!_n0.b) {
-				return A4(elm$url$Url$chompBeforeQuery, protocol, elm$core$Maybe$Nothing, frag, str);
-			} else {
-				var i = _n0.a;
-				return A4(
-					elm$url$Url$chompBeforeQuery,
-					protocol,
-					elm$core$Maybe$Just(
-						A2(elm$core$String$dropLeft, i + 1, str)),
-					frag,
-					A2(elm$core$String$left, i, str));
-			}
-		}
-	});
-var elm$url$Url$chompAfterProtocol = F2(
-	function (protocol, str) {
-		if (elm$core$String$isEmpty(str)) {
-			return elm$core$Maybe$Nothing;
-		} else {
-			var _n0 = A2(elm$core$String$indexes, '#', str);
-			if (!_n0.b) {
-				return A3(elm$url$Url$chompBeforeFragment, protocol, elm$core$Maybe$Nothing, str);
-			} else {
-				var i = _n0.a;
-				return A3(
-					elm$url$Url$chompBeforeFragment,
-					protocol,
-					elm$core$Maybe$Just(
-						A2(elm$core$String$dropLeft, i + 1, str)),
-					A2(elm$core$String$left, i, str));
-			}
-		}
-	});
-var elm$url$Url$fromString = function (str) {
-	return A2(elm$core$String$startsWith, 'http://', str) ? A2(
-		elm$url$Url$chompAfterProtocol,
-		elm$url$Url$Http,
-		A2(elm$core$String$dropLeft, 7, str)) : (A2(elm$core$String$startsWith, 'https://', str) ? A2(
-		elm$url$Url$chompAfterProtocol,
-		elm$url$Url$Https,
-		A2(elm$core$String$dropLeft, 8, str)) : elm$core$Maybe$Nothing);
-};
 var elm$browser$Browser$Navigation$load = _Browser_load;
 var elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
 var author$project$Guide$update = F2(
@@ -17035,15 +17151,16 @@ var author$project$Guide$update = F2(
 					elm$core$Platform$Cmd$none);
 			case 'DocumentLoaded':
 				var documentPage = message.a;
-				var document = message.b;
+				var fragment = message.b;
+				var document = message.c;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
 							state: A2(author$project$Guide$Loaded, documentPage, document)
 						}),
-					elm$core$Platform$Cmd$none);
-			default:
+					A2(author$project$Guide$scrollTo, model.screenClass, fragment));
+			case 'DocumentUpdated':
 				var newDocument = message.a;
 				var _n3 = model.state;
 				if (_n3.$ === 'Loaded') {
@@ -17059,6 +17176,8 @@ var author$project$Guide$update = F2(
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
+			default:
+				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		}
 	});
 var author$project$Guide$DocumentUpdated = function (a) {
@@ -17401,7 +17520,9 @@ var author$project$Guide$viewDocument = F3(
 						mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$fill),
 						mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill),
 						mdgriffith$elm_ui$Element$clipY,
-						mdgriffith$elm_ui$Element$scrollbarY
+						mdgriffith$elm_ui$Element$scrollbarY,
+						mdgriffith$elm_ui$Element$htmlAttribute(
+						elm$html$Html$Attributes$id(author$project$Guide$topLevelDocumentId))
 					]),
 				documentElement);
 		} else {
