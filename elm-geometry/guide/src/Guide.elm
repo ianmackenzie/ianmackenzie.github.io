@@ -189,17 +189,9 @@ navTitle model =
 
 packageDocLink : Model -> Element msg
 packageDocLink model =
-    Element.paragraph
-        [ Font.alegreyaSans
-        , Font.color Color.linkText
-        , Font.size (Font.sizes model.screenClass).navText
-        , Font.regular
-        , Border.widthEach { top = 1, bottom = 0, left = 0, right = 0 }
-        , Element.paddingEach { top = 8, bottom = 0, left = 0, right = 0 }
-        , Border.color Color.dividerLine
-        , Element.width Element.fill
-        ]
-        [ Element.link []
+    Element.row [ Element.spacing 4 ]
+        [ navIcon model { src = "images/elm.svg", description = "Elm logo" }
+        , Element.link []
             { url =
                 Url.Builder.crossOrigin "https://package.elm-lang.org"
                     [ "packages", model.author, model.packageName, "latest" ]
@@ -207,6 +199,35 @@ packageDocLink model =
             , label = Element.text "Package documentation"
             }
         ]
+
+
+gitHubLink : Model -> Element msg
+gitHubLink model =
+    Element.row [ Element.spacing 4 ]
+        [ navIcon model { src = "images/github.svg", description = "GitHub logo" }
+        , Element.link []
+            { url =
+                Url.Builder.crossOrigin "https://github.com"
+                    [ model.author, model.packageName ]
+                    []
+            , label = Element.text "Source code"
+            }
+        ]
+
+
+navIcon : Model -> { src : String, description : String } -> Element msg
+navIcon model properties =
+    Element.image [ Element.height (Element.px (Font.sizes model.screenClass).navText) ] properties
+
+
+horizontalDivider : Element msg
+horizontalDivider =
+    Element.el
+        [ Element.width Element.fill
+        , Element.height (Element.px 1)
+        , Background.color Color.dividerLine
+        ]
+        Element.none
 
 
 viewNav : Model -> Maybe Page -> Element msg
@@ -229,7 +250,10 @@ viewNav model currentPage =
                 (List.concat
                     [ [ navTitle model ]
                     , List.map (toPageLink model.rootPath currentPage) model.allPages
-                    , [ packageDocLink model ]
+                    , [ horizontalDivider
+                      , packageDocLink model
+                      , gitHubLink model
+                      ]
                     ]
                 )
 
