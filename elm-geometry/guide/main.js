@@ -4785,8 +4785,8 @@ var mdgriffith$elm_ui$Element$text = function (content) {
 var author$project$Guide$Document$viewCodeBlockLine = function (line) {
 	return elm$core$String$isEmpty(line) ? mdgriffith$elm_ui$Element$text('\n') : mdgriffith$elm_ui$Element$text(line);
 };
-var author$project$Guide$Font$largeScreenSizes = {body: 14, bodyCode: 14, codeBlockCode: 14, navText: 16, navTitle: 24, section: 32, sectionCode: 30, subsection: 22, subsectionCode: 22, title: 48, titleCode: 44};
-var author$project$Guide$Font$smallScreenSizes = {body: 14, bodyCode: 14, codeBlockCode: 12, navText: 18, navTitle: 32, section: 22, sectionCode: 22, subsection: 18, subsectionCode: 18, title: 32, titleCode: 28};
+var author$project$Guide$Font$largeScreenSizes = {body: 14, bodyCode: 14, bodyLineSpacing: 12, codeBlockCode: 14, codeBlockLineSpacing: 4, navText: 16, navTitle: 24, section: 32, sectionCode: 30, sectionLineSpacing: 0, subsection: 22, subsectionCode: 22, subsectionLineSpacing: 0, title: 48, titleCode: 44, titleLineSpacing: 0};
+var author$project$Guide$Font$smallScreenSizes = {body: 14, bodyCode: 14, bodyLineSpacing: 10, codeBlockCode: 12, codeBlockLineSpacing: 4, navText: 18, navTitle: 32, section: 22, sectionCode: 22, sectionLineSpacing: 0, subsection: 18, subsectionCode: 18, subsectionLineSpacing: 0, title: 32, titleCode: 28, titleLineSpacing: 0};
 var author$project$Guide$Font$sizes = function (screenClass) {
 	if (screenClass.$ === 'Large') {
 		return author$project$Guide$Font$largeScreenSizes;
@@ -10735,6 +10735,25 @@ var mdgriffith$elm_ui$Internal$Model$Class = F2(
 		return {$: 'Class', a: a, b: b};
 	});
 var mdgriffith$elm_ui$Element$scrollbarX = A2(mdgriffith$elm_ui$Internal$Model$Class, mdgriffith$elm_ui$Internal$Flag$overflow, mdgriffith$elm_ui$Internal$Style$classes.scrollbarsX);
+var mdgriffith$elm_ui$Internal$Flag$spacing = mdgriffith$elm_ui$Internal$Flag$flag(3);
+var mdgriffith$elm_ui$Internal$Model$SpacingStyle = F3(
+	function (a, b, c) {
+		return {$: 'SpacingStyle', a: a, b: b, c: c};
+	});
+var mdgriffith$elm_ui$Internal$Model$spacingName = F2(
+	function (x, y) {
+		return 'spacing-' + (elm$core$String$fromInt(x) + ('-' + elm$core$String$fromInt(y)));
+	});
+var mdgriffith$elm_ui$Element$spacing = function (x) {
+	return A2(
+		mdgriffith$elm_ui$Internal$Model$StyleClass,
+		mdgriffith$elm_ui$Internal$Flag$spacing,
+		A3(
+			mdgriffith$elm_ui$Internal$Model$SpacingStyle,
+			A2(mdgriffith$elm_ui$Internal$Model$spacingName, x, x),
+			x,
+			x));
+};
 var mdgriffith$elm_ui$Internal$Flag$bgColor = mdgriffith$elm_ui$Internal$Flag$flag(8);
 var mdgriffith$elm_ui$Internal$Model$Colored = F3(
 	function (a, b, c) {
@@ -10790,6 +10809,8 @@ var author$project$Guide$Document$viewCodeBlock = F2(
 					mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Color$codeBlockBackground),
 					mdgriffith$elm_ui$Element$Font$size(
 					author$project$Guide$Font$sizes(screenClass).codeBlockCode),
+					mdgriffith$elm_ui$Element$spacing(
+					author$project$Guide$Font$sizes(screenClass).codeBlockLineSpacing),
 					mdgriffith$elm_ui$Element$scrollbarX
 				]),
 			A2(
@@ -11082,25 +11103,6 @@ var mdgriffith$elm_ui$Internal$Model$Fill = function (a) {
 	return {$: 'Fill', a: a};
 };
 var mdgriffith$elm_ui$Element$fill = mdgriffith$elm_ui$Internal$Model$Fill(1);
-var mdgriffith$elm_ui$Internal$Flag$spacing = mdgriffith$elm_ui$Internal$Flag$flag(3);
-var mdgriffith$elm_ui$Internal$Model$SpacingStyle = F3(
-	function (a, b, c) {
-		return {$: 'SpacingStyle', a: a, b: b, c: c};
-	});
-var mdgriffith$elm_ui$Internal$Model$spacingName = F2(
-	function (x, y) {
-		return 'spacing-' + (elm$core$String$fromInt(x) + ('-' + elm$core$String$fromInt(y)));
-	});
-var mdgriffith$elm_ui$Element$spacing = function (x) {
-	return A2(
-		mdgriffith$elm_ui$Internal$Model$StyleClass,
-		mdgriffith$elm_ui$Internal$Flag$spacing,
-		A3(
-			mdgriffith$elm_ui$Internal$Model$SpacingStyle,
-			A2(mdgriffith$elm_ui$Internal$Model$spacingName, x, x),
-			x,
-			x));
-};
 var mdgriffith$elm_ui$Internal$Model$Describe = function (a) {
 	return {$: 'Describe', a: a};
 };
@@ -11127,7 +11129,11 @@ var author$project$Guide$Document$viewParagraph = F2(
 	function (screenClass, textFragments) {
 		return A2(
 			mdgriffith$elm_ui$Element$paragraph,
-			_List_Nil,
+			_List_fromArray(
+				[
+					mdgriffith$elm_ui$Element$spacing(
+					author$project$Guide$Font$sizes(screenClass).bodyLineSpacing)
+				]),
 			A3(author$project$Guide$Document$renderText, screenClass, author$project$Guide$Document$ParagraphContext, textFragments));
 	});
 var mdgriffith$elm_ui$Internal$Model$SansSerif = {$: 'SansSerif'};
@@ -11183,6 +11189,8 @@ var author$project$Guide$Document$viewSection = F2(
 					mdgriffith$elm_ui$Element$Font$extraBold,
 					mdgriffith$elm_ui$Element$Font$size(
 					author$project$Guide$Font$sizes(screenClass).section),
+					mdgriffith$elm_ui$Element$spacing(
+					author$project$Guide$Font$sizes(screenClass).sectionLineSpacing),
 					mdgriffith$elm_ui$Element$paddingEach(
 					{bottom: 0, left: 0, right: 0, top: 12})
 				]),
@@ -11199,6 +11207,8 @@ var author$project$Guide$Document$viewSubsection = F2(
 					mdgriffith$elm_ui$Element$Font$extraBold,
 					mdgriffith$elm_ui$Element$Font$size(
 					author$project$Guide$Font$sizes(screenClass).subsection),
+					mdgriffith$elm_ui$Element$spacing(
+					author$project$Guide$Font$sizes(screenClass).subsectionLineSpacing),
 					mdgriffith$elm_ui$Element$paddingEach(
 					{bottom: 0, left: 0, right: 0, top: 6})
 				]),
@@ -11383,6 +11393,8 @@ var author$project$Guide$Document$viewTitle = F3(
 								mdgriffith$elm_ui$Element$Font$extraBold,
 								mdgriffith$elm_ui$Element$Font$size(
 								author$project$Guide$Font$sizes(screenClass).title),
+								mdgriffith$elm_ui$Element$spacing(
+								author$project$Guide$Font$sizes(screenClass).titleLineSpacing),
 								mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill)
 							]),
 						A3(author$project$Guide$Document$renderText, screenClass, author$project$Guide$Document$TitleContext, textFragments)),
@@ -16776,8 +16788,8 @@ var author$project$Guide$Screen$Large = {$: 'Large'};
 var author$project$Guide$Screen$classify = function (width) {
 	return (width > 600) ? author$project$Guide$Screen$Large : author$project$Guide$Screen$Small;
 };
-var author$project$Guide$init = F6(
-	function (title, readmePage, allPages, flags, url, navigationKey) {
+var author$project$Guide$init = F7(
+	function (author, packageName, readmePage, allPages, flags, url, navigationKey) {
 		var screenClass = author$project$Guide$Screen$classify(flags.width);
 		var rootPath = A2(
 			elm$core$List$filter,
@@ -16787,7 +16799,7 @@ var author$project$Guide$init = F6(
 		var state = _n0.a;
 		var command = _n0.b;
 		return _Utils_Tuple2(
-			{allPages: allPages, navigationKey: navigationKey, readmePage: readmePage, rootPath: rootPath, screenClass: screenClass, state: state, title: title},
+			{allPages: allPages, author: author, navigationKey: navigationKey, packageName: packageName, readmePage: readmePage, rootPath: rootPath, screenClass: screenClass, state: state},
 			command);
 	});
 var elm$core$Platform$Sub$batch = _Platform_batch;
@@ -17396,6 +17408,107 @@ var author$project$Guide$viewDocument = F3(
 			return documentElement;
 		}
 	});
+var mdgriffith$elm_ui$Element$image = F2(
+	function (attrs, _n0) {
+		var src = _n0.src;
+		var description = _n0.description;
+		var imageAttributes = A2(
+			elm$core$List$filter,
+			function (a) {
+				switch (a.$) {
+					case 'Width':
+						return true;
+					case 'Height':
+						return true;
+					default:
+						return false;
+				}
+			},
+			attrs);
+		return A4(
+			mdgriffith$elm_ui$Internal$Model$element,
+			mdgriffith$elm_ui$Internal$Model$asEl,
+			mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				elm$core$List$cons,
+				mdgriffith$elm_ui$Internal$Model$htmlClass(mdgriffith$elm_ui$Internal$Style$classes.imageContainer),
+				attrs),
+			mdgriffith$elm_ui$Internal$Model$Unkeyed(
+				_List_fromArray(
+					[
+						A4(
+						mdgriffith$elm_ui$Internal$Model$element,
+						mdgriffith$elm_ui$Internal$Model$asEl,
+						mdgriffith$elm_ui$Internal$Model$NodeName('img'),
+						_Utils_ap(
+							_List_fromArray(
+								[
+									mdgriffith$elm_ui$Internal$Model$Attr(
+									elm$html$Html$Attributes$src(src)),
+									mdgriffith$elm_ui$Internal$Model$Attr(
+									elm$html$Html$Attributes$alt(description))
+								]),
+							imageAttributes),
+						mdgriffith$elm_ui$Internal$Model$Unkeyed(_List_Nil))
+					])));
+	});
+var mdgriffith$elm_ui$Internal$Model$Px = function (a) {
+	return {$: 'Px', a: a};
+};
+var mdgriffith$elm_ui$Element$px = mdgriffith$elm_ui$Internal$Model$Px;
+var author$project$Guide$navIcon = F2(
+	function (model, properties) {
+		return A2(
+			mdgriffith$elm_ui$Element$image,
+			_List_fromArray(
+				[
+					mdgriffith$elm_ui$Element$height(
+					mdgriffith$elm_ui$Element$px(
+						author$project$Guide$Font$sizes(model.screenClass).navText))
+				]),
+			properties);
+	});
+var elm$url$Url$Builder$crossOrigin = F3(
+	function (prePath, pathSegments, parameters) {
+		return prePath + ('/' + (A2(elm$core$String$join, '/', pathSegments) + elm$url$Url$Builder$toQuery(parameters)));
+	});
+var author$project$Guide$gitHubLink = function (model) {
+	return A2(
+		mdgriffith$elm_ui$Element$row,
+		_List_fromArray(
+			[
+				mdgriffith$elm_ui$Element$spacing(4)
+			]),
+		_List_fromArray(
+			[
+				A2(
+				author$project$Guide$navIcon,
+				model,
+				{description: 'GitHub logo', src: 'images/github.svg'}),
+				A2(
+				mdgriffith$elm_ui$Element$link,
+				_List_Nil,
+				{
+					label: mdgriffith$elm_ui$Element$text('Source code'),
+					url: A3(
+						elm$url$Url$Builder$crossOrigin,
+						'https://github.com',
+						_List_fromArray(
+							[model.author, model.packageName]),
+						_List_Nil)
+				})
+			]));
+};
+var author$project$Guide$horizontalDivider = A2(
+	mdgriffith$elm_ui$Element$el,
+	_List_fromArray(
+		[
+			mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill),
+			mdgriffith$elm_ui$Element$height(
+			mdgriffith$elm_ui$Element$px(1)),
+			mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Color$dividerLine)
+		]),
+	mdgriffith$elm_ui$Element$none);
 var author$project$Guide$Color$black = A3(mdgriffith$elm_ui$Element$rgb255, 0, 0, 0);
 var author$project$Guide$navTitle = function (model) {
 	return A2(
@@ -17415,10 +17528,37 @@ var author$project$Guide$navTitle = function (model) {
 			]),
 		_List_fromArray(
 			[
-				mdgriffith$elm_ui$Element$text(model.title)
+				mdgriffith$elm_ui$Element$text(model.packageName)
 			]));
 };
 var author$project$Guide$navWidth = 300;
+var author$project$Guide$packageDocLink = function (model) {
+	return A2(
+		mdgriffith$elm_ui$Element$row,
+		_List_fromArray(
+			[
+				mdgriffith$elm_ui$Element$spacing(4)
+			]),
+		_List_fromArray(
+			[
+				A2(
+				author$project$Guide$navIcon,
+				model,
+				{description: 'Elm logo', src: 'images/elm.svg'}),
+				A2(
+				mdgriffith$elm_ui$Element$link,
+				_List_Nil,
+				{
+					label: mdgriffith$elm_ui$Element$text('Package documentation'),
+					url: A3(
+						elm$url$Url$Builder$crossOrigin,
+						'https://package.elm-lang.org',
+						_List_fromArray(
+							['packages', model.author, model.packageName, 'latest']),
+						_List_Nil)
+				})
+			]));
+};
 var elm$url$Url$Builder$Absolute = {$: 'Absolute'};
 var elm$url$Url$Builder$rootToPrePath = function (root) {
 	switch (root.$) {
@@ -17499,10 +17639,6 @@ var author$project$Guide$toPageLink = F3(
 	});
 var author$project$Guide$Color$navBorder = author$project$Guide$Color$lightGrey;
 var author$project$Guide$Color$white = A3(mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
-var mdgriffith$elm_ui$Internal$Model$Px = function (a) {
-	return {$: 'Px', a: a};
-};
-var mdgriffith$elm_ui$Element$px = mdgriffith$elm_ui$Internal$Model$Px;
 var mdgriffith$elm_ui$Element$Font$regular = A2(mdgriffith$elm_ui$Internal$Model$Class, mdgriffith$elm_ui$Internal$Flag$fontWeight, mdgriffith$elm_ui$Internal$Style$classes.textNormalWeight);
 var author$project$Guide$viewNav = F2(
 	function (model, currentPage) {
@@ -17524,13 +17660,24 @@ var author$project$Guide$viewNav = F2(
 					mdgriffith$elm_ui$Element$spacing(12),
 					mdgriffith$elm_ui$Element$padding(12)
 				]),
-			A2(
-				elm$core$List$cons,
-				author$project$Guide$navTitle(model),
-				A2(
-					elm$core$List$map,
-					A2(author$project$Guide$toPageLink, model.rootPath, currentPage),
-					model.allPages)));
+			elm$core$List$concat(
+				_List_fromArray(
+					[
+						_List_fromArray(
+						[
+							author$project$Guide$navTitle(model)
+						]),
+						A2(
+						elm$core$List$map,
+						A2(author$project$Guide$toPageLink, model.rootPath, currentPage),
+						model.allPages),
+						_List_fromArray(
+						[
+							author$project$Guide$horizontalDivider,
+							author$project$Guide$packageDocLink(model),
+							author$project$Guide$gitHubLink(model)
+						])
+					])));
 		var elementWidth = function () {
 			var _n0 = model.screenClass;
 			if (_n0.$ === 'Large') {
@@ -17854,7 +18001,7 @@ var author$project$Guide$view = function (model) {
 					}
 				}())
 			]),
-		title: model.title
+		title: model.packageName
 	};
 };
 var author$project$Guide$Page$Readme = function (a) {
@@ -17873,7 +18020,8 @@ var author$project$Guide$Page$with = function (given) {
 };
 var elm$browser$Browser$application = _Browser_application;
 var author$project$Guide$program = function (_n0) {
-	var title = _n0.title;
+	var author = _n0.author;
+	var packageName = _n0.packageName;
 	var readmeUrl = _n0.readmeUrl;
 	var pages = _n0.pages;
 	var readmePage = author$project$Guide$Page$readme(
@@ -17884,7 +18032,7 @@ var author$project$Guide$program = function (_n0) {
 		A2(elm$core$List$map, author$project$Guide$Page$with, pages));
 	return elm$browser$Browser$application(
 		{
-			init: A3(author$project$Guide$init, title, readmePage, allPages),
+			init: A4(author$project$Guide$init, author, packageName, readmePage, allPages),
 			onUrlChange: author$project$Guide$UrlChanged,
 			onUrlRequest: author$project$Guide$UrlRequested,
 			subscriptions: author$project$Guide$subscriptions,
@@ -17897,12 +18045,13 @@ var elm$json$Json$Decode$field = _Json_decodeField;
 var elm$json$Json$Decode$int = _Json_decodeInt;
 var author$project$Main$main = author$project$Guide$program(
 	{
+		author: 'ianmackenzie',
+		packageName: 'elm-geometry',
 		pages: _List_fromArray(
 			[
 				{title: 'Units and coordinate systems', widgets: _List_Nil}
 			]),
-		readmeUrl: 'https://cdn.jsdelivr.net/gh/ianmackenzie/elm-geometry@coordinate-systems/README.md',
-		title: 'elm-geometry'
+		readmeUrl: 'https://cdn.jsdelivr.net/gh/ianmackenzie/elm-geometry@coordinate-systems/README.md'
 	});
 _Platform_export({'Main':{'init':author$project$Main$main(
 	A2(
