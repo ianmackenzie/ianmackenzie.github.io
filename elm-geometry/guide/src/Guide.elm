@@ -202,11 +202,7 @@ packageDocLink model =
         [ Element.link []
             { url =
                 Url.Builder.crossOrigin "https://package.elm-lang.org"
-                    [ "packages"
-                    , model.author
-                    , model.packageName
-                    , "latest"
-                    ]
+                    [ "packages", model.author, model.packageName, "latest" ]
                     []
             , label = Element.text "Package documentation"
             }
