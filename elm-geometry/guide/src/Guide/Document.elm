@@ -147,8 +147,8 @@ view attributes (Document document) =
 viewChunk : ViewConfig -> CompiledChunk -> Element Msg
 viewChunk config chunk =
     case chunk of
-        Static textContext element ->
-            Element.map never element
+        Static _ element ->
+            element
 
         Interactive id widget ->
             Widget.view (\newWidget -> ( id, newWidget )) widget
@@ -261,7 +261,7 @@ updateWidget givenId newWidget chunks =
                 Static _ _ ->
                     chunk
 
-                Interactive widgetId currentWidget ->
+                Interactive widgetId _ ->
                     if widgetId == givenId then
                         Interactive widgetId newWidget
 
@@ -782,7 +782,7 @@ parseChunks config blocks accumulated =
                                 Nothing ->
                                     Err ("No widget found with name " ++ tag)
 
-                        [ Inline.HtmlInline tag attributes children ] ->
+                        [ Inline.HtmlInline _ _ _ ] ->
                             Err "Custom elements with attributes or children not yet supported"
 
                         _ ->

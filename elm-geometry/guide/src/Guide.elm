@@ -9,7 +9,6 @@ module Guide exposing (Program, program)
 import Browser exposing (UrlRequest)
 import Browser.Dom
 import Browser.Navigation as Navigation
-import Dict
 import Element exposing (Element)
 import Element.Background as Background
 import Element.Border as Border
@@ -19,15 +18,12 @@ import Guide.Document as Document exposing (Document)
 import Guide.Font as Font
 import Guide.Page as Page exposing (Page)
 import Guide.Screen as Screen
-import Guide.Widget as Widget exposing (Widget)
-import Html exposing (Html)
+import Guide.Widget exposing (Widget)
 import Html.Attributes
 import Http
 import Task
 import Url exposing (Url)
 import Url.Builder
-import Url.Parser exposing ((</>))
-import Url.Parser.Query
 
 
 type alias Flags =
@@ -59,7 +55,7 @@ handleMarkdown screenClass page fragment rootUrl result =
                 Err message ->
                     LoadError message
 
-        Err error ->
+        Err _ ->
             LoadError "Network error"
 
 
@@ -166,7 +162,7 @@ scrollTo screenClass fragment =
                     Browser.Dom.setViewport 0 y
 
         scrollTask =
-            case Debug.log "scrolling to" fragment of
+            case fragment of
                 Just id ->
                     Browser.Dom.getElement id
                         |> Task.andThen (\{ element } -> setViewport element.y)
@@ -328,8 +324,8 @@ viewNav model currentPage =
         navElement
 
 
-viewDocument : Model -> Page -> Document -> Element Msg
-viewDocument model currentPage loadedDocument =
+viewDocument : Model -> Document -> Element Msg
+viewDocument model loadedDocument =
     let
         documentElement =
             Document.view [ Element.centerX ] loadedDocument
@@ -378,7 +374,7 @@ view model =
                                 , Element.width Element.fill
                                 , Element.inFront (Element.el [ Element.alignLeft, Element.height Element.fill ] (viewNav model (Just page)))
                                 ]
-                                (viewDocument model page document)
+                                (viewDocument model document)
 
                         Error message ->
                             Element.text message
@@ -392,7 +388,7 @@ view model =
                             Element.none
 
                         Loaded page fragment document ->
-                            viewDocument model page document
+                            viewDocument model document
 
                         Error message ->
                             Element.text message
@@ -444,9 +440,6 @@ update message model =
             ( model, Cmd.none )
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
 
 
 program :
@@ -468,7 +461,7 @@ program { author, packageName, readmeUrl, pages } =
         { init = init author packageName readmePage allPages
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = always Sub.none
         , onUrlRequest = UrlRequested
         , onUrlChange = UrlChanged
         }

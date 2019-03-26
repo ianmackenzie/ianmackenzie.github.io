@@ -18,9 +18,7 @@ module Guide.Page exposing
 -}
 
 import Dict exposing (Dict)
-import Guide.Document as Document exposing (Document)
-import Guide.Widget as Widget exposing (Widget)
-import Http
+import Guide.Widget exposing (Widget)
 import Url exposing (Url)
 import Url.Builder
 import Url.Parser exposing ((</>))
@@ -55,7 +53,7 @@ sourceUrl rootPath page =
 displayedUrl : List String -> Page -> Maybe String -> String
 displayedUrl rootPath page maybeFragment =
     case page of
-        Readme { url } ->
+        Readme _ ->
             Url.Builder.custom Url.Builder.Absolute
                 rootPath
                 [ Url.Builder.string "page" "README" ]
