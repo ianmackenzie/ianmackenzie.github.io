@@ -234,7 +234,6 @@ bulletIcon { screenClass, topLevel } =
             , left = leftPadding
             , right = rightPadding
             }
-        , Font.bold
         ]
         (Element.html <|
             Svg.svg
@@ -396,7 +395,6 @@ viewTitle screenClass textFragments rootUrl =
             ]
             [ Element.paragraph
                 [ Region.heading 1
-                , Font.extraBold
                 , Font.heading
                 , Font.size (Font.sizes screenClass).title
                 , Element.spacing (Font.sizes screenClass).titleLineSpacing
@@ -427,11 +425,10 @@ viewSection : Screen.Class -> List Text -> Element InternalMsg
 viewSection screenClass textFragments =
     Element.paragraph
         [ Region.heading 2
-        , Font.extraBold
         , Font.heading
         , Font.size (Font.sizes screenClass).section
         , Element.spacing (Font.sizes screenClass).sectionLineSpacing
-        , Element.paddingEach { top = 12, bottom = 0, left = 0, right = 0 }
+        , Element.paddingEach { top = 18, bottom = 8, left = 0, right = 0 }
         , Element.htmlAttribute (Html.Attributes.id (toId textFragments))
         ]
         (renderText screenClass SectionContext textFragments)
@@ -441,11 +438,10 @@ viewSubsection : Screen.Class -> List Text -> Element InternalMsg
 viewSubsection screenClass textFragments =
     Element.paragraph
         [ Region.heading 3
-        , Font.extraBold
         , Font.heading
         , Font.size (Font.sizes screenClass).subsection
         , Element.spacing (Font.sizes screenClass).subsectionLineSpacing
-        , Element.paddingEach { top = 6, bottom = 0, left = 0, right = 0 }
+        , Element.paddingEach { top = 14, bottom = 6, left = 0, right = 0 }
         , Element.htmlAttribute (Html.Attributes.id (toId textFragments))
         ]
         (renderText screenClass SubsectionContext textFragments)
@@ -552,7 +548,7 @@ codeFontSize screenClass context =
 
 inlineCodeBackgroundAttributes : List (Element.Attribute msg)
 inlineCodeBackgroundAttributes =
-    [ Element.paddingXY 4 2, Border.rounded 3, Background.color Color.inlineCodeBackground ]
+    [ Element.paddingXY 6 4, Border.rounded 3, Background.color Color.inlineCodeBackground ]
 
 
 renderImage : { url : String, description : String } -> Element InternalMsg

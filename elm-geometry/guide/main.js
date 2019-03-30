@@ -5202,15 +5202,6 @@ var mdgriffith$elm_ui$Element$text = function (content) {
 var author$project$Guide$Document$viewCodeBlockLine = function (line) {
 	return elm$core$String$isEmpty(line) ? mdgriffith$elm_ui$Element$text('\n') : mdgriffith$elm_ui$Element$text(line);
 };
-var author$project$Guide$Font$largeScreenSizes = {body: 14, bodyCode: 14, bodyLineSpacing: 12, codeBlockCode: 14, codeBlockLineSpacing: 4, navText: 16, navTitle: 24, section: 32, sectionCode: 30, sectionLineSpacing: 0, subsection: 22, subsectionCode: 22, subsectionLineSpacing: 0, title: 48, titleCode: 44, titleLineSpacing: 0};
-var author$project$Guide$Font$smallScreenSizes = {body: 14, bodyCode: 14, bodyLineSpacing: 10, codeBlockCode: 12, codeBlockLineSpacing: 4, navText: 18, navTitle: 32, section: 22, sectionCode: 22, sectionLineSpacing: 0, subsection: 18, subsectionCode: 18, subsectionLineSpacing: 0, title: 32, titleCode: 28, titleLineSpacing: 0};
-var author$project$Guide$Font$sizes = function (screenClass) {
-	if (screenClass.$ === 'Large') {
-		return author$project$Guide$Font$largeScreenSizes;
-	} else {
-		return author$project$Guide$Font$smallScreenSizes;
-	}
-};
 var elm$core$Basics$sub = _Basics_sub;
 var elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
 var mdgriffith$elm_ui$Internal$Flag$Flag = function (a) {
@@ -5292,12 +5283,21 @@ var mdgriffith$elm_ui$Internal$Model$Typeface = function (a) {
 	return {$: 'Typeface', a: a};
 };
 var mdgriffith$elm_ui$Element$Font$typeface = mdgriffith$elm_ui$Internal$Model$Typeface;
-var author$project$Guide$Font$sourceCodePro = mdgriffith$elm_ui$Element$Font$family(
+var author$project$Guide$Font$code = mdgriffith$elm_ui$Element$Font$family(
 	_List_fromArray(
 		[
 			mdgriffith$elm_ui$Element$Font$typeface('Source Code Pro'),
 			mdgriffith$elm_ui$Element$Font$monospace
 		]));
+var author$project$Guide$Font$largeScreenSizes = {body: 16, bodyCode: 14, bodyLineSpacing: 8, codeBlockCode: 14, codeBlockLineSpacing: 4, navText: 16, navTitle: 32, section: 24, sectionCode: 24, sectionLineSpacing: 4, subsection: 19, subsectionCode: 19, subsectionLineSpacing: 4, title: 32, titleCode: 32, titleLineSpacing: 4};
+var author$project$Guide$Font$smallScreenSizes = {body: 16, bodyCode: 14, bodyLineSpacing: 6, codeBlockCode: 14, codeBlockLineSpacing: 4, navText: 19, navTitle: 32, section: 22, sectionCode: 22, sectionLineSpacing: 4, subsection: 19, subsectionCode: 19, subsectionLineSpacing: 4, title: 32, titleCode: 32, titleLineSpacing: 4};
+var author$project$Guide$Font$sizes = function (screenClass) {
+	if (screenClass.$ === 'Large') {
+		return author$project$Guide$Font$largeScreenSizes;
+	} else {
+		return author$project$Guide$Font$smallScreenSizes;
+	}
+};
 var elm$core$String$lines = _String_lines;
 var elm$core$String$trim = _String_trim;
 var mdgriffith$elm_ui$Internal$Model$Height = function (a) {
@@ -10985,7 +10985,7 @@ var author$project$Guide$Document$viewCodeBlock = F2(
 				[
 					mdgriffith$elm_ui$Element$Border$rounded(5),
 					A2(mdgriffith$elm_ui$Element$paddingXY, 12, 10),
-					author$project$Guide$Font$sourceCodePro,
+					author$project$Guide$Font$code,
 					mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Color$codeBlockBackground),
 					mdgriffith$elm_ui$Element$Font$size(
 					author$project$Guide$Font$sizes(screenClass).codeBlockCode),
@@ -11020,7 +11020,7 @@ var author$project$Guide$Color$lightGrey = A3(mdgriffith$elm_ui$Element$rgb255, 
 var author$project$Guide$Color$inlineCodeBackground = author$project$Guide$Color$lightGrey;
 var author$project$Guide$Document$inlineCodeBackgroundAttributes = _List_fromArray(
 	[
-		A2(mdgriffith$elm_ui$Element$paddingXY, 4, 2),
+		A2(mdgriffith$elm_ui$Element$paddingXY, 6, 4),
 		mdgriffith$elm_ui$Element$Border$rounded(3),
 		mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Color$inlineCodeBackground)
 	]);
@@ -11242,7 +11242,7 @@ var author$project$Guide$Document$renderTextFragment = F3(
 							return _Utils_Tuple2(
 								A2(
 									elm$core$List$cons,
-									author$project$Guide$Font$sourceCodePro,
+									author$project$Guide$Font$code,
 									A2(
 										elm$core$List$cons,
 										mdgriffith$elm_ui$Element$Font$size(
@@ -11277,7 +11277,7 @@ var author$project$Guide$Document$renderTextFragment = F3(
 					mdgriffith$elm_ui$Element$row,
 					A2(
 						elm$core$List$cons,
-						author$project$Guide$Font$sourceCodePro,
+						author$project$Guide$Font$code,
 						A2(
 							elm$core$List$cons,
 							mdgriffith$elm_ui$Element$Font$size(fontSize),
@@ -11381,10 +11381,10 @@ var author$project$Guide$Document$toId = function (textFragments) {
 };
 var mdgriffith$elm_ui$Internal$Model$SansSerif = {$: 'SansSerif'};
 var mdgriffith$elm_ui$Element$Font$sansSerif = mdgriffith$elm_ui$Internal$Model$SansSerif;
-var author$project$Guide$Font$alegreyaSans = mdgriffith$elm_ui$Element$Font$family(
+var author$project$Guide$Font$heading = mdgriffith$elm_ui$Element$Font$family(
 	_List_fromArray(
 		[
-			mdgriffith$elm_ui$Element$Font$typeface('Alegreya Sans'),
+			mdgriffith$elm_ui$Element$Font$typeface('Source Sans Pro'),
 			mdgriffith$elm_ui$Element$Font$sansSerif
 		]));
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
@@ -11418,7 +11418,6 @@ var mdgriffith$elm_ui$Element$paddingEach = function (_n0) {
 			bottom,
 			left));
 };
-var mdgriffith$elm_ui$Element$Font$extraBold = A2(mdgriffith$elm_ui$Internal$Model$Class, mdgriffith$elm_ui$Internal$Flag$fontWeight, mdgriffith$elm_ui$Internal$Style$classes.textExtraBold);
 var mdgriffith$elm_ui$Internal$Model$Heading = function (a) {
 	return {$: 'Heading', a: a};
 };
@@ -11430,14 +11429,13 @@ var author$project$Guide$Document$viewSection = F2(
 			_List_fromArray(
 				[
 					mdgriffith$elm_ui$Element$Region$heading(2),
-					author$project$Guide$Font$alegreyaSans,
-					mdgriffith$elm_ui$Element$Font$extraBold,
+					author$project$Guide$Font$heading,
 					mdgriffith$elm_ui$Element$Font$size(
 					author$project$Guide$Font$sizes(screenClass).section),
 					mdgriffith$elm_ui$Element$spacing(
 					author$project$Guide$Font$sizes(screenClass).sectionLineSpacing),
 					mdgriffith$elm_ui$Element$paddingEach(
-					{bottom: 0, left: 0, right: 0, top: 12}),
+					{bottom: 8, left: 0, right: 0, top: 18}),
 					mdgriffith$elm_ui$Element$htmlAttribute(
 					elm$html$Html$Attributes$id(
 						author$project$Guide$Document$toId(textFragments)))
@@ -11451,14 +11449,13 @@ var author$project$Guide$Document$viewSubsection = F2(
 			_List_fromArray(
 				[
 					mdgriffith$elm_ui$Element$Region$heading(3),
-					author$project$Guide$Font$alegreyaSans,
-					mdgriffith$elm_ui$Element$Font$extraBold,
+					author$project$Guide$Font$heading,
 					mdgriffith$elm_ui$Element$Font$size(
 					author$project$Guide$Font$sizes(screenClass).subsection),
 					mdgriffith$elm_ui$Element$spacing(
 					author$project$Guide$Font$sizes(screenClass).subsectionLineSpacing),
 					mdgriffith$elm_ui$Element$paddingEach(
-					{bottom: 0, left: 0, right: 0, top: 6}),
+					{bottom: 6, left: 0, right: 0, top: 14}),
 					mdgriffith$elm_ui$Element$htmlAttribute(
 					elm$html$Html$Attributes$id(
 						author$project$Guide$Document$toId(textFragments)))
@@ -11640,8 +11637,7 @@ var author$project$Guide$Document$viewTitle = F3(
 						_List_fromArray(
 							[
 								mdgriffith$elm_ui$Element$Region$heading(1),
-								author$project$Guide$Font$alegreyaSans,
-								mdgriffith$elm_ui$Element$Font$extraBold,
+								author$project$Guide$Font$heading,
 								mdgriffith$elm_ui$Element$Font$size(
 								author$project$Guide$Font$sizes(screenClass).title),
 								mdgriffith$elm_ui$Element$spacing(
@@ -17471,8 +17467,7 @@ var author$project$Guide$Document$bulletIcon = function (_n0) {
 		_List_fromArray(
 			[
 				mdgriffith$elm_ui$Element$paddingEach(
-				{bottom: 0, left: leftPadding, right: rightPadding, top: 0}),
-				mdgriffith$elm_ui$Element$Font$bold
+				{bottom: 0, left: leftPadding, right: rightPadding, top: 0})
 			]),
 		mdgriffith$elm_ui$Element$html(
 			A2(
@@ -17648,13 +17643,11 @@ var author$project$Guide$Document$viewChunks = F2(
 				author$project$Guide$Document$viewChunk(config),
 				chunks));
 	});
-var mdgriffith$elm_ui$Internal$Model$Serif = {$: 'Serif'};
-var mdgriffith$elm_ui$Element$Font$serif = mdgriffith$elm_ui$Internal$Model$Serif;
-var author$project$Guide$Font$merriweather = mdgriffith$elm_ui$Element$Font$family(
+var author$project$Guide$Font$body = mdgriffith$elm_ui$Element$Font$family(
 	_List_fromArray(
 		[
-			mdgriffith$elm_ui$Element$Font$typeface('Merriweather'),
-			mdgriffith$elm_ui$Element$Font$serif
+			mdgriffith$elm_ui$Element$Font$typeface('Source Sans Pro'),
+			mdgriffith$elm_ui$Element$Font$sansSerif
 		]));
 var mdgriffith$elm_ui$Element$padding = function (x) {
 	return A2(
@@ -17683,7 +17676,7 @@ var author$project$Guide$Document$view = F2(
 			mdgriffith$elm_ui$Element$el,
 			A2(
 				elm$core$List$cons,
-				author$project$Guide$Font$merriweather,
+				author$project$Guide$Font$body,
 				A2(
 					elm$core$List$cons,
 					fontSize,
@@ -17841,7 +17834,6 @@ var author$project$Guide$navTitle = function (model) {
 		_List_fromArray(
 			[
 				mdgriffith$elm_ui$Element$Font$color(author$project$Guide$Color$black),
-				mdgriffith$elm_ui$Element$Font$bold,
 				mdgriffith$elm_ui$Element$Font$size(
 				author$project$Guide$Font$sizes(model.screenClass).navTitle),
 				mdgriffith$elm_ui$Element$Border$widthEach(
@@ -17978,7 +17970,7 @@ var author$project$Guide$viewNav = F2(
 					mdgriffith$elm_ui$Element$Border$widthEach(
 					{bottom: 0, left: 0, right: 1, top: 0}),
 					mdgriffith$elm_ui$Element$Border$color(author$project$Guide$Color$navBorder),
-					author$project$Guide$Font$alegreyaSans,
+					author$project$Guide$Font$heading,
 					mdgriffith$elm_ui$Element$Font$color(author$project$Guide$Color$linkText),
 					mdgriffith$elm_ui$Element$Font$size(
 					author$project$Guide$Font$sizes(model.screenClass).navText),

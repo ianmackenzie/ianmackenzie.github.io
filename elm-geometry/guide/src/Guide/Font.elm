@@ -16,7 +16,7 @@ code =
 heading : Element.Attribute msg
 heading =
     Element.Font.family
-        [ Element.Font.typeface "Alegreya Sans"
+        [ Element.Font.typeface "Source Sans Pro"
         , Element.Font.sansSerif
         ]
 
@@ -24,8 +24,8 @@ heading =
 body : Element.Attribute msg
 body =
     Element.Font.family
-        [ Element.Font.typeface "Merriweather"
-        , Element.Font.serif
+        [ Element.Font.typeface "Source Sans Pro"
+        , Element.Font.sansSerif
         ]
 
 
@@ -51,42 +51,42 @@ type alias Sizes =
 
 largeScreenSizes : Sizes
 largeScreenSizes =
-    { title = 48
-    , titleLineSpacing = 0
-    , section = 32
-    , sectionLineSpacing = 0
-    , subsection = 22
-    , subsectionLineSpacing = 0
-    , body = 14
-    , bodyLineSpacing = 12
-    , titleCode = 44
-    , sectionCode = 30
-    , subsectionCode = 22
+    { title = 32
+    , titleLineSpacing = 4
+    , section = 24
+    , sectionLineSpacing = 4
+    , subsection = 19
+    , subsectionLineSpacing = 4
+    , body = 16
+    , bodyLineSpacing = 8
+    , titleCode = 32
+    , sectionCode = 24
+    , subsectionCode = 19
     , bodyCode = 14
     , codeBlockCode = 14
     , codeBlockLineSpacing = 4
     , navText = 16
-    , navTitle = 24
+    , navTitle = 32
     }
 
 
 smallScreenSizes : Sizes
 smallScreenSizes =
     { title = 32
-    , titleLineSpacing = 0
+    , titleLineSpacing = 4
     , section = 22
-    , sectionLineSpacing = 0
-    , subsection = 18
-    , subsectionLineSpacing = 0
-    , body = 14
-    , bodyLineSpacing = 10
-    , titleCode = 28
+    , sectionLineSpacing = 4
+    , subsection = 19
+    , subsectionLineSpacing = 4
+    , body = 16
+    , bodyLineSpacing = 6
+    , titleCode = 32
     , sectionCode = 22
-    , subsectionCode = 18
+    , subsectionCode = 19
     , bodyCode = 14
-    , codeBlockCode = 12
+    , codeBlockCode = 14
     , codeBlockLineSpacing = 4
-    , navText = 18
+    , navText = 19
     , navTitle = 32
     }
 

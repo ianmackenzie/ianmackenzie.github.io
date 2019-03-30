@@ -262,7 +262,6 @@ navTitle : Model -> Element msg
 navTitle model =
     Element.paragraph
         [ Font.color Color.black
-        , Font.bold
         , Font.size (Font.sizes model.screenClass).navTitle
         , Border.widthEach { top = 0, bottom = 1, left = 0, right = 0 }
         , Element.paddingEach { top = 0, bottom = 8, left = 0, right = 0 }
