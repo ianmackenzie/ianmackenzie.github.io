@@ -1,4 +1,4 @@
-module Guide.Document exposing (Document, parse, title, view)
+module Guide.Document exposing (Document, Msg(..), parse, title, view)
 
 import BoundingBox2d
 import Dict exposing (Dict)
@@ -14,11 +14,14 @@ import Guide.Screen as Screen
 import Guide.Widget as Widget exposing (Widget)
 import Html
 import Html.Attributes
+import Html.Events
+import Json.Decode as Decode
 import Markdown.Block as Block exposing (Block)
 import Markdown.Config
 import Markdown.Inline as Inline exposing (Inline)
 import Regex exposing (Regex)
 import Result.Extra as Result
+import Set exposing (Set)
 import Svg
 import Svg.Attributes
 
@@ -31,12 +34,18 @@ type Document
         }
 
 
-type alias Msg =
-    ( Int, Widget )
+type InternalMsg
+    = InternalWidgetUpdated Int Widget
+    | InternalImageLoaded String
+
+
+type Msg
+    = Updated Document
+    | ImageLoaded String
 
 
 type CompiledChunk
-    = Static TextContext (Element Never)
+    = Static TextContext (Element InternalMsg)
     | Interactive Int Widget
     | CompiledBullets (List (List CompiledChunk))
 
@@ -115,7 +124,7 @@ title (Document document) =
     document.title
 
 
-view : List (Element.Attribute Document) -> Document -> Element Document
+view : List (Element.Attribute Msg) -> Document -> Element Msg
 view attributes (Document document) =
     let
         fontSize =
@@ -134,30 +143,35 @@ view attributes (Document document) =
         (Font.merriweather :: fontSize :: width :: padding :: mainContent :: attributes)
         (viewChunks { topLevel = True, screenClass = document.screenClass } document.chunks
             |> Element.map
-                (\( id, widget ) ->
-                    Document
-                        { title = document.title
-                        , chunks = updateWidget id widget document.chunks
-                        , screenClass = document.screenClass
-                        }
+                (\message ->
+                    case message of
+                        InternalWidgetUpdated id widget ->
+                            Updated <|
+                                Document
+                                    { document
+                                        | chunks = updateWidget id widget document.chunks
+                                    }
+
+                        InternalImageLoaded url ->
+                            ImageLoaded url
                 )
         )
 
 
-viewChunk : ViewConfig -> CompiledChunk -> Element Msg
+viewChunk : ViewConfig -> CompiledChunk -> Element InternalMsg
 viewChunk config chunk =
     case chunk of
         Static _ element ->
             element
 
         Interactive id widget ->
-            Widget.view (\newWidget -> ( id, newWidget )) widget
+            Widget.view (\newWidget -> InternalWidgetUpdated id newWidget) widget
 
         CompiledBullets bullets ->
             viewBullets config bullets
 
 
-viewChunks : ViewConfig -> List CompiledChunk -> Element Msg
+viewChunks : ViewConfig -> List CompiledChunk -> Element InternalMsg
 viewChunks config chunks =
     let
         spacing =
@@ -239,7 +253,7 @@ bulletIcon { screenClass, topLevel } =
         )
 
 
-bulletedItem : ViewConfig -> List CompiledChunk -> Element Msg
+bulletedItem : ViewConfig -> List CompiledChunk -> Element InternalMsg
 bulletedItem config chunks =
     Element.row [ widthFill ]
         [ Element.el [ Element.alignTop ] (bulletIcon config)
@@ -247,7 +261,7 @@ bulletedItem config chunks =
         ]
 
 
-viewBullets : ViewConfig -> List (List CompiledChunk) -> Element Msg
+viewBullets : ViewConfig -> List (List CompiledChunk) -> Element InternalMsg
 viewBullets config bullets =
     Element.column [ Element.spacing bulletSpacing, widthFill ]
         (List.map (bulletedItem config) bullets)
@@ -368,7 +382,7 @@ hamburgerIcon =
             ]
 
 
-viewTitle : Screen.Class -> List Text -> String -> Element msg
+viewTitle : Screen.Class -> List Text -> String -> Element InternalMsg
 viewTitle screenClass textFragments rootUrl =
     Element.el
         [ Element.width Element.fill
@@ -409,7 +423,7 @@ toId textFragments =
         |> String.replace " " "-"
 
 
-viewSection : Screen.Class -> List Text -> Element msg
+viewSection : Screen.Class -> List Text -> Element InternalMsg
 viewSection screenClass textFragments =
     Element.paragraph
         [ Region.heading 2
@@ -423,7 +437,7 @@ viewSection screenClass textFragments =
         (renderText screenClass SectionContext textFragments)
 
 
-viewSubsection : Screen.Class -> List Text -> Element msg
+viewSubsection : Screen.Class -> List Text -> Element InternalMsg
 viewSubsection screenClass textFragments =
     Element.paragraph
         [ Region.heading 3
@@ -437,7 +451,7 @@ viewSubsection screenClass textFragments =
         (renderText screenClass SubsectionContext textFragments)
 
 
-viewParagraph : Screen.Class -> List Text -> Element msg
+viewParagraph : Screen.Class -> List Text -> Element InternalMsg
 viewParagraph screenClass textFragments =
     Element.paragraph [ Element.spacing (Font.sizes screenClass).bodyLineSpacing ]
         (renderText screenClass ParagraphContext textFragments)
@@ -466,7 +480,7 @@ viewCodeBlock screenClass code =
         (List.map viewCodeBlockLine (String.lines (String.trim code)))
 
 
-renderText : Screen.Class -> TextContext -> List Text -> List (Element msg)
+renderText : Screen.Class -> TextContext -> List Text -> List (Element InternalMsg)
 renderText screenClass context fragments =
     List.map (renderTextFragment screenClass context) fragments
 
@@ -541,7 +555,7 @@ inlineCodeBackgroundAttributes =
     [ Element.paddingXY 4 2, Border.rounded 3, Background.color Color.inlineCodeBackground ]
 
 
-renderImage : { url : String, description : String } -> Element msg
+renderImage : { url : String, description : String } -> Element InternalMsg
 renderImage { url, description } =
     Element.html <|
         Html.img
@@ -549,11 +563,12 @@ renderImage { url, description } =
             , Html.Attributes.alt description
             , Html.Attributes.style "max-width" "100%"
             , Html.Attributes.style "max-height" "100%"
+            , Html.Events.on "load" (Decode.succeed (InternalImageLoaded url))
             ]
             []
 
 
-renderTextFragment : Screen.Class -> TextContext -> Text -> Element msg
+renderTextFragment : Screen.Class -> TextContext -> Text -> Element InternalMsg
 renderTextFragment screenClass context fragment =
     case fragment of
         Plain string ->
@@ -795,7 +810,7 @@ parseChunks config blocks accumulated =
             Ok (List.reverse accumulated)
 
 
-parse : { screenClass : Screen.Class, widgets : List ( String, Widget ), rootUrl : String } -> String -> Result String Document
+parse : { screenClass : Screen.Class, widgets : List ( String, Widget ), rootUrl : String } -> String -> Result String ( Document, Set String )
 parse { screenClass, widgets, rootUrl } markdown =
     let
         options =
@@ -810,14 +825,37 @@ parse { screenClass, widgets, rootUrl } markdown =
         (Block.Heading _ 1 inlines) :: rest ->
             Result.map2
                 (\titleText bodyChunks ->
-                    Document
+                    let
+                        compiledChunks =
+                            compile screenClass (Title titleText rootUrl :: bodyChunks)
+                    in
+                    ( Document
                         { title = Inline.extractText inlines
-                        , chunks = compile screenClass (Title titleText rootUrl :: bodyChunks)
+                        , chunks = compiledChunks
                         , screenClass = screenClass
                         }
+                    , collectImageUrls blocks
+                    )
                 )
                 (parseText inlines [])
                 (parseChunks { screenClass = screenClass, widgets = Dict.fromList widgets } rest [])
 
         _ ->
             Err "Markdown document must start with a level 1 header"
+
+
+collectImageUrls : List (Block Never Never) -> Set String
+collectImageUrls blocks =
+    List.map (Block.queryInlines getImageUrls) blocks
+        |> List.concat
+        |> Set.fromList
+
+
+getImageUrls : Inline i -> List String
+getImageUrls inline =
+    case inline of
+        Inline.Image url _ _ ->
+            [ url ]
+
+        _ ->
+            []

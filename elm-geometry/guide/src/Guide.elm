@@ -21,6 +21,7 @@ import Guide.Screen as Screen
 import Guide.Widget exposing (Widget)
 import Html.Attributes
 import Http
+import Set exposing (Set)
 import Task
 import Url exposing (Url)
 import Url.Builder
@@ -49,8 +50,13 @@ handleMarkdown screenClass page fragment rootUrl result =
                     }
             in
             case Document.parse documentConfig markdown of
-                Ok document ->
-                    DocumentLoaded page fragment document
+                Ok ( document, imagesToLoad ) ->
+                    DocumentLoaded
+                        { page = page
+                        , fragment = fragment
+                        , document = document
+                        , imagesToLoad = imagesToLoad
+                        }
 
                 Err message ->
                     LoadError message
@@ -84,7 +90,12 @@ type State
     = Navigating
     | Loading
     | Error String
-    | Loaded Page (Maybe String) Document
+    | Loaded
+        { page : Page
+        , fragment : Maybe String
+        , document : Document
+        , imagesToLoad : Set String
+        }
 
 
 type alias Model =
@@ -103,8 +114,13 @@ type Msg
     = UrlRequested UrlRequest
     | UrlChanged Url
     | LoadError String
-    | DocumentLoaded Page (Maybe String) Document
-    | DocumentUpdated Document
+    | DocumentLoaded
+        { page : Page
+        , fragment : Maybe String
+        , document : Document
+        , imagesToLoad : Set String
+        }
+    | DocumentMsg Document.Msg
     | NoOp
 
 
@@ -120,26 +136,44 @@ topLevelDocumentId =
 handleNewUrl : State -> List String -> Page -> List Page -> Screen.Class -> Url -> ( State, Cmd Msg )
 handleNewUrl currentState rootPath readmePage allPages screenClass url =
     case Page.matching { url = url, rootPath = rootPath } allPages of
-        Ok (Page.Match { page, fragment }) ->
+        Ok (Page.Match page) ->
             let
+                loadNewPage =
+                    loadPage screenClass rootPath page url.fragment
+
                 command =
                     case currentState of
-                        Loaded currentPage currentFragment currentDocument ->
-                            if page == currentPage then
-                                scrollTo screenClass fragment
+                        Loaded current ->
+                            if page == current.page then
+                                scrollTo url.fragment
 
                             else
-                                loadPage screenClass rootPath page fragment
+                                loadNewPage
 
                         _ ->
-                            loadPage screenClass rootPath page fragment
+                            loadNewPage
             in
             ( currentState, command )
 
         Ok Page.Unspecified ->
             case screenClass of
                 Screen.Large ->
-                    ( currentState, loadPage screenClass rootPath readmePage Nothing )
+                    let
+                        loadReadme =
+                            loadPage screenClass rootPath readmePage url.fragment
+                    in
+                    ( currentState
+                    , case currentState of
+                        Loaded current ->
+                            if Page.isReadme current.page then
+                                scrollTo url.fragment
+
+                            else
+                                loadReadme
+
+                        _ ->
+                            loadReadme
+                    )
 
                 Screen.Small ->
                     ( Navigating, Cmd.none )
@@ -159,25 +193,17 @@ handleNewUrl currentState rootPath readmePage allPages screenClass url =
             ( Error errorMessage, Cmd.none )
 
 
-scrollTo : Screen.Class -> Maybe String -> Cmd Msg
-scrollTo screenClass fragment =
+scrollTo : Maybe String -> Cmd Msg
+scrollTo fragment =
     let
-        setViewport y =
-            case screenClass of
-                Screen.Large ->
-                    Browser.Dom.setViewportOf topLevelDocumentId 0 y
-
-                Screen.Small ->
-                    Browser.Dom.setViewport 0 y
-
         scrollTask =
             case fragment of
                 Just id ->
                     Browser.Dom.getElement id
-                        |> Task.andThen (\{ element } -> setViewport element.y)
+                        |> Task.andThen (\{ element } -> Browser.Dom.setViewport 0 element.y)
 
                 Nothing ->
-                    setViewport 0
+                    Browser.Dom.setViewport 0 0
     in
     scrollTask
         |> Task.attempt
@@ -241,7 +267,7 @@ navTitle model =
         , Border.widthEach { top = 0, bottom = 1, left = 0, right = 0 }
         , Element.paddingEach { top = 0, bottom = 8, left = 0, right = 0 }
         , Border.color Color.dividerLine
-        , Element.width Element.fill
+        , widthFill
         ]
         [ Element.text model.packageName ]
 
@@ -282,7 +308,7 @@ navIcon model properties =
 horizontalDivider : Element msg
 horizontalDivider =
     Element.el
-        [ Element.width Element.fill
+        [ widthFill
         , Element.height (Element.px 1)
         , Background.color Color.dividerLine
         ]
@@ -294,8 +320,8 @@ viewNav model currentPage =
     let
         navElement =
             Element.column
-                [ Element.height Element.fill
-                , Element.width Element.fill
+                [ heightFill
+                , widthFill
                 , Background.color Color.white
                 , Border.widthEach { top = 0, bottom = 0, left = 0, right = 1 }
                 , Border.color Color.navBorder
@@ -325,7 +351,7 @@ viewNav model currentPage =
                     Element.fill
     in
     Element.el
-        [ Element.height Element.fill
+        [ heightFill
         , Element.width elementWidth
         , Element.clipY
         , Element.scrollbarY
@@ -333,62 +359,63 @@ viewNav model currentPage =
         navElement
 
 
-viewDocument : Model -> Document -> Element Msg
-viewDocument model loadedDocument =
-    let
-        documentElement =
-            Document.view [ Element.centerX ] loadedDocument
-                |> Element.map DocumentUpdated
-    in
-    case model.screenClass of
-        Screen.Large ->
-            Element.el
-                [ Element.height Element.fill
-                , Element.width Element.fill
-                , Element.clipY
-                , Element.scrollbarY
-                , Element.htmlAttribute (Html.Attributes.id topLevelDocumentId)
-                ]
-                documentElement
+viewDocument : Document -> Element Msg
+viewDocument loadedDocument =
+    Document.view [ Element.centerX ] loadedDocument
+        |> Element.map DocumentMsg
 
-        Screen.Small ->
-            documentElement
+
+widthFill : Element.Attribute msg
+widthFill =
+    Element.width Element.fill
+
+
+heightFill : Element.Attribute msg
+heightFill =
+    Element.height Element.fill
 
 
 view : Model -> Browser.Document Msg
 view model =
     { title = model.packageName
     , body =
-        [ Element.layout [ Element.width Element.fill, Element.height Element.fill ] <|
-            case model.screenClass of
-                Screen.Large ->
+        [ case model.screenClass of
+            Screen.Large ->
+                let
+                    displayedPage =
+                        case model.state of
+                            Loaded { page } ->
+                                Just page
+
+                            Navigating ->
+                                Just model.readmePage
+
+                            Loading ->
+                                Nothing
+
+                            Error _ ->
+                                Nothing
+
+                    navElement =
+                        Element.el [ Element.alignLeft, heightFill ]
+                            (viewNav model displayedPage)
+                in
+                Element.layout [ widthFill, heightFill, Element.inFront navElement ] <|
                     case model.state of
                         Navigating ->
-                            Element.row
-                                [ Element.height Element.fill
-                                , Element.width Element.fill
-                                ]
-                                [ viewNav model (Just model.readmePage), Element.none ]
+                            Element.none
 
                         Loading ->
-                            Element.row
-                                [ Element.height Element.fill
-                                , Element.width Element.fill
-                                ]
-                                [ viewNav model Nothing, Element.none ]
+                            Element.none
 
-                        Loaded page fragment document ->
-                            Element.el
-                                [ Element.height Element.fill
-                                , Element.width Element.fill
-                                , Element.inFront (Element.el [ Element.alignLeft, Element.height Element.fill ] (viewNav model (Just page)))
-                                ]
-                                (viewDocument model document)
+                        Loaded { document } ->
+                            viewDocument document
 
                         Error message ->
-                            Element.text message
+                            Element.el [ Element.centerX ] (Element.text message)
 
-                Screen.Small ->
+            Screen.Small ->
+                Element.layout [ widthFill, heightFill ] <|
                     case model.state of
                         Navigating ->
                             viewNav model Nothing
@@ -396,8 +423,8 @@ view model =
                         Loading ->
                             Element.none
 
-                        Loaded page fragment document ->
-                            viewDocument model document
+                        Loaded { document } ->
+                            viewDocument document
 
                         Error message ->
                             Element.text message
@@ -432,23 +459,45 @@ update message model =
         LoadError string ->
             ( { model | state = Error string }, Cmd.none )
 
-        DocumentLoaded documentPage fragment document ->
-            ( { model | state = Loaded documentPage fragment document }
-            , scrollTo model.screenClass fragment
+        DocumentLoaded loaded ->
+            ( { model | state = Loaded loaded }
+            , if Set.isEmpty loaded.imagesToLoad then
+                -- No images to load, can immediately scroll to given fragment
+                scrollTo loaded.fragment
+
+              else
+                Cmd.none
             )
 
-        DocumentUpdated newDocument ->
+        DocumentMsg (Document.Updated newDocument) ->
             case model.state of
-                Loaded page fragment currentDocument ->
-                    ( { model | state = Loaded page fragment newDocument }, Cmd.none )
+                Loaded current ->
+                    ( { model | state = Loaded { current | document = newDocument } }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        DocumentMsg (Document.ImageLoaded url) ->
+            case model.state of
+                Loaded current ->
+                    let
+                        updatedImagesToLoad =
+                            Set.remove url current.imagesToLoad
+                    in
+                    ( { model | state = Loaded { current | imagesToLoad = updatedImagesToLoad } }
+                    , if Set.isEmpty updatedImagesToLoad then
+                        -- All images loaded, scroll to given fragment
+                        scrollTo current.fragment
+
+                      else
+                        Cmd.none
+                    )
 
                 _ ->
                     ( model, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
-
-
 
 
 program :

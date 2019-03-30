@@ -80,271 +80,6 @@ function A9(fun, a, b, c, d, e, f, g, h, i) {
 console.warn('Compiled in DEV mode. Follow the advice at https://elm-lang.org/0.19.0/optimize for better performance and smaller assets.');
 
 
-var _List_Nil_UNUSED = { $: 0 };
-var _List_Nil = { $: '[]' };
-
-function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
-function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
-
-
-var _List_cons = F2(_List_Cons);
-
-function _List_fromArray(arr)
-{
-	var out = _List_Nil;
-	for (var i = arr.length; i--; )
-	{
-		out = _List_Cons(arr[i], out);
-	}
-	return out;
-}
-
-function _List_toArray(xs)
-{
-	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
-	{
-		out.push(xs.a);
-	}
-	return out;
-}
-
-var _List_map2 = F3(function(f, xs, ys)
-{
-	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
-	{
-		arr.push(A2(f, xs.a, ys.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map3 = F4(function(f, xs, ys, zs)
-{
-	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A3(f, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map4 = F5(function(f, ws, xs, ys, zs)
-{
-	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
-{
-	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_sortBy = F2(function(f, xs)
-{
-	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
-		return _Utils_cmp(f(a), f(b));
-	}));
-});
-
-var _List_sortWith = F2(function(f, xs)
-{
-	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
-		var ord = A2(f, a, b);
-		return ord === elm$core$Basics$EQ ? 0 : ord === elm$core$Basics$LT ? -1 : 1;
-	}));
-});
-
-
-
-// EQUALITY
-
-function _Utils_eq(x, y)
-{
-	for (
-		var pair, stack = [], isEqual = _Utils_eqHelp(x, y, 0, stack);
-		isEqual && (pair = stack.pop());
-		isEqual = _Utils_eqHelp(pair.a, pair.b, 0, stack)
-		)
-	{}
-
-	return isEqual;
-}
-
-function _Utils_eqHelp(x, y, depth, stack)
-{
-	if (depth > 100)
-	{
-		stack.push(_Utils_Tuple2(x,y));
-		return true;
-	}
-
-	if (x === y)
-	{
-		return true;
-	}
-
-	if (typeof x !== 'object' || x === null || y === null)
-	{
-		typeof x === 'function' && _Debug_crash(5);
-		return false;
-	}
-
-	/**/
-	if (x.$ === 'Set_elm_builtin')
-	{
-		x = elm$core$Set$toList(x);
-		y = elm$core$Set$toList(y);
-	}
-	if (x.$ === 'RBNode_elm_builtin' || x.$ === 'RBEmpty_elm_builtin')
-	{
-		x = elm$core$Dict$toList(x);
-		y = elm$core$Dict$toList(y);
-	}
-	//*/
-
-	/**_UNUSED/
-	if (x.$ < 0)
-	{
-		x = elm$core$Dict$toList(x);
-		y = elm$core$Dict$toList(y);
-	}
-	//*/
-
-	for (var key in x)
-	{
-		if (!_Utils_eqHelp(x[key], y[key], depth + 1, stack))
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-var _Utils_equal = F2(_Utils_eq);
-var _Utils_notEqual = F2(function(a, b) { return !_Utils_eq(a,b); });
-
-
-
-// COMPARISONS
-
-// Code in Generate/JavaScript.hs, Basics.js, and List.js depends on
-// the particular integer values assigned to LT, EQ, and GT.
-
-function _Utils_cmp(x, y, ord)
-{
-	if (typeof x !== 'object')
-	{
-		return x === y ? /*EQ*/ 0 : x < y ? /*LT*/ -1 : /*GT*/ 1;
-	}
-
-	/**/
-	if (x instanceof String)
-	{
-		var a = x.valueOf();
-		var b = y.valueOf();
-		return a === b ? 0 : a < b ? -1 : 1;
-	}
-	//*/
-
-	/**_UNUSED/
-	if (typeof x.$ === 'undefined')
-	//*/
-	/**/
-	if (x.$[0] === '#')
-	//*/
-	{
-		return (ord = _Utils_cmp(x.a, y.a))
-			? ord
-			: (ord = _Utils_cmp(x.b, y.b))
-				? ord
-				: _Utils_cmp(x.c, y.c);
-	}
-
-	// traverse conses until end of a list or a mismatch
-	for (; x.b && y.b && !(ord = _Utils_cmp(x.a, y.a)); x = x.b, y = y.b) {} // WHILE_CONSES
-	return ord || (x.b ? /*GT*/ 1 : y.b ? /*LT*/ -1 : /*EQ*/ 0);
-}
-
-var _Utils_lt = F2(function(a, b) { return _Utils_cmp(a, b) < 0; });
-var _Utils_le = F2(function(a, b) { return _Utils_cmp(a, b) < 1; });
-var _Utils_gt = F2(function(a, b) { return _Utils_cmp(a, b) > 0; });
-var _Utils_ge = F2(function(a, b) { return _Utils_cmp(a, b) >= 0; });
-
-var _Utils_compare = F2(function(x, y)
-{
-	var n = _Utils_cmp(x, y);
-	return n < 0 ? elm$core$Basics$LT : n ? elm$core$Basics$GT : elm$core$Basics$EQ;
-});
-
-
-// COMMON VALUES
-
-var _Utils_Tuple0_UNUSED = 0;
-var _Utils_Tuple0 = { $: '#0' };
-
-function _Utils_Tuple2_UNUSED(a, b) { return { a: a, b: b }; }
-function _Utils_Tuple2(a, b) { return { $: '#2', a: a, b: b }; }
-
-function _Utils_Tuple3_UNUSED(a, b, c) { return { a: a, b: b, c: c }; }
-function _Utils_Tuple3(a, b, c) { return { $: '#3', a: a, b: b, c: c }; }
-
-function _Utils_chr_UNUSED(c) { return c; }
-function _Utils_chr(c) { return new String(c); }
-
-
-// RECORDS
-
-function _Utils_update(oldRecord, updatedFields)
-{
-	var newRecord = {};
-
-	for (var key in oldRecord)
-	{
-		newRecord[key] = oldRecord[key];
-	}
-
-	for (var key in updatedFields)
-	{
-		newRecord[key] = updatedFields[key];
-	}
-
-	return newRecord;
-}
-
-
-// APPEND
-
-var _Utils_append = F2(_Utils_ap);
-
-function _Utils_ap(xs, ys)
-{
-	// append Strings
-	if (typeof xs === 'string')
-	{
-		return xs + ys;
-	}
-
-	// append Lists
-	if (!xs.b)
-	{
-		return ys;
-	}
-	var root = _List_Cons(xs.a, ys);
-	xs = xs.b
-	for (var curr = root; xs.b; xs = xs.b) // WHILE_CONS
-	{
-		curr = curr.b = _List_Cons(xs.a, ys);
-	}
-	return root;
-}
-
-
-
 var _JsArray_empty = [];
 
 function _JsArray_singleton(value)
@@ -493,6 +228,87 @@ var _JsArray_appendN = F3(function(n, dest, source)
     }
 
     return result;
+});
+
+
+
+var _List_Nil_UNUSED = { $: 0 };
+var _List_Nil = { $: '[]' };
+
+function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
+function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
+
+
+var _List_cons = F2(_List_Cons);
+
+function _List_fromArray(arr)
+{
+	var out = _List_Nil;
+	for (var i = arr.length; i--; )
+	{
+		out = _List_Cons(arr[i], out);
+	}
+	return out;
+}
+
+function _List_toArray(xs)
+{
+	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
+	{
+		out.push(xs.a);
+	}
+	return out;
+}
+
+var _List_map2 = F3(function(f, xs, ys)
+{
+	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
+	{
+		arr.push(A2(f, xs.a, ys.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map3 = F4(function(f, xs, ys, zs)
+{
+	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A3(f, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map4 = F5(function(f, ws, xs, ys, zs)
+{
+	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
+{
+	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_sortBy = F2(function(f, xs)
+{
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		return _Utils_cmp(f(a), f(b));
+	}));
+});
+
+var _List_sortWith = F2(function(f, xs)
+{
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		var ord = A2(f, a, b);
+		return ord === elm$core$Basics$EQ ? 0 : ord === elm$core$Basics$LT ? -1 : 1;
+	}));
 });
 
 
@@ -793,100 +609,187 @@ function _Debug_regionToString(region)
 
 
 
-// MATH
+// EQUALITY
 
-var _Basics_add = F2(function(a, b) { return a + b; });
-var _Basics_sub = F2(function(a, b) { return a - b; });
-var _Basics_mul = F2(function(a, b) { return a * b; });
-var _Basics_fdiv = F2(function(a, b) { return a / b; });
-var _Basics_idiv = F2(function(a, b) { return (a / b) | 0; });
-var _Basics_pow = F2(Math.pow);
-
-var _Basics_remainderBy = F2(function(b, a) { return a % b; });
-
-// https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/divmodnote-letter.pdf
-var _Basics_modBy = F2(function(modulus, x)
+function _Utils_eq(x, y)
 {
-	var answer = x % modulus;
-	return modulus === 0
-		? _Debug_crash(11)
-		:
-	((answer > 0 && modulus < 0) || (answer < 0 && modulus > 0))
-		? answer + modulus
-		: answer;
+	for (
+		var pair, stack = [], isEqual = _Utils_eqHelp(x, y, 0, stack);
+		isEqual && (pair = stack.pop());
+		isEqual = _Utils_eqHelp(pair.a, pair.b, 0, stack)
+		)
+	{}
+
+	return isEqual;
+}
+
+function _Utils_eqHelp(x, y, depth, stack)
+{
+	if (depth > 100)
+	{
+		stack.push(_Utils_Tuple2(x,y));
+		return true;
+	}
+
+	if (x === y)
+	{
+		return true;
+	}
+
+	if (typeof x !== 'object' || x === null || y === null)
+	{
+		typeof x === 'function' && _Debug_crash(5);
+		return false;
+	}
+
+	/**/
+	if (x.$ === 'Set_elm_builtin')
+	{
+		x = elm$core$Set$toList(x);
+		y = elm$core$Set$toList(y);
+	}
+	if (x.$ === 'RBNode_elm_builtin' || x.$ === 'RBEmpty_elm_builtin')
+	{
+		x = elm$core$Dict$toList(x);
+		y = elm$core$Dict$toList(y);
+	}
+	//*/
+
+	/**_UNUSED/
+	if (x.$ < 0)
+	{
+		x = elm$core$Dict$toList(x);
+		y = elm$core$Dict$toList(y);
+	}
+	//*/
+
+	for (var key in x)
+	{
+		if (!_Utils_eqHelp(x[key], y[key], depth + 1, stack))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+var _Utils_equal = F2(_Utils_eq);
+var _Utils_notEqual = F2(function(a, b) { return !_Utils_eq(a,b); });
+
+
+
+// COMPARISONS
+
+// Code in Generate/JavaScript.hs, Basics.js, and List.js depends on
+// the particular integer values assigned to LT, EQ, and GT.
+
+function _Utils_cmp(x, y, ord)
+{
+	if (typeof x !== 'object')
+	{
+		return x === y ? /*EQ*/ 0 : x < y ? /*LT*/ -1 : /*GT*/ 1;
+	}
+
+	/**/
+	if (x instanceof String)
+	{
+		var a = x.valueOf();
+		var b = y.valueOf();
+		return a === b ? 0 : a < b ? -1 : 1;
+	}
+	//*/
+
+	/**_UNUSED/
+	if (typeof x.$ === 'undefined')
+	//*/
+	/**/
+	if (x.$[0] === '#')
+	//*/
+	{
+		return (ord = _Utils_cmp(x.a, y.a))
+			? ord
+			: (ord = _Utils_cmp(x.b, y.b))
+				? ord
+				: _Utils_cmp(x.c, y.c);
+	}
+
+	// traverse conses until end of a list or a mismatch
+	for (; x.b && y.b && !(ord = _Utils_cmp(x.a, y.a)); x = x.b, y = y.b) {} // WHILE_CONSES
+	return ord || (x.b ? /*GT*/ 1 : y.b ? /*LT*/ -1 : /*EQ*/ 0);
+}
+
+var _Utils_lt = F2(function(a, b) { return _Utils_cmp(a, b) < 0; });
+var _Utils_le = F2(function(a, b) { return _Utils_cmp(a, b) < 1; });
+var _Utils_gt = F2(function(a, b) { return _Utils_cmp(a, b) > 0; });
+var _Utils_ge = F2(function(a, b) { return _Utils_cmp(a, b) >= 0; });
+
+var _Utils_compare = F2(function(x, y)
+{
+	var n = _Utils_cmp(x, y);
+	return n < 0 ? elm$core$Basics$LT : n ? elm$core$Basics$GT : elm$core$Basics$EQ;
 });
 
 
-// TRIGONOMETRY
+// COMMON VALUES
 
-var _Basics_pi = Math.PI;
-var _Basics_e = Math.E;
-var _Basics_cos = Math.cos;
-var _Basics_sin = Math.sin;
-var _Basics_tan = Math.tan;
-var _Basics_acos = Math.acos;
-var _Basics_asin = Math.asin;
-var _Basics_atan = Math.atan;
-var _Basics_atan2 = F2(Math.atan2);
+var _Utils_Tuple0_UNUSED = 0;
+var _Utils_Tuple0 = { $: '#0' };
 
+function _Utils_Tuple2_UNUSED(a, b) { return { a: a, b: b }; }
+function _Utils_Tuple2(a, b) { return { $: '#2', a: a, b: b }; }
 
-// MORE MATH
+function _Utils_Tuple3_UNUSED(a, b, c) { return { a: a, b: b, c: c }; }
+function _Utils_Tuple3(a, b, c) { return { $: '#3', a: a, b: b, c: c }; }
 
-function _Basics_toFloat(x) { return x; }
-function _Basics_truncate(n) { return n | 0; }
-function _Basics_isInfinite(n) { return n === Infinity || n === -Infinity; }
-
-var _Basics_ceiling = Math.ceil;
-var _Basics_floor = Math.floor;
-var _Basics_round = Math.round;
-var _Basics_sqrt = Math.sqrt;
-var _Basics_log = Math.log;
-var _Basics_isNaN = isNaN;
+function _Utils_chr_UNUSED(c) { return c; }
+function _Utils_chr(c) { return new String(c); }
 
 
-// BOOLEANS
+// RECORDS
 
-function _Basics_not(bool) { return !bool; }
-var _Basics_and = F2(function(a, b) { return a && b; });
-var _Basics_or  = F2(function(a, b) { return a || b; });
-var _Basics_xor = F2(function(a, b) { return a !== b; });
-
-
-
-var _Bitwise_and = F2(function(a, b)
+function _Utils_update(oldRecord, updatedFields)
 {
-	return a & b;
-});
+	var newRecord = {};
 
-var _Bitwise_or = F2(function(a, b)
-{
-	return a | b;
-});
+	for (var key in oldRecord)
+	{
+		newRecord[key] = oldRecord[key];
+	}
 
-var _Bitwise_xor = F2(function(a, b)
-{
-	return a ^ b;
-});
+	for (var key in updatedFields)
+	{
+		newRecord[key] = updatedFields[key];
+	}
 
-function _Bitwise_complement(a)
-{
-	return ~a;
-};
+	return newRecord;
+}
 
-var _Bitwise_shiftLeftBy = F2(function(offset, a)
-{
-	return a << offset;
-});
 
-var _Bitwise_shiftRightBy = F2(function(offset, a)
-{
-	return a >> offset;
-});
+// APPEND
 
-var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+var _Utils_append = F2(_Utils_ap);
+
+function _Utils_ap(xs, ys)
 {
-	return a >>> offset;
-});
+	// append Strings
+	if (typeof xs === 'string')
+	{
+		return xs + ys;
+	}
+
+	// append Lists
+	if (!xs.b)
+	{
+		return ys;
+	}
+	var root = _List_Cons(xs.a, ys);
+	xs = xs.b
+	for (var curr = root; xs.b; xs = xs.b) // WHILE_CONS
+	{
+		curr = curr.b = _List_Cons(xs.a, ys);
+	}
+	return root;
+}
 
 
 
@@ -1199,6 +1102,103 @@ function _String_fromList(chars)
 	return _List_toArray(chars).join('');
 }
 
+
+
+
+// MATH
+
+var _Basics_add = F2(function(a, b) { return a + b; });
+var _Basics_sub = F2(function(a, b) { return a - b; });
+var _Basics_mul = F2(function(a, b) { return a * b; });
+var _Basics_fdiv = F2(function(a, b) { return a / b; });
+var _Basics_idiv = F2(function(a, b) { return (a / b) | 0; });
+var _Basics_pow = F2(Math.pow);
+
+var _Basics_remainderBy = F2(function(b, a) { return a % b; });
+
+// https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/divmodnote-letter.pdf
+var _Basics_modBy = F2(function(modulus, x)
+{
+	var answer = x % modulus;
+	return modulus === 0
+		? _Debug_crash(11)
+		:
+	((answer > 0 && modulus < 0) || (answer < 0 && modulus > 0))
+		? answer + modulus
+		: answer;
+});
+
+
+// TRIGONOMETRY
+
+var _Basics_pi = Math.PI;
+var _Basics_e = Math.E;
+var _Basics_cos = Math.cos;
+var _Basics_sin = Math.sin;
+var _Basics_tan = Math.tan;
+var _Basics_acos = Math.acos;
+var _Basics_asin = Math.asin;
+var _Basics_atan = Math.atan;
+var _Basics_atan2 = F2(Math.atan2);
+
+
+// MORE MATH
+
+function _Basics_toFloat(x) { return x; }
+function _Basics_truncate(n) { return n | 0; }
+function _Basics_isInfinite(n) { return n === Infinity || n === -Infinity; }
+
+var _Basics_ceiling = Math.ceil;
+var _Basics_floor = Math.floor;
+var _Basics_round = Math.round;
+var _Basics_sqrt = Math.sqrt;
+var _Basics_log = Math.log;
+var _Basics_isNaN = isNaN;
+
+
+// BOOLEANS
+
+function _Basics_not(bool) { return !bool; }
+var _Basics_and = F2(function(a, b) { return a && b; });
+var _Basics_or  = F2(function(a, b) { return a || b; });
+var _Basics_xor = F2(function(a, b) { return a !== b; });
+
+
+
+var _Bitwise_and = F2(function(a, b)
+{
+	return a & b;
+});
+
+var _Bitwise_or = F2(function(a, b)
+{
+	return a | b;
+});
+
+var _Bitwise_xor = F2(function(a, b)
+{
+	return a ^ b;
+});
+
+function _Bitwise_complement(a)
+{
+	return ~a;
+};
+
+var _Bitwise_shiftLeftBy = F2(function(offset, a)
+{
+	return a << offset;
+});
+
+var _Bitwise_shiftRightBy = F2(function(offset, a)
+{
+	return a >> offset;
+});
+
+var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+{
+	return a >>> offset;
+});
 
 
 
@@ -1566,7 +1566,7 @@ function _Json_runArrayDecoder(decoder, value, toElmValue)
 
 function _Json_isArray(value)
 {
-	return Array.isArray(value) || (typeof FileList === 'function' && value instanceof FileList);
+	return Array.isArray(value) || (typeof FileList !== 'undefined' && value instanceof FileList);
 }
 
 function _Json_toElmArray(array)
@@ -4651,39 +4651,34 @@ var author$project$Guide$Error = function (a) {
 	return {$: 'Error', a: a};
 };
 var author$project$Guide$Navigating = {$: 'Navigating'};
-var author$project$Guide$DocumentLoaded = F3(
-	function (a, b, c) {
-		return {$: 'DocumentLoaded', a: a, b: b, c: c};
+var elm$core$Elm$JsArray$foldr = _JsArray_foldr;
+var elm$core$Array$foldr = F3(
+	function (func, baseCase, _n0) {
+		var tree = _n0.c;
+		var tail = _n0.d;
+		var helper = F2(
+			function (node, acc) {
+				if (node.$ === 'SubTree') {
+					var subTree = node.a;
+					return A3(elm$core$Elm$JsArray$foldr, helper, acc, subTree);
+				} else {
+					var values = node.a;
+					return A3(elm$core$Elm$JsArray$foldr, func, acc, values);
+				}
+			});
+		return A3(
+			elm$core$Elm$JsArray$foldr,
+			helper,
+			A3(elm$core$Elm$JsArray$foldr, func, baseCase, tail),
+			tree);
 	});
-var author$project$Guide$LoadError = function (a) {
-	return {$: 'LoadError', a: a};
-};
-var author$project$Guide$Document$Document = function (a) {
-	return {$: 'Document', a: a};
-};
-var author$project$Guide$Document$Title = F2(
-	function (a, b) {
-		return {$: 'Title', a: a, b: b};
-	});
-var author$project$Guide$Document$CodeBlockContext = {$: 'CodeBlockContext'};
-var author$project$Guide$Document$CompiledBullets = function (a) {
-	return {$: 'CompiledBullets', a: a};
-};
-var author$project$Guide$Document$Interactive = F2(
-	function (a, b) {
-		return {$: 'Interactive', a: a, b: b};
-	});
-var author$project$Guide$Document$ParagraphContext = {$: 'ParagraphContext'};
-var author$project$Guide$Document$SectionContext = {$: 'SectionContext'};
-var author$project$Guide$Document$Static = F2(
-	function (a, b) {
-		return {$: 'Static', a: a, b: b};
-	});
-var author$project$Guide$Document$SubsectionContext = {$: 'SubsectionContext'};
-var author$project$Guide$Document$TitleContext = {$: 'TitleContext'};
 var elm$core$Basics$EQ = {$: 'EQ'};
-var elm$core$Basics$GT = {$: 'GT'};
 var elm$core$Basics$LT = {$: 'LT'};
+var elm$core$List$cons = _List_cons;
+var elm$core$Array$toList = function (array) {
+	return A3(elm$core$Array$foldr, elm$core$List$cons, _List_Nil, array);
+};
+var elm$core$Basics$GT = {$: 'GT'};
 var elm$core$Dict$foldr = F3(
 	function (func, acc, t) {
 		foldr:
@@ -4709,7 +4704,6 @@ var elm$core$Dict$foldr = F3(
 			}
 		}
 	});
-var elm$core$List$cons = _List_cons;
 var elm$core$Dict$toList = function (dict) {
 	return A3(
 		elm$core$Dict$foldr,
@@ -4737,30 +4731,453 @@ var elm$core$Set$toList = function (_n0) {
 	var dict = _n0.a;
 	return elm$core$Dict$keys(dict);
 };
-var elm$core$Elm$JsArray$foldr = _JsArray_foldr;
-var elm$core$Array$foldr = F3(
-	function (func, baseCase, _n0) {
-		var tree = _n0.c;
-		var tail = _n0.d;
-		var helper = F2(
-			function (node, acc) {
-				if (node.$ === 'SubTree') {
-					var subTree = node.a;
-					return A3(elm$core$Elm$JsArray$foldr, helper, acc, subTree);
-				} else {
-					var values = node.a;
-					return A3(elm$core$Elm$JsArray$foldr, func, acc, values);
-				}
-			});
-		return A3(
-			elm$core$Elm$JsArray$foldr,
-			helper,
-			A3(elm$core$Elm$JsArray$foldr, func, baseCase, tail),
-			tree);
-	});
-var elm$core$Array$toList = function (array) {
-	return A3(elm$core$Array$foldr, elm$core$List$cons, _List_Nil, array);
+var elm$core$Basics$append = _Utils_append;
+var elm$core$Maybe$Just = function (a) {
+	return {$: 'Just', a: a};
 };
+var elm$core$Maybe$Nothing = {$: 'Nothing'};
+var elm$core$String$endsWith = _String_endsWith;
+var author$project$Guide$appendSlash = function (url) {
+	return A2(elm$core$String$endsWith, '/', url) ? url : (url + '/');
+};
+var author$project$Guide$DocumentLoaded = function (a) {
+	return {$: 'DocumentLoaded', a: a};
+};
+var author$project$Guide$LoadError = function (a) {
+	return {$: 'LoadError', a: a};
+};
+var author$project$Guide$Document$Document = function (a) {
+	return {$: 'Document', a: a};
+};
+var author$project$Guide$Document$Title = F2(
+	function (a, b) {
+		return {$: 'Title', a: a, b: b};
+	});
+var author$project$Guide$Document$getImageUrls = function (inline) {
+	if (inline.$ === 'Image') {
+		var url = inline.a;
+		return _List_fromArray(
+			[url]);
+	} else {
+		return _List_Nil;
+	}
+};
+var elm$core$Basics$apR = F2(
+	function (x, f) {
+		return f(x);
+	});
+var elm$core$Basics$add = _Basics_add;
+var elm$core$Basics$gt = _Utils_gt;
+var elm$core$List$foldl = F3(
+	function (func, acc, list) {
+		foldl:
+		while (true) {
+			if (!list.b) {
+				return acc;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				var $temp$func = func,
+					$temp$acc = A2(func, x, acc),
+					$temp$list = xs;
+				func = $temp$func;
+				acc = $temp$acc;
+				list = $temp$list;
+				continue foldl;
+			}
+		}
+	});
+var elm$core$List$reverse = function (list) {
+	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
+};
+var elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							elm$core$List$foldl,
+							fn,
+							acc,
+							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
+		}
+	});
+var elm$core$List$concat = function (lists) {
+	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
+};
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
+var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
+var elm$core$Set$Set_elm_builtin = function (a) {
+	return {$: 'Set_elm_builtin', a: a};
+};
+var elm$core$Set$empty = elm$core$Set$Set_elm_builtin(elm$core$Dict$empty);
+var elm$core$Dict$Black = {$: 'Black'};
+var elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var elm$core$Basics$compare = _Utils_compare;
+var elm$core$Dict$Red = {$: 'Red'};
+var elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _n1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _n3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Red,
+					key,
+					value,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _n5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _n6 = left.d;
+				var _n7 = _n6.a;
+				var llK = _n6.b;
+				var llV = _n6.c;
+				var llLeft = _n6.d;
+				var llRight = _n6.e;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Red,
+					lK,
+					lV,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5(elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _n1 = A2(elm$core$Basics$compare, key, nKey);
+			switch (_n1.$) {
+				case 'LT':
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3(elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3(elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
+		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
+			var _n1 = _n0.a;
+			var k = _n0.b;
+			var v = _n0.c;
+			var l = _n0.d;
+			var r = _n0.e;
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _n0;
+			return x;
+		}
+	});
+var elm$core$Set$insert = F2(
+	function (key, _n0) {
+		var dict = _n0.a;
+		return elm$core$Set$Set_elm_builtin(
+			A3(elm$core$Dict$insert, key, _Utils_Tuple0, dict));
+	});
+var elm$core$Set$fromList = function (list) {
+	return A3(elm$core$List$foldl, elm$core$Set$insert, elm$core$Set$empty, list);
+};
+var pablohirafuji$elm_markdown$Markdown$Block$BlockQuote = function (a) {
+	return {$: 'BlockQuote', a: a};
+};
+var pablohirafuji$elm_markdown$Markdown$Block$Custom = F2(
+	function (a, b) {
+		return {$: 'Custom', a: a, b: b};
+	});
+var pablohirafuji$elm_markdown$Markdown$Block$List = F2(
+	function (a, b) {
+		return {$: 'List', a: a, b: b};
+	});
+var pablohirafuji$elm_markdown$Markdown$Block$query = F2(
+	function (_function, block) {
+		switch (block.$) {
+			case 'BlockQuote':
+				var blocks = block.a;
+				return _Utils_ap(
+					_function(
+						pablohirafuji$elm_markdown$Markdown$Block$BlockQuote(blocks)),
+					elm$core$List$concat(
+						A2(
+							elm$core$List$map,
+							pablohirafuji$elm_markdown$Markdown$Block$query(_function),
+							blocks)));
+			case 'List':
+				var listBlock = block.a;
+				var items = block.b;
+				return _Utils_ap(
+					_function(
+						A2(pablohirafuji$elm_markdown$Markdown$Block$List, listBlock, items)),
+					elm$core$List$concat(
+						elm$core$List$concat(
+							A2(
+								elm$core$List$map,
+								elm$core$List$map(
+									pablohirafuji$elm_markdown$Markdown$Block$query(_function)),
+								items))));
+			case 'Custom':
+				var customBlock = block.a;
+				var blocks = block.b;
+				return _Utils_ap(
+					_function(
+						A2(pablohirafuji$elm_markdown$Markdown$Block$Custom, customBlock, blocks)),
+					elm$core$List$concat(
+						A2(
+							elm$core$List$map,
+							pablohirafuji$elm_markdown$Markdown$Block$query(_function),
+							blocks)));
+			default:
+				return _function(block);
+		}
+	});
+var pablohirafuji$elm_markdown$Markdown$Inline$Emphasis = F2(
+	function (a, b) {
+		return {$: 'Emphasis', a: a, b: b};
+	});
+var pablohirafuji$elm_markdown$Markdown$Inline$HtmlInline = F3(
+	function (a, b, c) {
+		return {$: 'HtmlInline', a: a, b: b, c: c};
+	});
+var pablohirafuji$elm_markdown$Markdown$Inline$Image = F3(
+	function (a, b, c) {
+		return {$: 'Image', a: a, b: b, c: c};
+	});
+var pablohirafuji$elm_markdown$Markdown$Inline$Link = F3(
+	function (a, b, c) {
+		return {$: 'Link', a: a, b: b, c: c};
+	});
+var pablohirafuji$elm_markdown$Markdown$InlineParser$query = F2(
+	function (_function, inline) {
+		switch (inline.$) {
+			case 'Link':
+				var url = inline.a;
+				var maybeTitle = inline.b;
+				var inlines = inline.c;
+				return _Utils_ap(
+					_function(
+						A3(pablohirafuji$elm_markdown$Markdown$Inline$Link, url, maybeTitle, inlines)),
+					elm$core$List$concat(
+						A2(
+							elm$core$List$map,
+							pablohirafuji$elm_markdown$Markdown$InlineParser$query(_function),
+							inlines)));
+			case 'Image':
+				var url = inline.a;
+				var maybeTitle = inline.b;
+				var inlines = inline.c;
+				return _Utils_ap(
+					_function(
+						A3(pablohirafuji$elm_markdown$Markdown$Inline$Image, url, maybeTitle, inlines)),
+					elm$core$List$concat(
+						A2(
+							elm$core$List$map,
+							pablohirafuji$elm_markdown$Markdown$InlineParser$query(_function),
+							inlines)));
+			case 'HtmlInline':
+				var tag = inline.a;
+				var attrs = inline.b;
+				var inlines = inline.c;
+				return _Utils_ap(
+					_function(
+						A3(pablohirafuji$elm_markdown$Markdown$Inline$HtmlInline, tag, attrs, inlines)),
+					elm$core$List$concat(
+						A2(
+							elm$core$List$map,
+							pablohirafuji$elm_markdown$Markdown$InlineParser$query(_function),
+							inlines)));
+			case 'Emphasis':
+				var length = inline.a;
+				var inlines = inline.b;
+				return _Utils_ap(
+					_function(
+						A2(pablohirafuji$elm_markdown$Markdown$Inline$Emphasis, length, inlines)),
+					elm$core$List$concat(
+						A2(
+							elm$core$List$map,
+							pablohirafuji$elm_markdown$Markdown$InlineParser$query(_function),
+							inlines)));
+			default:
+				return _function(inline);
+		}
+	});
+var pablohirafuji$elm_markdown$Markdown$Block$queryInlinesHelp = F2(
+	function (_function, block) {
+		switch (block.$) {
+			case 'Paragraph':
+				var inlines = block.b;
+				return elm$core$List$concat(
+					A2(
+						elm$core$List$map,
+						pablohirafuji$elm_markdown$Markdown$InlineParser$query(_function),
+						inlines));
+			case 'Heading':
+				var inlines = block.c;
+				return elm$core$List$concat(
+					A2(
+						elm$core$List$map,
+						pablohirafuji$elm_markdown$Markdown$InlineParser$query(_function),
+						inlines));
+			case 'PlainInlines':
+				var inlines = block.a;
+				return elm$core$List$concat(
+					A2(
+						elm$core$List$map,
+						pablohirafuji$elm_markdown$Markdown$InlineParser$query(_function),
+						inlines));
+			default:
+				return _List_Nil;
+		}
+	});
+var pablohirafuji$elm_markdown$Markdown$Block$queryInlines = F2(
+	function (_function, block) {
+		return A2(
+			pablohirafuji$elm_markdown$Markdown$Block$query,
+			pablohirafuji$elm_markdown$Markdown$Block$queryInlinesHelp(_function),
+			block);
+	});
+var author$project$Guide$Document$collectImageUrls = function (blocks) {
+	return elm$core$Set$fromList(
+		elm$core$List$concat(
+			A2(
+				elm$core$List$map,
+				pablohirafuji$elm_markdown$Markdown$Block$queryInlines(author$project$Guide$Document$getImageUrls),
+				blocks)));
+};
+var author$project$Guide$Document$CodeBlockContext = {$: 'CodeBlockContext'};
+var author$project$Guide$Document$CompiledBullets = function (a) {
+	return {$: 'CompiledBullets', a: a};
+};
+var author$project$Guide$Document$Interactive = F2(
+	function (a, b) {
+		return {$: 'Interactive', a: a, b: b};
+	});
+var author$project$Guide$Document$ParagraphContext = {$: 'ParagraphContext'};
+var author$project$Guide$Document$SectionContext = {$: 'SectionContext'};
+var author$project$Guide$Document$Static = F2(
+	function (a, b) {
+		return {$: 'Static', a: a, b: b};
+	});
+var author$project$Guide$Document$SubsectionContext = {$: 'SubsectionContext'};
+var author$project$Guide$Document$TitleContext = {$: 'TitleContext'};
 var elm$core$Basics$fdiv = _Basics_fdiv;
 var elm$core$Basics$toFloat = _Basics_toFloat;
 var mdgriffith$elm_ui$Internal$Model$Rgba = F4(
@@ -4794,26 +5211,6 @@ var author$project$Guide$Font$sizes = function (screenClass) {
 		return author$project$Guide$Font$smallScreenSizes;
 	}
 };
-var elm$core$List$foldl = F3(
-	function (func, acc, list) {
-		foldl:
-		while (true) {
-			if (!list.b) {
-				return acc;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				var $temp$func = func,
-					$temp$acc = A2(func, x, acc),
-					$temp$list = xs;
-				func = $temp$func;
-				acc = $temp$acc;
-				list = $temp$list;
-				continue foldl;
-			}
-		}
-	});
-var elm$core$Basics$gt = _Utils_gt;
 var elm$core$Basics$sub = _Basics_sub;
 var elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
 var mdgriffith$elm_ui$Internal$Flag$Flag = function (a) {
@@ -4834,15 +5231,6 @@ var mdgriffith$elm_ui$Internal$Model$StyleClass = F2(
 	function (a, b) {
 		return {$: 'StyleClass', a: a, b: b};
 	});
-var elm$core$Basics$apR = F2(
-	function (x, f) {
-		return f(x);
-	});
-var elm$core$Basics$append = _Utils_append;
-var elm$core$Maybe$Just = function (a) {
-	return {$: 'Just', a: a};
-};
-var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$String$join = F2(
 	function (sep, chunks) {
 		return A2(
@@ -4910,79 +5298,6 @@ var author$project$Guide$Font$sourceCodePro = mdgriffith$elm_ui$Element$Font$fam
 			mdgriffith$elm_ui$Element$Font$typeface('Source Code Pro'),
 			mdgriffith$elm_ui$Element$Font$monospace
 		]));
-var elm$core$Basics$add = _Basics_add;
-var elm$core$List$reverse = function (list) {
-	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
-};
-var elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
-		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							elm$core$List$foldl,
-							fn,
-							acc,
-							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
-		}
-	});
-var elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
-	});
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
 var elm$core$String$lines = _String_lines;
 var elm$core$String$trim = _String_trim;
 var mdgriffith$elm_ui$Internal$Model$Height = function (a) {
@@ -5120,9 +5435,6 @@ var mdgriffith$elm_ui$Internal$Model$AsParagraph = {$: 'AsParagraph'};
 var mdgriffith$elm_ui$Internal$Model$asParagraph = mdgriffith$elm_ui$Internal$Model$AsParagraph;
 var elm$core$Basics$and = _Basics_and;
 var elm$core$Basics$not = _Basics_not;
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
 var elm$core$Result$isOk = function (result) {
 	if (result.$ === 'Ok') {
 		return true;
@@ -5528,131 +5840,10 @@ var mdgriffith$elm_ui$Internal$Flag$present = F2(
 	});
 var mdgriffith$elm_ui$Internal$Flag$widthBetween = mdgriffith$elm_ui$Internal$Flag$flag(44);
 var mdgriffith$elm_ui$Internal$Flag$widthFill = mdgriffith$elm_ui$Internal$Flag$flag(39);
-var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
-var elm$core$Set$Set_elm_builtin = function (a) {
-	return {$: 'Set_elm_builtin', a: a};
-};
-var elm$core$Set$empty = elm$core$Set$Set_elm_builtin(elm$core$Dict$empty);
 var elm$core$Tuple$second = function (_n0) {
 	var y = _n0.b;
 	return y;
 };
-var elm$core$Dict$Black = {$: 'Black'};
-var elm$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
-	});
-var elm$core$Basics$compare = _Utils_compare;
-var elm$core$Dict$Red = {$: 'Red'};
-var elm$core$Dict$balance = F5(
-	function (color, key, value, left, right) {
-		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
-			var _n1 = right.a;
-			var rK = right.b;
-			var rV = right.c;
-			var rLeft = right.d;
-			var rRight = right.e;
-			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-				var _n3 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var lLeft = left.d;
-				var lRight = left.e;
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					elm$core$Dict$Red,
-					key,
-					value,
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, lK, lV, lLeft, lRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					color,
-					rK,
-					rV,
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, left, rLeft),
-					rRight);
-			}
-		} else {
-			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
-				var _n5 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var _n6 = left.d;
-				var _n7 = _n6.a;
-				var llK = _n6.b;
-				var llV = _n6.c;
-				var llLeft = _n6.d;
-				var llRight = _n6.e;
-				var lRight = left.e;
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					elm$core$Dict$Red,
-					lK,
-					lV,
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, key, value, lRight, right));
-			} else {
-				return A5(elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
-			}
-		}
-	});
-var elm$core$Dict$insertHelp = F3(
-	function (key, value, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
-		} else {
-			var nColor = dict.a;
-			var nKey = dict.b;
-			var nValue = dict.c;
-			var nLeft = dict.d;
-			var nRight = dict.e;
-			var _n1 = A2(elm$core$Basics$compare, key, nKey);
-			switch (_n1.$) {
-				case 'LT':
-					return A5(
-						elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						A3(elm$core$Dict$insertHelp, key, value, nLeft),
-						nRight);
-				case 'EQ':
-					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
-				default:
-					return A5(
-						elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						nLeft,
-						A3(elm$core$Dict$insertHelp, key, value, nRight));
-			}
-		}
-	});
-var elm$core$Dict$insert = F3(
-	function (key, value, dict) {
-		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
-		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
-			var _n1 = _n0.a;
-			var k = _n0.b;
-			var v = _n0.c;
-			var l = _n0.d;
-			var r = _n0.e;
-			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _n0;
-			return x;
-		}
-	});
-var elm$core$Set$insert = F2(
-	function (key, _n0) {
-		var dict = _n0.a;
-		return elm$core$Set$Set_elm_builtin(
-			A3(elm$core$Dict$insert, key, _Utils_Tuple0, dict));
-	});
 var elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -6028,17 +6219,6 @@ var mdgriffith$elm_ui$Internal$Style$Supports = F2(
 	function (a, b) {
 		return {$: 'Supports', a: a, b: b};
 	});
-var elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
-		}
-	});
-var elm$core$List$concat = function (lists) {
-	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
-};
 var elm$core$List$concatMap = F2(
 	function (f, list) {
 		return elm$core$List$concat(
@@ -10887,6 +11067,9 @@ var author$project$Guide$Document$inlineCodeElement = F2(
 				mdgriffith$elm_ui$Element$text(spaces));
 		}
 	});
+var author$project$Guide$Document$InternalImageLoaded = function (a) {
+	return {$: 'InternalImageLoaded', a: a};
+};
 var elm$html$Html$img = _VirtualDom_node('img');
 var elm$html$Html$Attributes$alt = elm$html$Html$Attributes$stringProperty('alt');
 var elm$html$Html$Attributes$src = function (url) {
@@ -10897,6 +11080,17 @@ var elm$html$Html$Attributes$src = function (url) {
 };
 var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
+var elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
 var elm$core$Basics$always = F2(
 	function (a, _n0) {
 		return a;
@@ -10919,7 +11113,12 @@ var author$project$Guide$Document$renderImage = function (_n0) {
 					elm$html$Html$Attributes$src(url),
 					elm$html$Html$Attributes$alt(description),
 					A2(elm$html$Html$Attributes$style, 'max-width', '100%'),
-					A2(elm$html$Html$Attributes$style, 'max-height', '100%')
+					A2(elm$html$Html$Attributes$style, 'max-height', '100%'),
+					A2(
+					elm$html$Html$Events$on,
+					'load',
+					elm$json$Json$Decode$succeed(
+						author$project$Guide$Document$InternalImageLoaded(url)))
 				]),
 			_List_Nil));
 };
@@ -12019,9 +12218,6 @@ var author$project$Guide$Document$parseChunks = F3(
 								}
 							} else {
 								var _n9 = inlines.a;
-								var tag = _n9.a;
-								var attributes = _n9.b;
-								var children = _n9.c;
 								return elm$core$Result$Err('Custom elements with attributes or children not yet supported');
 							}
 						} else {
@@ -12097,13 +12293,6 @@ var elm$core$Result$withDefault = F2(
 		}
 	});
 var elm$regex$Regex$findAtMost = _Regex_findAtMost;
-var pablohirafuji$elm_markdown$Markdown$Block$BlockQuote = function (a) {
-	return {$: 'BlockQuote', a: a};
-};
-var pablohirafuji$elm_markdown$Markdown$Block$List = F2(
-	function (a, b) {
-		return {$: 'List', a: a, b: b};
-	});
 var pablohirafuji$elm_markdown$Markdown$Block$Paragraph = F2(
 	function (a, b) {
 		return {$: 'Paragraph', a: a, b: b};
@@ -13553,10 +13742,6 @@ var pablohirafuji$elm_markdown$Markdown$Block$incorporateLines = F2(
 				A2(pablohirafuji$elm_markdown$Markdown$Block$incorporateLine, rawLine, ast));
 		}
 	});
-var pablohirafuji$elm_markdown$Markdown$Block$Custom = F2(
-	function (a, b) {
-		return {$: 'Custom', a: a, b: b};
-	});
 var pablohirafuji$elm_markdown$Markdown$Block$PlainInlines = function (a) {
 	return {$: 'PlainInlines', a: a};
 };
@@ -13579,23 +13764,7 @@ var pablohirafuji$elm_markdown$Markdown$InlineParser$initParser = F3(
 var pablohirafuji$elm_markdown$Markdown$Inline$CodeInline = function (a) {
 	return {$: 'CodeInline', a: a};
 };
-var pablohirafuji$elm_markdown$Markdown$Inline$Emphasis = F2(
-	function (a, b) {
-		return {$: 'Emphasis', a: a, b: b};
-	});
 var pablohirafuji$elm_markdown$Markdown$Inline$HardLineBreak = {$: 'HardLineBreak'};
-var pablohirafuji$elm_markdown$Markdown$Inline$HtmlInline = F3(
-	function (a, b, c) {
-		return {$: 'HtmlInline', a: a, b: b, c: c};
-	});
-var pablohirafuji$elm_markdown$Markdown$Inline$Image = F3(
-	function (a, b, c) {
-		return {$: 'Image', a: a, b: b, c: c};
-	});
-var pablohirafuji$elm_markdown$Markdown$Inline$Link = F3(
-	function (a, b, c) {
-		return {$: 'Link', a: a, b: b, c: c};
-	});
 var pablohirafuji$elm_markdown$Markdown$Inline$Text = function (a) {
 	return {$: 'Text', a: a};
 };
@@ -15684,18 +15853,21 @@ var author$project$Guide$Document$parse = F2(
 				elm$core$Result$map2,
 				F2(
 					function (titleText, bodyChunks) {
-						return author$project$Guide$Document$Document(
-							{
-								chunks: A2(
-									author$project$Guide$Document$compile,
-									screenClass,
-									A2(
-										elm$core$List$cons,
-										A2(author$project$Guide$Document$Title, titleText, rootUrl),
-										bodyChunks)),
-								screenClass: screenClass,
-								title: pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines)
-							});
+						var compiledChunks = A2(
+							author$project$Guide$Document$compile,
+							screenClass,
+							A2(
+								elm$core$List$cons,
+								A2(author$project$Guide$Document$Title, titleText, rootUrl),
+								bodyChunks));
+						return _Utils_Tuple2(
+							author$project$Guide$Document$Document(
+								{
+									chunks: compiledChunks,
+									screenClass: screenClass,
+									title: pablohirafuji$elm_markdown$Markdown$Inline$extractText(inlines)
+								}),
+							author$project$Guide$Document$collectImageUrls(blocks));
 					}),
 				A2(author$project$Guide$Document$parseText, inlines, _List_Nil),
 				A3(
@@ -15717,14 +15889,16 @@ var author$project$Guide$handleMarkdown = F5(
 			var documentConfig = {rootUrl: rootUrl, screenClass: screenClass, widgets: _List_Nil};
 			var _n1 = A2(author$project$Guide$Document$parse, documentConfig, markdown);
 			if (_n1.$ === 'Ok') {
-				var document = _n1.a;
-				return A3(author$project$Guide$DocumentLoaded, page, fragment, document);
+				var _n2 = _n1.a;
+				var document = _n2.a;
+				var imagesToLoad = _n2.b;
+				return author$project$Guide$DocumentLoaded(
+					{document: document, fragment: fragment, imagesToLoad: imagesToLoad, page: page});
 			} else {
 				var message = _n1.a;
 				return author$project$Guide$LoadError(message);
 			}
 		} else {
-			var error = result.a;
 			return author$project$Guide$LoadError('Network error');
 		}
 	});
@@ -16393,7 +16567,8 @@ var elm$http$Http$get = function (r) {
 };
 var author$project$Guide$loadPage = F4(
 	function (screenClass, rootPath, page, fragment) {
-		var rootUrl = A2(elm$url$Url$Builder$absolute, rootPath, _List_Nil);
+		var rootUrl = author$project$Guide$appendSlash(
+			A2(elm$url$Url$Builder$absolute, rootPath, _List_Nil));
 		return elm$http$Http$get(
 			{
 				expect: elm$http$Http$expectString(
@@ -16402,7 +16577,6 @@ var author$project$Guide$loadPage = F4(
 			});
 	});
 var author$project$Guide$NoOp = {$: 'NoOp'};
-var author$project$Guide$topLevelDocumentId = 'top-level-document-e41c28257f09';
 var elm$browser$Browser$External = function (a) {
 	return {$: 'External', a: a};
 };
@@ -16587,8 +16761,6 @@ var elm$url$Url$fromString = function (str) {
 };
 var elm$browser$Browser$Dom$getElement = _Browser_getElement;
 var elm$browser$Browser$Dom$setViewport = _Browser_setViewport;
-var elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
-var elm$core$Debug$log = _Debug_log;
 var elm$core$Task$onError = _Scheduler_onError;
 var elm$core$Task$attempt = F2(
 	function (resultToMessage, task) {
@@ -16608,42 +16780,40 @@ var elm$core$Task$attempt = F2(
 							elm$core$Result$Ok),
 						task))));
 	});
-var author$project$Guide$scrollTo = F2(
-	function (screenClass, fragment) {
-		var setViewport = function (y) {
-			if (screenClass.$ === 'Large') {
-				return A3(elm$browser$Browser$Dom$setViewportOf, author$project$Guide$topLevelDocumentId, 0, y);
+var author$project$Guide$scrollTo = function (fragment) {
+	var scrollTask = function () {
+		if (fragment.$ === 'Just') {
+			var id = fragment.a;
+			return A2(
+				elm$core$Task$andThen,
+				function (_n2) {
+					var element = _n2.element;
+					return A2(elm$browser$Browser$Dom$setViewport, 0, element.y);
+				},
+				elm$browser$Browser$Dom$getElement(id));
+		} else {
+			return A2(elm$browser$Browser$Dom$setViewport, 0, 0);
+		}
+	}();
+	return A2(
+		elm$core$Task$attempt,
+		function (result) {
+			if (result.$ === 'Ok') {
+				return author$project$Guide$NoOp;
 			} else {
-				return A2(elm$browser$Browser$Dom$setViewport, 0, y);
+				var id = result.a.a;
+				return author$project$Guide$LoadError('Could not find element on page with id \'' + (id + '\''));
 			}
-		};
-		var scrollTask = function () {
-			var _n1 = A2(elm$core$Debug$log, 'scrolling to', fragment);
-			if (_n1.$ === 'Just') {
-				var id = _n1.a;
-				return A2(
-					elm$core$Task$andThen,
-					function (_n2) {
-						var element = _n2.element;
-						return setViewport(element.y);
-					},
-					elm$browser$Browser$Dom$getElement(id));
-			} else {
-				return setViewport(0);
-			}
-		}();
-		return A2(
-			elm$core$Task$attempt,
-			function (result) {
-				if (result.$ === 'Ok') {
-					return author$project$Guide$NoOp;
-				} else {
-					var id = result.a.a;
-					return author$project$Guide$LoadError('Could not find element on page with id \'' + (id + '\''));
-				}
-			},
-			scrollTask);
-	});
+		},
+		scrollTask);
+};
+var author$project$Guide$Page$isReadme = function (page) {
+	if (page.$ === 'Readme') {
+		return true;
+	} else {
+		return false;
+	}
+};
 var author$project$Guide$Page$BadUrl = {$: 'BadUrl'};
 var author$project$Guide$Page$Match = function (a) {
 	return {$: 'Match', a: a};
@@ -16977,8 +17147,7 @@ var author$project$Guide$Page$matching = F2(
 				if (_n3.b && (!_n3.b.b)) {
 					var page = _n3.a;
 					return elm$core$Result$Ok(
-						author$project$Guide$Page$Match(
-							{fragment: fragment, page: page}));
+						author$project$Guide$Page$Match(page));
 				} else {
 					return elm$core$Result$Err(
 						author$project$Guide$Page$NotFound(pageTitle));
@@ -17044,24 +17213,31 @@ var author$project$Guide$handleNewUrl = F6(
 			allPages);
 		if (_n0.$ === 'Ok') {
 			if (_n0.a.$ === 'Match') {
-				var page = _n0.a.a.page;
-				var fragment = _n0.a.a.fragment;
+				var page = _n0.a.a;
+				var loadNewPage = A4(author$project$Guide$loadPage, screenClass, rootPath, page, url.fragment);
 				var command = function () {
 					if (currentState.$ === 'Loaded') {
-						var currentPage = currentState.a;
-						var currentDocument = currentState.b;
-						return _Utils_eq(page, currentPage) ? A2(author$project$Guide$scrollTo, screenClass, fragment) : A4(author$project$Guide$loadPage, screenClass, rootPath, page, fragment);
+						var current = currentState.a;
+						return _Utils_eq(page, current.page) ? author$project$Guide$scrollTo(url.fragment) : loadNewPage;
 					} else {
-						return A4(author$project$Guide$loadPage, screenClass, rootPath, page, fragment);
+						return loadNewPage;
 					}
 				}();
 				return _Utils_Tuple2(currentState, command);
 			} else {
 				var _n2 = _n0.a;
 				if (screenClass.$ === 'Large') {
+					var loadReadme = A4(author$project$Guide$loadPage, screenClass, rootPath, readmePage, url.fragment);
 					return _Utils_Tuple2(
 						currentState,
-						A4(author$project$Guide$loadPage, screenClass, rootPath, readmePage, elm$core$Maybe$Nothing));
+						function () {
+							if (currentState.$ === 'Loaded') {
+								var current = currentState.a;
+								return author$project$Guide$Page$isReadme(current.page) ? author$project$Guide$scrollTo(url.fragment) : loadReadme;
+							} else {
+								return loadReadme;
+							}
+						}());
 				} else {
 					return _Utils_Tuple2(author$project$Guide$Navigating, elm$core$Platform$Cmd$none);
 				}
@@ -17074,7 +17250,7 @@ var author$project$Guide$handleNewUrl = F6(
 					author$project$Guide$Error(errorMessage),
 					elm$core$Platform$Cmd$none);
 			} else {
-				var _n4 = _n0.a;
+				var _n5 = _n0.a;
 				var errorMessage = 'No page matching ' + elm$url$Url$toString(url);
 				return _Utils_Tuple2(
 					author$project$Guide$Error(errorMessage),
@@ -17100,17 +17276,28 @@ var author$project$Guide$init = F7(
 			{allPages: allPages, author: author, navigationKey: navigationKey, packageName: packageName, readmePage: readmePage, rootPath: rootPath, screenClass: screenClass, state: state},
 			command);
 	});
-var elm$core$Platform$Sub$batch = _Platform_batch;
-var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
-var author$project$Guide$subscriptions = function (model) {
-	return elm$core$Platform$Sub$none;
+var author$project$Guide$Loaded = function (a) {
+	return {$: 'Loaded', a: a};
 };
-var author$project$Guide$Loaded = F2(
-	function (a, b) {
-		return {$: 'Loaded', a: a, b: b};
-	});
 var elm$browser$Browser$Navigation$load = _Browser_load;
 var elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
+var elm$core$Dict$isEmpty = function (dict) {
+	if (dict.$ === 'RBEmpty_elm_builtin') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var elm$core$Set$isEmpty = function (_n0) {
+	var dict = _n0.a;
+	return elm$core$Dict$isEmpty(dict);
+};
+var elm$core$Set$remove = F2(
+	function (key, _n0) {
+		var dict = _n0.a;
+		return elm$core$Set$Set_elm_builtin(
+			A2(elm$core$Dict$remove, key, dict));
+	});
 var author$project$Guide$update = F2(
 	function (message, model) {
 		switch (message.$) {
@@ -17150,38 +17337,66 @@ var author$project$Guide$update = F2(
 						}),
 					elm$core$Platform$Cmd$none);
 			case 'DocumentLoaded':
-				var documentPage = message.a;
-				var fragment = message.b;
-				var document = message.c;
+				var loaded = message.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							state: A2(author$project$Guide$Loaded, documentPage, document)
+							state: author$project$Guide$Loaded(loaded)
 						}),
-					A2(author$project$Guide$scrollTo, model.screenClass, fragment));
-			case 'DocumentUpdated':
-				var newDocument = message.a;
-				var _n3 = model.state;
-				if (_n3.$ === 'Loaded') {
-					var page = _n3.a;
-					var currentDocument = _n3.b;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								state: A2(author$project$Guide$Loaded, page, newDocument)
-							}),
-						elm$core$Platform$Cmd$none);
+					elm$core$Set$isEmpty(loaded.imagesToLoad) ? author$project$Guide$scrollTo(loaded.fragment) : elm$core$Platform$Cmd$none);
+			case 'DocumentMsg':
+				if (message.a.$ === 'Updated') {
+					var newDocument = message.a.a;
+					var _n3 = model.state;
+					if (_n3.$ === 'Loaded') {
+						var current = _n3.a;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									state: author$project$Guide$Loaded(
+										_Utils_update(
+											current,
+											{document: newDocument}))
+								}),
+							elm$core$Platform$Cmd$none);
+					} else {
+						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					}
 				} else {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					var url = message.a.a;
+					var _n4 = model.state;
+					if (_n4.$ === 'Loaded') {
+						var current = _n4.a;
+						var updatedImagesToLoad = A2(elm$core$Set$remove, url, current.imagesToLoad);
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									state: author$project$Guide$Loaded(
+										_Utils_update(
+											current,
+											{imagesToLoad: updatedImagesToLoad}))
+								}),
+							elm$core$Set$isEmpty(updatedImagesToLoad) ? author$project$Guide$scrollTo(current.fragment) : elm$core$Platform$Cmd$none);
+					} else {
+						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					}
 				}
 			default:
 				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		}
 	});
-var author$project$Guide$DocumentUpdated = function (a) {
-	return {$: 'DocumentUpdated', a: a};
+var author$project$Guide$heightFill = mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$fill);
+var author$project$Guide$DocumentMsg = function (a) {
+	return {$: 'DocumentMsg', a: a};
+};
+var author$project$Guide$Document$ImageLoaded = function (a) {
+	return {$: 'ImageLoaded', a: a};
+};
+var author$project$Guide$Document$Updated = function (a) {
+	return {$: 'Updated', a: a};
 };
 var author$project$Guide$Document$gutterPadding = 12;
 var author$project$Guide$Document$maxWidth = 640;
@@ -17195,7 +17410,6 @@ var author$project$Guide$Document$updateWidget = F3(
 						return chunk;
 					case 'Interactive':
 						var widgetId = chunk.a;
-						var currentWidget = chunk.b;
 						return _Utils_eq(widgetId, givenId) ? A2(author$project$Guide$Document$Interactive, widgetId, newWidget) : chunk;
 					default:
 						var bullets = chunk.a;
@@ -17207,6 +17421,10 @@ var author$project$Guide$Document$updateWidget = F3(
 				}
 			},
 			chunks);
+	});
+var author$project$Guide$Document$InternalWidgetUpdated = F2(
+	function (a, b) {
+		return {$: 'InternalWidgetUpdated', a: a, b: b};
 	});
 var elm$svg$Svg$circle = elm$svg$Svg$trustedNode('circle');
 var elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
@@ -17399,16 +17617,15 @@ var author$project$Guide$Document$viewChunk = F2(
 	function (config, chunk) {
 		switch (chunk.$) {
 			case 'Static':
-				var textContext = chunk.a;
 				var element = chunk.b;
-				return A2(mdgriffith$elm_ui$Element$map, elm$core$Basics$never, element);
+				return element;
 			case 'Interactive':
 				var id = chunk.a;
 				var widget = chunk.b;
 				return A2(
 					author$project$Guide$Widget$view,
 					function (newWidget) {
-						return _Utils_Tuple2(id, newWidget);
+						return A2(author$project$Guide$Document$InternalWidgetUpdated, id, newWidget);
 					},
 					widget);
 			default:
@@ -17479,15 +17696,21 @@ var author$project$Guide$Document$view = F2(
 							A2(elm$core$List$cons, mainContent, attributes))))),
 			A2(
 				mdgriffith$elm_ui$Element$map,
-				function (_n1) {
-					var id = _n1.a;
-					var widget = _n1.b;
-					return author$project$Guide$Document$Document(
-						{
-							chunks: A3(author$project$Guide$Document$updateWidget, id, widget, document.chunks),
-							screenClass: document.screenClass,
-							title: document.title
-						});
+				function (message) {
+					if (message.$ === 'InternalWidgetUpdated') {
+						var id = message.a;
+						var widget = message.b;
+						return author$project$Guide$Document$Updated(
+							author$project$Guide$Document$Document(
+								_Utils_update(
+									document,
+									{
+										chunks: A3(author$project$Guide$Document$updateWidget, id, widget, document.chunks)
+									})));
+					} else {
+						var url = message.a;
+						return author$project$Guide$Document$ImageLoaded(url);
+					}
 				},
 				A2(
 					author$project$Guide$Document$viewChunks,
@@ -17499,36 +17722,16 @@ var mdgriffith$elm_ui$Internal$Model$AlignX = function (a) {
 };
 var mdgriffith$elm_ui$Internal$Model$CenterX = {$: 'CenterX'};
 var mdgriffith$elm_ui$Element$centerX = mdgriffith$elm_ui$Internal$Model$AlignX(mdgriffith$elm_ui$Internal$Model$CenterX);
-var mdgriffith$elm_ui$Element$clipY = A2(mdgriffith$elm_ui$Internal$Model$Class, mdgriffith$elm_ui$Internal$Flag$overflow, mdgriffith$elm_ui$Internal$Style$classes.clipY);
-var mdgriffith$elm_ui$Element$scrollbarY = A2(mdgriffith$elm_ui$Internal$Model$Class, mdgriffith$elm_ui$Internal$Flag$overflow, mdgriffith$elm_ui$Internal$Style$classes.scrollbarsY);
-var author$project$Guide$viewDocument = F3(
-	function (model, currentPage, loadedDocument) {
-		var documentElement = A2(
-			mdgriffith$elm_ui$Element$map,
-			author$project$Guide$DocumentUpdated,
-			A2(
-				author$project$Guide$Document$view,
-				_List_fromArray(
-					[mdgriffith$elm_ui$Element$centerX]),
-				loadedDocument));
-		var _n0 = model.screenClass;
-		if (_n0.$ === 'Large') {
-			return A2(
-				mdgriffith$elm_ui$Element$el,
-				_List_fromArray(
-					[
-						mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$fill),
-						mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill),
-						mdgriffith$elm_ui$Element$clipY,
-						mdgriffith$elm_ui$Element$scrollbarY,
-						mdgriffith$elm_ui$Element$htmlAttribute(
-						elm$html$Html$Attributes$id(author$project$Guide$topLevelDocumentId))
-					]),
-				documentElement);
-		} else {
-			return documentElement;
-		}
-	});
+var author$project$Guide$viewDocument = function (loadedDocument) {
+	return A2(
+		mdgriffith$elm_ui$Element$map,
+		author$project$Guide$DocumentMsg,
+		A2(
+			author$project$Guide$Document$view,
+			_List_fromArray(
+				[mdgriffith$elm_ui$Element$centerX]),
+			loadedDocument));
+};
 var mdgriffith$elm_ui$Element$image = F2(
 	function (attrs, _n0) {
 		var src = _n0.src;
@@ -17620,11 +17823,12 @@ var author$project$Guide$gitHubLink = function (model) {
 				})
 			]));
 };
+var author$project$Guide$widthFill = mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill);
 var author$project$Guide$horizontalDivider = A2(
 	mdgriffith$elm_ui$Element$el,
 	_List_fromArray(
 		[
-			mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill),
+			author$project$Guide$widthFill,
 			mdgriffith$elm_ui$Element$height(
 			mdgriffith$elm_ui$Element$px(1)),
 			mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Color$dividerLine)
@@ -17645,7 +17849,7 @@ var author$project$Guide$navTitle = function (model) {
 				mdgriffith$elm_ui$Element$paddingEach(
 				{bottom: 8, left: 0, right: 0, top: 0}),
 				mdgriffith$elm_ui$Element$Border$color(author$project$Guide$Color$dividerLine),
-				mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill)
+				author$project$Guide$widthFill
 			]),
 		_List_fromArray(
 			[
@@ -17720,7 +17924,6 @@ var elm$url$Url$Builder$string = F2(
 var author$project$Guide$Page$displayedUrl = F3(
 	function (rootPath, page, maybeFragment) {
 		if (page.$ === 'Readme') {
-			var url = page.a.url;
 			return A4(
 				elm$url$Url$Builder$custom,
 				elm$url$Url$Builder$Absolute,
@@ -17760,6 +17963,8 @@ var author$project$Guide$toPageLink = F3(
 	});
 var author$project$Guide$Color$navBorder = author$project$Guide$Color$lightGrey;
 var author$project$Guide$Color$white = A3(mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
+var mdgriffith$elm_ui$Element$clipY = A2(mdgriffith$elm_ui$Internal$Model$Class, mdgriffith$elm_ui$Internal$Flag$overflow, mdgriffith$elm_ui$Internal$Style$classes.clipY);
+var mdgriffith$elm_ui$Element$scrollbarY = A2(mdgriffith$elm_ui$Internal$Model$Class, mdgriffith$elm_ui$Internal$Flag$overflow, mdgriffith$elm_ui$Internal$Style$classes.scrollbarsY);
 var mdgriffith$elm_ui$Element$Font$regular = A2(mdgriffith$elm_ui$Internal$Model$Class, mdgriffith$elm_ui$Internal$Flag$fontWeight, mdgriffith$elm_ui$Internal$Style$classes.textNormalWeight);
 var author$project$Guide$viewNav = F2(
 	function (model, currentPage) {
@@ -17767,8 +17972,8 @@ var author$project$Guide$viewNav = F2(
 			mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
 				[
-					mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$fill),
-					mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill),
+					author$project$Guide$heightFill,
+					author$project$Guide$widthFill,
 					mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Color$white),
 					mdgriffith$elm_ui$Element$Border$widthEach(
 					{bottom: 0, left: 0, right: 1, top: 0}),
@@ -17811,7 +18016,7 @@ var author$project$Guide$viewNav = F2(
 			mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
 				[
-					mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$fill),
+					author$project$Guide$heightFill,
 					mdgriffith$elm_ui$Element$width(elementWidth),
 					mdgriffith$elm_ui$Element$clipY,
 					mdgriffith$elm_ui$Element$scrollbarY
@@ -18036,91 +18241,77 @@ var author$project$Guide$view = function (model) {
 	return {
 		body: _List_fromArray(
 			[
-				A2(
-				mdgriffith$elm_ui$Element$layout,
-				_List_fromArray(
-					[
-						mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill),
-						mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$fill)
-					]),
 				function () {
-					var _n0 = model.screenClass;
-					if (_n0.$ === 'Large') {
-						var _n1 = model.state;
-						switch (_n1.$) {
-							case 'Navigating':
-								return A2(
-									mdgriffith$elm_ui$Element$row,
-									_List_fromArray(
-										[
-											mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$fill),
-											mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill)
-										]),
-									_List_fromArray(
-										[
-											A2(
-											author$project$Guide$viewNav,
-											model,
-											elm$core$Maybe$Just(model.readmePage)),
-											mdgriffith$elm_ui$Element$none
-										]));
-							case 'Loading':
-								return A2(
-									mdgriffith$elm_ui$Element$row,
-									_List_fromArray(
-										[
-											mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$fill),
-											mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill)
-										]),
-									_List_fromArray(
-										[
-											A2(author$project$Guide$viewNav, model, elm$core$Maybe$Nothing),
-											mdgriffith$elm_ui$Element$none
-										]));
-							case 'Loaded':
-								var page = _n1.a;
-								var document = _n1.b;
-								return A2(
-									mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$fill),
-											mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill),
-											mdgriffith$elm_ui$Element$inFront(
-											A2(
-												mdgriffith$elm_ui$Element$el,
-												_List_fromArray(
-													[
-														mdgriffith$elm_ui$Element$alignLeft,
-														mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$fill)
-													]),
-												A2(
-													author$project$Guide$viewNav,
-													model,
-													elm$core$Maybe$Just(page))))
-										]),
-									A3(author$project$Guide$viewDocument, model, page, document));
-							default:
-								var message = _n1.a;
-								return mdgriffith$elm_ui$Element$text(message);
-						}
-					} else {
+				var _n0 = model.screenClass;
+				if (_n0.$ === 'Large') {
+					var displayedPage = function () {
 						var _n2 = model.state;
 						switch (_n2.$) {
-							case 'Navigating':
-								return A2(author$project$Guide$viewNav, model, elm$core$Maybe$Nothing);
-							case 'Loading':
-								return mdgriffith$elm_ui$Element$none;
 							case 'Loaded':
-								var page = _n2.a;
-								var document = _n2.b;
-								return A3(author$project$Guide$viewDocument, model, page, document);
+								var page = _n2.a.page;
+								return elm$core$Maybe$Just(page);
+							case 'Navigating':
+								return elm$core$Maybe$Just(model.readmePage);
+							case 'Loading':
+								return elm$core$Maybe$Nothing;
 							default:
-								var message = _n2.a;
-								return mdgriffith$elm_ui$Element$text(message);
+								return elm$core$Maybe$Nothing;
 						}
-					}
-				}())
+					}();
+					var navElement = A2(
+						mdgriffith$elm_ui$Element$el,
+						_List_fromArray(
+							[mdgriffith$elm_ui$Element$alignLeft, author$project$Guide$heightFill]),
+						A2(author$project$Guide$viewNav, model, displayedPage));
+					return A2(
+						mdgriffith$elm_ui$Element$layout,
+						_List_fromArray(
+							[
+								author$project$Guide$widthFill,
+								author$project$Guide$heightFill,
+								mdgriffith$elm_ui$Element$inFront(navElement)
+							]),
+						function () {
+							var _n1 = model.state;
+							switch (_n1.$) {
+								case 'Navigating':
+									return mdgriffith$elm_ui$Element$none;
+								case 'Loading':
+									return mdgriffith$elm_ui$Element$none;
+								case 'Loaded':
+									var document = _n1.a.document;
+									return author$project$Guide$viewDocument(document);
+								default:
+									var message = _n1.a;
+									return A2(
+										mdgriffith$elm_ui$Element$el,
+										_List_fromArray(
+											[mdgriffith$elm_ui$Element$centerX]),
+										mdgriffith$elm_ui$Element$text(message));
+							}
+						}());
+				} else {
+					return A2(
+						mdgriffith$elm_ui$Element$layout,
+						_List_fromArray(
+							[author$project$Guide$widthFill, author$project$Guide$heightFill]),
+						function () {
+							var _n3 = model.state;
+							switch (_n3.$) {
+								case 'Navigating':
+									return A2(author$project$Guide$viewNav, model, elm$core$Maybe$Nothing);
+								case 'Loading':
+									return mdgriffith$elm_ui$Element$none;
+								case 'Loaded':
+									var document = _n3.a.document;
+									return author$project$Guide$viewDocument(document);
+								default:
+									var message = _n3.a;
+									return mdgriffith$elm_ui$Element$text(message);
+							}
+						}());
+				}
+			}()
 			]),
 		title: model.packageName
 	};
@@ -18140,6 +18331,8 @@ var author$project$Guide$Page$with = function (given) {
 		});
 };
 var elm$browser$Browser$application = _Browser_application;
+var elm$core$Platform$Sub$batch = _Platform_batch;
+var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var author$project$Guide$program = function (_n0) {
 	var author = _n0.author;
 	var packageName = _n0.packageName;
@@ -18156,7 +18349,7 @@ var author$project$Guide$program = function (_n0) {
 			init: A4(author$project$Guide$init, author, packageName, readmePage, allPages),
 			onUrlChange: author$project$Guide$UrlChanged,
 			onUrlRequest: author$project$Guide$UrlRequested,
-			subscriptions: author$project$Guide$subscriptions,
+			subscriptions: elm$core$Basics$always(elm$core$Platform$Sub$none),
 			update: author$project$Guide$update,
 			view: author$project$Guide$view
 		});

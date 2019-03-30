@@ -3,6 +3,7 @@ module Guide.Page exposing
     , readme, with
     , sourceUrl, displayedUrl, title, widgets
     , Match(..), Error(..), matching
+    , isReadme
     )
 
 {-|
@@ -86,6 +87,16 @@ widgets page =
             properties.widgets
 
 
+isReadme : Page -> Bool
+isReadme page =
+    case page of
+        Readme _ ->
+            True
+
+        Page _ ->
+            False
+
+
 type alias Route =
     { query : Maybe String
     , fragment : Maybe String
@@ -111,7 +122,7 @@ matchesQuery query page =
 
 
 type Match
-    = Match { page : Page, fragment : Maybe String }
+    = Match Page
     | Unspecified
 
 
@@ -128,7 +139,7 @@ matching { url, rootPath } pages =
                 Just pageTitle ->
                     case List.filter (matchesQuery pageTitle) pages of
                         [ page ] ->
-                            Ok (Match { page = page, fragment = fragment })
+                            Ok (Match page)
 
                         _ ->
                             Err (NotFound pageTitle)
