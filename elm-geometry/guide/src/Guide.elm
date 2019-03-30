@@ -59,11 +59,20 @@ handleMarkdown screenClass page fragment rootUrl result =
             LoadError "Network error"
 
 
+appendSlash : String -> String
+appendSlash url =
+    if String.endsWith "/" url then
+        url
+
+    else
+        url ++ "/"
+
+
 loadPage : Screen.Class -> List String -> Page -> Maybe String -> Cmd Msg
 loadPage screenClass rootPath page fragment =
     let
         rootUrl =
-            Url.Builder.absolute rootPath []
+            Url.Builder.absolute rootPath [] |> appendSlash
     in
     Http.get
         { url = Page.sourceUrl rootPath page
