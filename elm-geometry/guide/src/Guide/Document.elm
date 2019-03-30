@@ -140,7 +140,7 @@ view attributes (Document document) =
             Region.mainContent
     in
     Element.el
-        (Font.merriweather :: fontSize :: width :: padding :: mainContent :: attributes)
+        (Font.body :: fontSize :: width :: padding :: mainContent :: attributes)
         (viewChunks { topLevel = True, screenClass = document.screenClass } document.chunks
             |> Element.map
                 (\message ->
@@ -396,8 +396,8 @@ viewTitle screenClass textFragments rootUrl =
             ]
             [ Element.paragraph
                 [ Region.heading 1
-                , Font.alegreyaSans
                 , Font.extraBold
+                , Font.heading
                 , Font.size (Font.sizes screenClass).title
                 , Element.spacing (Font.sizes screenClass).titleLineSpacing
                 , Element.width Element.fill
@@ -427,8 +427,8 @@ viewSection : Screen.Class -> List Text -> Element InternalMsg
 viewSection screenClass textFragments =
     Element.paragraph
         [ Region.heading 2
-        , Font.alegreyaSans
         , Font.extraBold
+        , Font.heading
         , Font.size (Font.sizes screenClass).section
         , Element.spacing (Font.sizes screenClass).sectionLineSpacing
         , Element.paddingEach { top = 12, bottom = 0, left = 0, right = 0 }
@@ -441,8 +441,8 @@ viewSubsection : Screen.Class -> List Text -> Element InternalMsg
 viewSubsection screenClass textFragments =
     Element.paragraph
         [ Region.heading 3
-        , Font.alegreyaSans
         , Font.extraBold
+        , Font.heading
         , Font.size (Font.sizes screenClass).subsection
         , Element.spacing (Font.sizes screenClass).subsectionLineSpacing
         , Element.paddingEach { top = 6, bottom = 0, left = 0, right = 0 }
@@ -471,7 +471,7 @@ viewCodeBlock screenClass code =
     Element.column
         [ Border.rounded 5
         , Element.paddingXY 12 10
-        , Font.sourceCodePro
+        , Font.code
         , Background.color Color.codeBlockBackground
         , Font.size (Font.sizes screenClass).codeBlockCode
         , Element.spacing (Font.sizes screenClass).codeBlockLineSpacing
@@ -594,7 +594,7 @@ renderTextFragment screenClass context fragment =
                             ( [ Font.bold ], Element.text string )
 
                         InlineCode chunks ->
-                            ( Font.sourceCodePro
+                            ( Font.code
                                 :: Font.size (codeFontSize screenClass context)
                                 :: inlineCodeBackgroundAttributes
                             , Element.text <|
@@ -623,7 +623,7 @@ renderTextFragment screenClass context fragment =
                         []
             in
             Element.row
-                (Font.sourceCodePro :: Font.size fontSize :: backgroundAttributes)
+                (Font.code :: Font.size fontSize :: backgroundAttributes)
                 (List.map (inlineCodeElement fontSize) chunks)
 
         Image properties ->

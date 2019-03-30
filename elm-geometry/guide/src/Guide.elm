@@ -325,7 +325,7 @@ viewNav model currentPage =
                 , Background.color Color.white
                 , Border.widthEach { top = 0, bottom = 0, left = 0, right = 1 }
                 , Border.color Color.navBorder
-                , Font.alegreyaSans
+                , Font.heading
                 , Font.color Color.linkText
                 , Font.size (Font.sizes model.screenClass).navText
                 , Font.regular

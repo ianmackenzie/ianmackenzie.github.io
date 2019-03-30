@@ -1,28 +1,28 @@
-module Guide.Font exposing (alegreyaSans, merriweather, sizes, sourceCodePro)
+module Guide.Font exposing (body, code, heading, sizes)
 
 import Element
 import Element.Font
 import Guide.Screen as Screen
 
 
-sourceCodePro : Element.Attribute msg
-sourceCodePro =
+code : Element.Attribute msg
+code =
     Element.Font.family
         [ Element.Font.typeface "Source Code Pro"
         , Element.Font.monospace
         ]
 
 
-alegreyaSans : Element.Attribute msg
-alegreyaSans =
+heading : Element.Attribute msg
+heading =
     Element.Font.family
         [ Element.Font.typeface "Alegreya Sans"
         , Element.Font.sansSerif
         ]
 
 
-merriweather : Element.Attribute msg
-merriweather =
+body : Element.Attribute msg
+body =
     Element.Font.family
         [ Element.Font.typeface "Merriweather"
         , Element.Font.serif
