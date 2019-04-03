@@ -8,11 +8,10 @@ point =
     Point2d.fromCoordinates ( 200, 300 )
 ```
 
-However, this leaves several things implicit. Are those numbers in meters,
-pixels or something else? If they're in pixels, and this is an on-screen point,
-is the X direction right or left? Is Y up or down? Is the point (0, 0) at the
-upper left corner of the screen, the lower left, the center, or somewhere else
-entirely?
+What does `300` mean here though? 300 meters? 300 pixels? If the numbers are in
+pixels, and this is an on-screen point, is the X direction right or left? Is Y
+up or down? Is the point (0, 0) at the upper left corner of the screen, the
+lower left, the center, or somewhere else entirely?
 
 ## Units
 
