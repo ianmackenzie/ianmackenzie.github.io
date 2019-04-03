@@ -258,19 +258,6 @@ toPageLink rootPath currentPage page =
         }
 
 
-navTitle : Model -> Element msg
-navTitle model =
-    Element.paragraph
-        [ Font.color Color.black
-        , Font.size (Font.sizes model.screenClass).navTitle
-        , Border.widthEach { top = 0, bottom = 1, left = 0, right = 0 }
-        , Element.paddingEach { top = 0, bottom = 8, left = 0, right = 0 }
-        , Border.color Color.dividerLine
-        , widthFill
-        ]
-        [ Element.text model.packageName ]
-
-
 packageDocLink : Model -> Element msg
 packageDocLink model =
     Element.row [ Element.spacing 4 ]
@@ -280,7 +267,7 @@ packageDocLink model =
                 Url.Builder.crossOrigin "https://package.elm-lang.org"
                     [ "packages", model.author, model.packageName, "latest" ]
                     []
-            , label = Element.text "Package documentation"
+            , label = Element.text (model.author ++ "/" ++ model.packageName)
             }
         ]
 
@@ -317,6 +304,14 @@ horizontalDivider =
 viewNav : Model -> Maybe Page -> Element msg
 viewNav model currentPage =
     let
+        navPadding =
+            case model.screenClass of
+                Screen.Large ->
+                    24
+
+                Screen.Small ->
+                    12
+
         navElement =
             Element.column
                 [ heightFill
@@ -329,15 +324,14 @@ viewNav model currentPage =
                 , Font.size (Font.sizes model.screenClass).navText
                 , Font.regular
                 , Element.spacing 12
-                , Element.padding 12
+                , Element.padding navPadding
                 ]
                 (List.concat
-                    [ [ navTitle model ]
+                    [ [ packageDocLink model ]
+                    , [ horizontalDivider ]
                     , List.map (toPageLink model.rootPath currentPage) model.allPages
-                    , [ horizontalDivider
-                      , packageDocLink model
-                      , gitHubLink model
-                      ]
+                    , [ horizontalDivider ]
+                    , [ gitHubLink model ]
                     ]
                 )
 
@@ -358,9 +352,14 @@ viewNav model currentPage =
         navElement
 
 
-viewDocument : Document -> Element Msg
-viewDocument loadedDocument =
-    Document.view [ Element.centerX ] loadedDocument
+maxDocumentWidth : Int
+maxDocumentWidth =
+    640
+
+
+viewDocument : List (Element.Attribute Never) -> Document -> Element Msg
+viewDocument attributes loadedDocument =
+    Document.view (List.map (Element.mapAttribute never) attributes) loadedDocument
         |> Element.map DocumentMsg
 
 
@@ -395,23 +394,60 @@ view model =
                             Error _ ->
                                 Nothing
 
-                    navElement =
-                        Element.el [ Element.alignLeft, heightFill ]
-                            (viewNav model displayedPage)
+                    navLayer =
+                        Element.row
+                            [ widthFill
+                            , heightFill
+                            , Element.htmlAttribute (Html.Attributes.style "pointer-events" "none")
+                            ]
+                            [ Element.el
+                                [ Element.width (Element.fill |> Element.minimum navWidth)
+                                , heightFill
+                                , Element.htmlAttribute (Html.Attributes.style "pointer-events" "auto")
+                                ]
+                                (Element.el [ Element.alignRight, heightFill ]
+                                    (viewNav model displayedPage)
+                                )
+                            , Element.el
+                                [ Element.width (Element.px maxDocumentWidth)
+                                , heightFill
+                                ]
+                                Element.none
+                            , Element.el [ widthFill ]
+                                Element.none
+                            ]
+
+                    documentElement =
+                        case model.state of
+                            Navigating ->
+                                Element.none
+
+                            Loading ->
+                                Element.none
+
+                            Loaded { document } ->
+                                viewDocument [ widthFill, heightFill ] document
+
+                            Error message ->
+                                Element.el [ Element.centerX ] (Element.text message)
+
+                    mainLayer =
+                        Element.row [ widthFill, heightFill ]
+                            [ Element.el
+                                [ Element.width (Element.fill |> Element.minimum navWidth)
+                                , heightFill
+                                ]
+                                Element.none
+                            , Element.el
+                                [ Element.width (Element.px maxDocumentWidth)
+                                , heightFill
+                                , Element.paddingXY 24 12
+                                ]
+                                documentElement
+                            , Element.el [ widthFill ] Element.none
+                            ]
                 in
-                Element.layout [ widthFill, heightFill, Element.inFront navElement ] <|
-                    case model.state of
-                        Navigating ->
-                            Element.none
-
-                        Loading ->
-                            Element.none
-
-                        Loaded { document } ->
-                            viewDocument document
-
-                        Error message ->
-                            Element.el [ Element.centerX ] (Element.text message)
+                Element.layout [ widthFill, heightFill, Element.inFront navLayer ] mainLayer
 
             Screen.Small ->
                 Element.layout [ widthFill, heightFill ] <|
@@ -423,7 +459,11 @@ view model =
                             Element.none
 
                         Loaded { document } ->
-                            viewDocument document
+                            viewDocument
+                                [ Element.padding 12
+                                , Element.width (Element.fill |> Element.maximum 10000)
+                                ]
+                                document
 
                         Error message ->
                             Element.text message

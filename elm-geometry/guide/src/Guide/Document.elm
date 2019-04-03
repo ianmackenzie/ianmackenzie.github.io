@@ -109,16 +109,6 @@ bulletSpacing =
     8
 
 
-maxWidth : Int
-maxWidth =
-    640
-
-
-gutterPadding : Int
-gutterPadding =
-    12
-
-
 title : Document -> String
 title (Document document) =
     document.title
@@ -130,17 +120,11 @@ view attributes (Document document) =
         fontSize =
             Font.size (Font.sizes document.screenClass).body
 
-        width =
-            Element.width (Element.fill |> Element.maximum maxWidth)
-
-        padding =
-            Element.padding gutterPadding
-
         mainContent =
             Region.mainContent
     in
     Element.el
-        (Font.body :: fontSize :: width :: padding :: mainContent :: attributes)
+        (Font.body :: fontSize :: mainContent :: attributes)
         (viewChunks { topLevel = True, screenClass = document.screenClass } document.chunks
             |> Element.map
                 (\message ->
