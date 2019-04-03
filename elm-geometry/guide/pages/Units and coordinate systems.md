@@ -44,19 +44,19 @@ checked by the Elm compiler!) but doesn't address the remaining questions.
 
 In addition to tracking what units are used, `elm-geometry` also lets you add
 (optional) type annotations to specify what _coordinate system_ a particular
-point is defined in. For example, we might declare a `TopLeftCoordinates` type
-and then add a type annotation to `point` asserting that it is defined in
-coordinates relative to the top-left corner of the screen:
+point is defined in. For example, we might declare a `TopLeft` type and then
+add a type annotation to `point` asserting that it is defined in coordinates
+relative to the top-left corner of the screen:
 
 ```elm
 {-| A coordinate system where (0, 0) is the top left
 corner of the screen, positive X is to the right and
 positive Y is down.
 -}
-type TopLeftCoordinates =
-    TopLeftCoordinates
+type TopLeft =
+    TopLeft
 
-point : Point2d Pixels TopLeftCoordinates
+point : Point2d Pixels TopLeft
 point =
     Point2d.fromCoordinates
         ( Pixels.pixels 200
@@ -64,7 +64,7 @@ point =
         )
 ```
 
-Note that the `TopLeftCoordinates` type we declared gives us a convenient place
-to document exactly how that coordinate system is defined. This combination now
-gives us some nice type safety - the compiler will tell us if we try to mix two
-points that have different units or are defined in different coordinate systems.
+Note that the `TopLeft` type we declared gives us a convenient place to document
+exactly how that coordinate system is defined. This combination now gives us
+some nice type safety - the compiler will tell us if we try to mix two points
+that have different units or are defined in different coordinate systems.
