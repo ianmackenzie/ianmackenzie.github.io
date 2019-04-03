@@ -11652,7 +11652,9 @@ var author$project$Guide$Document$viewTitle = F3(
 								_List_fromArray(
 									[
 										mdgriffith$elm_ui$Element$alignTop,
-										mdgriffith$elm_ui$Element$Font$size(32)
+										mdgriffith$elm_ui$Element$Font$size(32),
+										mdgriffith$elm_ui$Element$paddingEach(
+										{bottom: 0, left: 8, right: 0, top: 0})
 									]),
 								{label: author$project$Guide$Document$hamburgerIcon, url: rootUrl});
 						} else {
