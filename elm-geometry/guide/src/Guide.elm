@@ -542,12 +542,21 @@ update message model =
 program :
     { author : String
     , packageName : String
-    , readmeUrl : String
+    , branch : String
     , pages : List { title : String, widgets : List ( String, Widget ) }
     }
     -> Program
-program { author, packageName, readmeUrl, pages } =
+program { author, packageName, branch, pages } =
     let
+        readmeUrl =
+            Url.Builder.crossOrigin "https://cdn.jsdelivr.net"
+                [ "gh"
+                , author
+                , packageName ++ "@" ++ branch
+                , "README.md"
+                ]
+                []
+
         readmePage =
             Page.readme { url = readmeUrl }
 
