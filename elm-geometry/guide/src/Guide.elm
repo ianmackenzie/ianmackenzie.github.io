@@ -9,6 +9,7 @@ module Guide exposing (Program, program)
 import Browser exposing (UrlRequest)
 import Browser.Dom
 import Browser.Navigation as Navigation
+import Dict
 import Element exposing (Element)
 import Element.Background as Background
 import Element.Border as Border
@@ -21,8 +22,10 @@ import Guide.Screen as Screen
 import Guide.Widget exposing (Widget)
 import Html.Attributes
 import Http
+import Parser exposing ((|.), (|=), Parser)
 import Set exposing (Set)
 import Task
+import Time
 import Url exposing (Url)
 import Url.Builder
 
@@ -38,15 +41,137 @@ navWidth =
     300
 
 
-handleMarkdown : Screen.Class -> Page -> Maybe String -> String -> Result Http.Error String -> Msg
+monthName : Time.Month -> String
+monthName month =
+    case month of
+        Time.Jan ->
+            "January"
+
+        Time.Feb ->
+            "February"
+
+        Time.Mar ->
+            "March"
+
+        Time.Apr ->
+            "April"
+
+        Time.May ->
+            "May"
+
+        Time.Jun ->
+            "June"
+
+        Time.Jul ->
+            "July"
+
+        Time.Aug ->
+            "August"
+
+        Time.Sep ->
+            "September"
+
+        Time.Oct ->
+            "October"
+
+        Time.Nov ->
+            "November"
+
+        Time.Dec ->
+            "December"
+
+
+toDateString : Int -> Time.Month -> Int -> Int -> Int -> Int -> String
+toDateString day month year hour minute second =
+    monthName month ++ " " ++ String.fromInt day ++ ", " ++ String.fromInt year
+
+
+parseTwoDigitNumber : Parser Int
+parseTwoDigitNumber =
+    Parser.oneOf
+        [ Parser.succeed identity
+            |. Parser.token "0"
+            |= Parser.int
+        , Parser.int
+        ]
+
+
+dateParser : Parser String
+dateParser =
+    -- From MDN: "Last-Modified: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT"
+    -- https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Last-Modified
+    Parser.succeed toDateString
+        |. Parser.oneOf (List.map Parser.token [ "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" ])
+        |. Parser.token ", "
+        |= parseTwoDigitNumber
+        |. Parser.token " "
+        |= Parser.oneOf
+            [ Parser.map (always Time.Jan) (Parser.token "Jan")
+            , Parser.map (always Time.Feb) (Parser.token "Feb")
+            , Parser.map (always Time.Mar) (Parser.token "Mar")
+            , Parser.map (always Time.Apr) (Parser.token "Apr")
+            , Parser.map (always Time.May) (Parser.token "May")
+            , Parser.map (always Time.Jun) (Parser.token "Jun")
+            , Parser.map (always Time.Jul) (Parser.token "Jul")
+            , Parser.map (always Time.Aug) (Parser.token "Aug")
+            , Parser.map (always Time.Sep) (Parser.token "Sep")
+            , Parser.map (always Time.Oct) (Parser.token "Oct")
+            , Parser.map (always Time.Nov) (Parser.token "Nov")
+            , Parser.map (always Time.Dec) (Parser.token "Dec")
+            ]
+        |. Parser.token " "
+        |= Parser.int
+        |. Parser.token " "
+        |= parseTwoDigitNumber
+        |. Parser.token ":"
+        |= parseTwoDigitNumber
+        |. Parser.token ":"
+        |= parseTwoDigitNumber
+        |. Parser.token " GMT"
+
+
+handleResponse : Http.Response String -> Result String { markdown : String, lastModified : Maybe String }
+handleResponse response =
+    case response of
+        Http.BadUrl_ url ->
+            Err ("Could not load page from " ++ url)
+
+        Http.Timeout_ ->
+            Err "HTTP request timed out when loading page"
+
+        Http.NetworkError_ ->
+            Err "HTTP network error when loading page"
+
+        Http.BadStatus_ metadata _ ->
+            Err ("Got an HTTP " ++ String.fromInt metadata.statusCode ++ " error code when loading page")
+
+        Http.GoodStatus_ metadata content ->
+            let
+                parsedDate =
+                    Dict.get "last-modified" metadata.headers
+                        |> Maybe.map
+                            (\lastModified ->
+                                case Parser.run dateParser lastModified of
+                                    Ok parsed ->
+                                        parsed
+
+                                    Err err ->
+                                        lastModified
+                            )
+            in
+            Ok { markdown = content, lastModified = parsedDate }
+
+
+handleMarkdown : Screen.Class -> Page -> Maybe String -> String -> Result String { markdown : String, lastModified : Maybe String } -> Msg
 handleMarkdown screenClass page fragment rootUrl result =
     case result of
-        Ok markdown ->
+        Ok { markdown, lastModified } ->
             let
                 documentConfig =
                     { screenClass = screenClass
                     , widgets = []
                     , rootUrl = rootUrl
+                    , lastModified = lastModified
                     }
             in
             case Document.parse documentConfig markdown of
@@ -82,7 +207,7 @@ loadPage screenClass rootPath page fragment =
     in
     Http.get
         { url = Page.sourceUrl rootPath page
-        , expect = Http.expectString (handleMarkdown screenClass page fragment rootUrl)
+        , expect = Http.expectStringResponse (handleMarkdown screenClass page fragment rootUrl) handleResponse
         }
 
 

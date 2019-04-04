@@ -3,6 +3,7 @@ module Guide.Color exposing
     , codeBlockBackground
     , dividerLine
     , inlineCodeBackground
+    , lastModified
     , linkText
     , navBackground
     , navBorder
@@ -67,3 +68,8 @@ black =
 navDividerLine : Element.Color
 navDividerLine =
     Element.rgb255 200 200 200
+
+
+lastModified : Element.Color
+lastModified =
+    Element.rgb 0.5 0.5 0.5

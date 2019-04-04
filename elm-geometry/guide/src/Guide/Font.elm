@@ -46,6 +46,7 @@ type alias Sizes =
     , codeBlockLineSpacing : Int
     , navText : Int
     , navTitle : Int
+    , lastModified : Int
     }
 
 
@@ -67,6 +68,7 @@ largeScreenSizes =
     , codeBlockLineSpacing = 4
     , navText = 16
     , navTitle = 32
+    , lastModified = 16
     }
 
 
@@ -88,6 +90,7 @@ smallScreenSizes =
     , codeBlockLineSpacing = 4
     , navText = 19
     , navTitle = 32
+    , lastModified = 16
     }
 
 

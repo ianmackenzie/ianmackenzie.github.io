@@ -51,7 +51,7 @@ type CompiledChunk
 
 
 type Chunk
-    = Title (List Text) String
+    = Title { textFragments : List Text, rootUrl : String, lastModified : Maybe String }
     | Section (List Text)
     | Subsection (List Text)
     | Paragraph (List Text)
@@ -285,8 +285,8 @@ compileHelp screenClass chunks widgetId accumulated =
                     compileHelp screenClass rest widgetId (compiledChunk :: accumulated)
             in
             case first of
-                Title textFragments rootUrl ->
-                    prepend (Static TitleContext (viewTitle screenClass textFragments rootUrl))
+                Title { textFragments, rootUrl, lastModified } ->
+                    prepend (Static TitleContext (viewTitle screenClass textFragments rootUrl lastModified))
 
                 Section textFragments ->
                     prepend (Static SectionContext (viewSection screenClass textFragments))
@@ -365,41 +365,59 @@ hamburgerIcon =
             ]
 
 
-viewTitle : Screen.Class -> List Text -> String -> Element InternalMsg
-viewTitle screenClass textFragments rootUrl =
-    Element.el
-        [ Element.width Element.fill
-        , Element.paddingEach { bottom = 8, top = 0, left = 0, right = 0 }
-        ]
-        (Element.row
-            [ Element.width Element.fill
-            , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-            , Element.paddingEach { top = 0, bottom = 8, left = 0, right = 0 }
-            , Border.color Color.dividerLine
-            ]
-            [ Element.paragraph
-                [ Region.heading 1
-                , Font.heading
-                , Font.size (Font.sizes screenClass).title
-                , Element.spacing (Font.sizes screenClass).titleLineSpacing
-                , Element.width Element.fill
+viewTitle : Screen.Class -> List Text -> String -> Maybe String -> Element InternalMsg
+viewTitle screenClass textFragments rootUrl lastModified =
+    let
+        titleElement =
+            Element.el
+                [ Element.width Element.fill
+                , Element.paddingEach { bottom = 8, top = 0, left = 0, right = 0 }
                 ]
-                (renderText screenClass TitleContext textFragments)
-            , case screenClass of
-                Screen.Small ->
-                    Element.link
-                        [ Element.alignTop
-                        , Font.size 32
-                        , Element.paddingEach { left = 8, top = 0, bottom = 0, right = 0 }
+                (Element.row
+                    [ Element.width Element.fill
+                    , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+                    , Element.paddingEach { top = 0, bottom = 8, left = 0, right = 0 }
+                    , Border.color Color.dividerLine
+                    ]
+                    [ Element.paragraph
+                        [ Region.heading 1
+                        , Font.heading
+                        , Font.size (Font.sizes screenClass).title
+                        , Element.spacing (Font.sizes screenClass).titleLineSpacing
+                        , Element.width Element.fill
                         ]
-                        { url = rootUrl
-                        , label = hamburgerIcon
-                        }
+                        (renderText screenClass TitleContext textFragments)
+                    , case screenClass of
+                        Screen.Small ->
+                            Element.link
+                                [ Element.alignTop
+                                , Font.size 32
+                                , Element.paddingEach { left = 8, top = 0, bottom = 0, right = 0 }
+                                ]
+                                { url = rootUrl
+                                , label = hamburgerIcon
+                                }
 
-                Screen.Large ->
-                    Element.none
-            ]
-        )
+                        Screen.Large ->
+                            Element.none
+                    ]
+                )
+    in
+    case lastModified of
+        Just date ->
+            Element.column [ Element.width Element.fill ]
+                [ titleElement
+                , Element.paragraph
+                    [ Font.color Color.lastModified
+                    , Font.italic
+                    , Font.size (Font.sizes screenClass).lastModified
+                    , Element.paddingEach { top = 0, bottom = 12, left = 0, right = 0 }
+                    ]
+                    [ Element.text "Last updated on ", Element.text date ]
+                ]
+
+        Nothing ->
+            titleElement
 
 
 toId : List Text -> String
@@ -794,8 +812,8 @@ parseChunks config blocks accumulated =
             Ok (List.reverse accumulated)
 
 
-parse : { screenClass : Screen.Class, widgets : List ( String, Widget ), rootUrl : String } -> String -> Result String ( Document, Set String )
-parse { screenClass, widgets, rootUrl } markdown =
+parse : { screenClass : Screen.Class, widgets : List ( String, Widget ), rootUrl : String, lastModified : Maybe String } -> String -> Result String ( Document, Set String )
+parse { screenClass, widgets, rootUrl, lastModified } markdown =
     let
         options =
             { softAsHardLineBreak = False
@@ -810,8 +828,15 @@ parse { screenClass, widgets, rootUrl } markdown =
             Result.map2
                 (\titleText bodyChunks ->
                     let
+                        titleChunk =
+                            Title
+                                { textFragments = titleText
+                                , rootUrl = rootUrl
+                                , lastModified = lastModified
+                                }
+
                         compiledChunks =
-                            compile screenClass (Title titleText rootUrl :: bodyChunks)
+                            compile screenClass (titleChunk :: bodyChunks)
                     in
                     ( Document
                         { title = Inline.extractText inlines
