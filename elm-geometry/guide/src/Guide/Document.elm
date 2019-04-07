@@ -373,12 +373,7 @@ viewTitle screenClass textFragments rootUrl lastModified =
                 [ Element.width Element.fill
                 , Element.paddingEach { bottom = 8, top = 0, left = 0, right = 0 }
                 ]
-                (Element.row
-                    [ Element.width Element.fill
-                    , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-                    , Element.paddingEach { top = 0, bottom = 8, left = 0, right = 0 }
-                    , Border.color Color.dividerLine
-                    ]
+                (Element.row [ Element.width Element.fill ]
                     [ Element.paragraph
                         [ Region.heading 1
                         , Font.heading

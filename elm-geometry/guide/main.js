@@ -5418,8 +5418,8 @@ var author$project$Guide$Font$code = mdgriffith$elm_ui$Element$Font$family(
 			mdgriffith$elm_ui$Element$Font$typeface('Source Code Pro'),
 			mdgriffith$elm_ui$Element$Font$monospace
 		]));
-var author$project$Guide$Font$largeScreenSizes = {body: 16, bodyCode: 14, bodyLineSpacing: 8, codeBlockCode: 14, codeBlockLineSpacing: 4, lastModified: 16, navText: 16, navTitle: 32, section: 24, sectionCode: 24, sectionLineSpacing: 4, subsection: 19, subsectionCode: 19, subsectionLineSpacing: 4, title: 32, titleCode: 32, titleLineSpacing: 4};
-var author$project$Guide$Font$smallScreenSizes = {body: 16, bodyCode: 14, bodyLineSpacing: 6, codeBlockCode: 14, codeBlockLineSpacing: 4, lastModified: 16, navText: 19, navTitle: 32, section: 22, sectionCode: 22, sectionLineSpacing: 4, subsection: 19, subsectionCode: 19, subsectionLineSpacing: 4, title: 32, titleCode: 32, titleLineSpacing: 4};
+var author$project$Guide$Font$largeScreenSizes = {body: 16, bodyCode: 14, bodyLineSpacing: 8, codeBlockCode: 14, codeBlockLineSpacing: 4, lastModified: 16, navText: 16, navTitle: 16, section: 24, sectionCode: 24, sectionLineSpacing: 4, subsection: 19, subsectionCode: 19, subsectionLineSpacing: 4, title: 32, titleCode: 32, titleLineSpacing: 4};
+var author$project$Guide$Font$smallScreenSizes = {body: 16, bodyCode: 14, bodyLineSpacing: 6, codeBlockCode: 14, codeBlockLineSpacing: 4, lastModified: 16, navText: 19, navTitle: 19, section: 22, sectionCode: 22, sectionLineSpacing: 4, subsection: 19, subsectionCode: 19, subsectionLineSpacing: 4, title: 32, titleCode: 32, titleLineSpacing: 4};
 var author$project$Guide$Font$sizes = function (screenClass) {
 	if (screenClass.$ === 'Large') {
 		return author$project$Guide$Font$largeScreenSizes;
@@ -11591,12 +11591,12 @@ var author$project$Guide$Document$viewSubsection = F2(
 				]),
 			A3(author$project$Guide$Document$renderText, screenClass, author$project$Guide$Document$SubsectionContext, textFragments));
 	});
-var author$project$Guide$Color$dividerLine = author$project$Guide$Color$lightGrey;
 var mdgriffith$elm_ui$Element$rgb = F3(
 	function (r, g, b) {
 		return A4(mdgriffith$elm_ui$Internal$Model$Rgba, r, g, b, 1);
 	});
-var author$project$Guide$Color$lastModified = A3(mdgriffith$elm_ui$Element$rgb, 0.5, 0.5, 0.5);
+var author$project$Guide$Color$grey = A3(mdgriffith$elm_ui$Element$rgb, 0.5, 0.5, 0.5);
+var author$project$Guide$Color$lastModified = author$project$Guide$Color$grey;
 var author$project$Guide$Screen$Small = {$: 'Small'};
 var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
@@ -11687,62 +11687,6 @@ var mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
 };
 var mdgriffith$elm_ui$Internal$Model$Top = {$: 'Top'};
 var mdgriffith$elm_ui$Element$alignTop = mdgriffith$elm_ui$Internal$Model$AlignY(mdgriffith$elm_ui$Internal$Model$Top);
-var mdgriffith$elm_ui$Internal$Flag$borderColor = mdgriffith$elm_ui$Internal$Flag$flag(28);
-var mdgriffith$elm_ui$Element$Border$color = function (clr) {
-	return A2(
-		mdgriffith$elm_ui$Internal$Model$StyleClass,
-		mdgriffith$elm_ui$Internal$Flag$borderColor,
-		A3(
-			mdgriffith$elm_ui$Internal$Model$Colored,
-			'bc-' + mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
-			'border-color',
-			clr));
-};
-var mdgriffith$elm_ui$Internal$Model$BorderWidth = F5(
-	function (a, b, c, d, e) {
-		return {$: 'BorderWidth', a: a, b: b, c: c, d: d, e: e};
-	});
-var mdgriffith$elm_ui$Element$Border$width = function (v) {
-	return A2(
-		mdgriffith$elm_ui$Internal$Model$StyleClass,
-		mdgriffith$elm_ui$Internal$Flag$borderWidth,
-		A5(
-			mdgriffith$elm_ui$Internal$Model$BorderWidth,
-			'b-' + elm$core$String$fromInt(v),
-			v,
-			v,
-			v,
-			v));
-};
-var mdgriffith$elm_ui$Element$Border$widthXY = F2(
-	function (x, y) {
-		return A2(
-			mdgriffith$elm_ui$Internal$Model$StyleClass,
-			mdgriffith$elm_ui$Internal$Flag$borderWidth,
-			A5(
-				mdgriffith$elm_ui$Internal$Model$BorderWidth,
-				'b-' + (elm$core$String$fromInt(x) + ('-' + elm$core$String$fromInt(y))),
-				y,
-				x,
-				y,
-				x));
-	});
-var mdgriffith$elm_ui$Element$Border$widthEach = function (_n0) {
-	var bottom = _n0.bottom;
-	var top = _n0.top;
-	var left = _n0.left;
-	var right = _n0.right;
-	return (_Utils_eq(top, bottom) && _Utils_eq(left, right)) ? (_Utils_eq(top, right) ? mdgriffith$elm_ui$Element$Border$width(top) : A2(mdgriffith$elm_ui$Element$Border$widthXY, left, top)) : A2(
-		mdgriffith$elm_ui$Internal$Model$StyleClass,
-		mdgriffith$elm_ui$Internal$Flag$borderWidth,
-		A5(
-			mdgriffith$elm_ui$Internal$Model$BorderWidth,
-			'b-' + (elm$core$String$fromInt(top) + ('-' + (elm$core$String$fromInt(right) + ('-' + (elm$core$String$fromInt(bottom) + ('-' + elm$core$String$fromInt(left))))))),
-			top,
-			right,
-			bottom,
-			left));
-};
 var author$project$Guide$Document$viewTitle = F4(
 	function (screenClass, textFragments, rootUrl, lastModified) {
 		var titleElement = A2(
@@ -11757,12 +11701,7 @@ var author$project$Guide$Document$viewTitle = F4(
 				mdgriffith$elm_ui$Element$row,
 				_List_fromArray(
 					[
-						mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill),
-						mdgriffith$elm_ui$Element$Border$widthEach(
-						{bottom: 1, left: 0, right: 0, top: 0}),
-						mdgriffith$elm_ui$Element$paddingEach(
-						{bottom: 8, left: 0, right: 0, top: 0}),
-						mdgriffith$elm_ui$Element$Border$color(author$project$Guide$Color$dividerLine)
+						mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill)
 					]),
 				_List_fromArray(
 					[
@@ -18107,6 +18046,30 @@ var author$project$Guide$update = F2(
 	});
 var author$project$Guide$heightFill = mdgriffith$elm_ui$Element$height(mdgriffith$elm_ui$Element$fill);
 var author$project$Guide$maxDocumentWidth = 640;
+var mdgriffith$elm_ui$Internal$Model$Px = function (a) {
+	return {$: 'Px', a: a};
+};
+var mdgriffith$elm_ui$Element$px = mdgriffith$elm_ui$Internal$Model$Px;
+var author$project$Guide$navDivider = function (givenAttributes) {
+	return A2(
+		mdgriffith$elm_ui$Element$el,
+		_List_fromArray(
+			[
+				A2(mdgriffith$elm_ui$Element$paddingXY, 0, 16),
+				author$project$Guide$heightFill
+			]),
+		A2(
+			mdgriffith$elm_ui$Element$el,
+			A2(
+				elm$core$List$cons,
+				author$project$Guide$heightFill,
+				A2(
+					elm$core$List$cons,
+					mdgriffith$elm_ui$Element$width(
+						mdgriffith$elm_ui$Element$px(1)),
+					givenAttributes)),
+			mdgriffith$elm_ui$Element$none));
+};
 var author$project$Guide$navWidth = 300;
 var author$project$Guide$DocumentMsg = function (a) {
 	return {$: 'DocumentMsg', a: a};
@@ -18526,10 +18489,6 @@ var mdgriffith$elm_ui$Element$image = F2(
 						mdgriffith$elm_ui$Internal$Model$Unkeyed(_List_Nil))
 					])));
 	});
-var mdgriffith$elm_ui$Internal$Model$Px = function (a) {
-	return {$: 'Px', a: a};
-};
-var mdgriffith$elm_ui$Element$px = mdgriffith$elm_ui$Internal$Model$Px;
 var author$project$Guide$navIcon = F2(
 	function (model, properties) {
 		return A2(
@@ -18574,6 +18533,7 @@ var author$project$Guide$gitHubLink = function (model) {
 			]));
 };
 var author$project$Guide$widthFill = mdgriffith$elm_ui$Element$width(mdgriffith$elm_ui$Element$fill);
+var author$project$Guide$Color$dividerLine = author$project$Guide$Color$lightGrey;
 var author$project$Guide$horizontalDivider = A2(
 	mdgriffith$elm_ui$Element$el,
 	_List_fromArray(
@@ -18601,7 +18561,7 @@ var author$project$Guide$packageDocLink = function (model) {
 				mdgriffith$elm_ui$Element$link,
 				_List_Nil,
 				{
-					label: mdgriffith$elm_ui$Element$text(model.author + ('/' + model.packageName)),
+					label: mdgriffith$elm_ui$Element$text('Package documentation'),
 					url: A3(
 						elm$url$Url$Builder$crossOrigin,
 						'https://package.elm-lang.org',
@@ -18688,7 +18648,7 @@ var author$project$Guide$toPageLink = F3(
 				url: A3(author$project$Guide$Page$displayedUrl, rootPath, page, elm$core$Maybe$Nothing)
 			});
 	});
-var author$project$Guide$Color$navBorder = author$project$Guide$Color$lightGrey;
+var author$project$Guide$Color$navTitle = author$project$Guide$Color$grey;
 var author$project$Guide$Color$white = A3(mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
 var mdgriffith$elm_ui$Element$clipY = A2(mdgriffith$elm_ui$Internal$Model$Class, mdgriffith$elm_ui$Internal$Flag$overflow, mdgriffith$elm_ui$Internal$Style$classes.clipY);
 var mdgriffith$elm_ui$Element$padding = function (x) {
@@ -18707,6 +18667,24 @@ var mdgriffith$elm_ui$Element$scrollbarY = A2(mdgriffith$elm_ui$Internal$Model$C
 var mdgriffith$elm_ui$Element$Font$regular = A2(mdgriffith$elm_ui$Internal$Model$Class, mdgriffith$elm_ui$Internal$Flag$fontWeight, mdgriffith$elm_ui$Internal$Style$classes.textNormalWeight);
 var author$project$Guide$viewNav = F2(
 	function (model, currentPage) {
+		var titleElement = A2(
+			mdgriffith$elm_ui$Element$paragraph,
+			_List_fromArray(
+				[
+					mdgriffith$elm_ui$Element$Font$color(author$project$Guide$Color$navTitle),
+					mdgriffith$elm_ui$Element$Font$size(
+					author$project$Guide$Font$sizes(model.screenClass).navTitle)
+				]),
+			_List_fromArray(
+				[
+					mdgriffith$elm_ui$Element$text('The '),
+					A2(
+					mdgriffith$elm_ui$Element$el,
+					_List_fromArray(
+						[author$project$Guide$Font$code]),
+					mdgriffith$elm_ui$Element$text(model.packageName)),
+					mdgriffith$elm_ui$Element$text(' guide')
+				]));
 		var navPadding = function () {
 			var _n1 = model.screenClass;
 			if (_n1.$ === 'Large') {
@@ -18722,9 +18700,6 @@ var author$project$Guide$viewNav = F2(
 					author$project$Guide$heightFill,
 					author$project$Guide$widthFill,
 					mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Color$white),
-					mdgriffith$elm_ui$Element$Border$widthEach(
-					{bottom: 0, left: 0, right: 1, top: 0}),
-					mdgriffith$elm_ui$Element$Border$color(author$project$Guide$Color$navBorder),
 					author$project$Guide$Font$heading,
 					mdgriffith$elm_ui$Element$Font$color(author$project$Guide$Color$linkText),
 					mdgriffith$elm_ui$Element$Font$size(
@@ -18737,9 +18712,7 @@ var author$project$Guide$viewNav = F2(
 				_List_fromArray(
 					[
 						_List_fromArray(
-						[
-							author$project$Guide$packageDocLink(model)
-						]),
+						[titleElement]),
 						_List_fromArray(
 						[author$project$Guide$horizontalDivider]),
 						A2(
@@ -18748,6 +18721,10 @@ var author$project$Guide$viewNav = F2(
 						model.allPages),
 						_List_fromArray(
 						[author$project$Guide$horizontalDivider]),
+						_List_fromArray(
+						[
+							author$project$Guide$packageDocLink(model)
+						]),
 						_List_fromArray(
 						[
 							author$project$Guide$gitHubLink(model)
@@ -18772,8 +18749,8 @@ var author$project$Guide$viewNav = F2(
 				]),
 			navElement);
 	});
-var mdgriffith$elm_ui$Internal$Model$Right = {$: 'Right'};
-var mdgriffith$elm_ui$Element$alignRight = mdgriffith$elm_ui$Internal$Model$AlignX(mdgriffith$elm_ui$Internal$Model$Right);
+var mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
+var mdgriffith$elm_ui$Element$alignLeft = mdgriffith$elm_ui$Internal$Model$AlignX(mdgriffith$elm_ui$Internal$Model$Left);
 var mdgriffith$elm_ui$Internal$Model$CenterX = {$: 'CenterX'};
 var mdgriffith$elm_ui$Element$centerX = mdgriffith$elm_ui$Internal$Model$AlignX(mdgriffith$elm_ui$Internal$Model$CenterX);
 var mdgriffith$elm_ui$Internal$Model$InFront = {$: 'InFront'};
@@ -19023,11 +19000,7 @@ var author$project$Guide$view = function (model) {
 								A2(
 								mdgriffith$elm_ui$Element$el,
 								_List_fromArray(
-									[
-										mdgriffith$elm_ui$Element$width(
-										A2(mdgriffith$elm_ui$Element$minimum, author$project$Guide$navWidth, mdgriffith$elm_ui$Element$fill)),
-										author$project$Guide$heightFill
-									]),
+									[author$project$Guide$widthFill]),
 								mdgriffith$elm_ui$Element$none),
 								A2(
 								mdgriffith$elm_ui$Element$el,
@@ -19039,10 +19012,15 @@ var author$project$Guide$view = function (model) {
 										A2(mdgriffith$elm_ui$Element$paddingXY, 24, 12)
 									]),
 								documentElement),
+								author$project$Guide$navDivider(_List_Nil),
 								A2(
 								mdgriffith$elm_ui$Element$el,
 								_List_fromArray(
-									[author$project$Guide$widthFill]),
+									[
+										mdgriffith$elm_ui$Element$width(
+										A2(mdgriffith$elm_ui$Element$minimum, author$project$Guide$navWidth, mdgriffith$elm_ui$Element$fill)),
+										author$project$Guide$heightFill
+									]),
 								mdgriffith$elm_ui$Element$none)
 							]));
 					var displayedPage = function () {
@@ -19073,6 +19051,25 @@ var author$project$Guide$view = function (model) {
 								A2(
 								mdgriffith$elm_ui$Element$el,
 								_List_fromArray(
+									[author$project$Guide$widthFill]),
+								mdgriffith$elm_ui$Element$none),
+								A2(
+								mdgriffith$elm_ui$Element$el,
+								_List_fromArray(
+									[
+										mdgriffith$elm_ui$Element$width(
+										mdgriffith$elm_ui$Element$px(author$project$Guide$maxDocumentWidth)),
+										author$project$Guide$heightFill
+									]),
+								mdgriffith$elm_ui$Element$none),
+								author$project$Guide$navDivider(
+								_List_fromArray(
+									[
+										mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Color$dividerLine)
+									])),
+								A2(
+								mdgriffith$elm_ui$Element$el,
+								_List_fromArray(
 									[
 										mdgriffith$elm_ui$Element$width(
 										A2(mdgriffith$elm_ui$Element$minimum, author$project$Guide$navWidth, mdgriffith$elm_ui$Element$fill)),
@@ -19083,22 +19080,8 @@ var author$project$Guide$view = function (model) {
 								A2(
 									mdgriffith$elm_ui$Element$el,
 									_List_fromArray(
-										[mdgriffith$elm_ui$Element$alignRight, author$project$Guide$heightFill]),
-									A2(author$project$Guide$viewNav, model, displayedPage))),
-								A2(
-								mdgriffith$elm_ui$Element$el,
-								_List_fromArray(
-									[
-										mdgriffith$elm_ui$Element$width(
-										mdgriffith$elm_ui$Element$px(author$project$Guide$maxDocumentWidth)),
-										author$project$Guide$heightFill
-									]),
-								mdgriffith$elm_ui$Element$none),
-								A2(
-								mdgriffith$elm_ui$Element$el,
-								_List_fromArray(
-									[author$project$Guide$widthFill]),
-								mdgriffith$elm_ui$Element$none)
+										[mdgriffith$elm_ui$Element$alignLeft, author$project$Guide$heightFill]),
+									A2(author$project$Guide$viewNav, model, displayedPage)))
 							]));
 					return A2(
 						mdgriffith$elm_ui$Element$layout,

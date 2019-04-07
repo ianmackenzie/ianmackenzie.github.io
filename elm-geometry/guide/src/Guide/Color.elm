@@ -8,6 +8,7 @@ module Guide.Color exposing
     , navBackground
     , navBorder
     , navDividerLine
+    , navTitle
     , white
     )
 
@@ -70,6 +71,16 @@ navDividerLine =
     Element.rgb255 200 200 200
 
 
+grey : Element.Color
+grey =
+    Element.rgb 0.5 0.5 0.5
+
+
 lastModified : Element.Color
 lastModified =
-    Element.rgb 0.5 0.5 0.5
+    grey
+
+
+navTitle : Element.Color
+navTitle =
+    grey

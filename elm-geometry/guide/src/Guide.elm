@@ -392,7 +392,7 @@ packageDocLink model =
                 Url.Builder.crossOrigin "https://package.elm-lang.org"
                     [ "packages", model.author, model.packageName, "latest" ]
                     []
-            , label = Element.text (model.author ++ "/" ++ model.packageName)
+            , label = Element.text "Package documentation"
             }
         ]
 
@@ -429,6 +429,16 @@ horizontalDivider =
 viewNav : Model -> Maybe Page -> Element msg
 viewNav model currentPage =
     let
+        titleElement =
+            Element.paragraph
+                [ Font.color Color.navTitle
+                , Font.size (Font.sizes model.screenClass).navTitle
+                ]
+                [ Element.text "The "
+                , Element.el [ Font.code ] (Element.text model.packageName)
+                , Element.text " guide"
+                ]
+
         navPadding =
             case model.screenClass of
                 Screen.Large ->
@@ -442,8 +452,6 @@ viewNav model currentPage =
                 [ heightFill
                 , widthFill
                 , Background.color Color.white
-                , Border.widthEach { top = 0, bottom = 0, left = 0, right = 1 }
-                , Border.color Color.navBorder
                 , Font.heading
                 , Font.color Color.linkText
                 , Font.size (Font.sizes model.screenClass).navText
@@ -452,10 +460,11 @@ viewNav model currentPage =
                 , Element.padding navPadding
                 ]
                 (List.concat
-                    [ [ packageDocLink model ]
+                    [ [ titleElement ]
                     , [ horizontalDivider ]
                     , List.map (toPageLink model.rootPath currentPage) model.allPages
                     , [ horizontalDivider ]
+                    , [ packageDocLink model ]
                     , [ gitHubLink model ]
                     ]
                 )
@@ -498,6 +507,12 @@ heightFill =
     Element.height Element.fill
 
 
+navDivider : List (Element.Attribute msg) -> Element msg
+navDivider givenAttributes =
+    Element.el [ Element.paddingXY 0 16, heightFill ] <|
+        Element.el (heightFill :: Element.width (Element.px 1) :: givenAttributes) Element.none
+
+
 view : Model -> Browser.Document Msg
 view model =
     { title = model.packageName
@@ -526,20 +541,22 @@ view model =
                             , Element.htmlAttribute (Html.Attributes.style "pointer-events" "none")
                             ]
                             [ Element.el
-                                [ Element.width (Element.fill |> Element.minimum navWidth)
-                                , heightFill
-                                , Element.htmlAttribute (Html.Attributes.style "pointer-events" "auto")
-                                ]
-                                (Element.el [ Element.alignRight, heightFill ]
-                                    (viewNav model displayedPage)
-                                )
+                                [ widthFill ]
+                                Element.none
                             , Element.el
                                 [ Element.width (Element.px maxDocumentWidth)
                                 , heightFill
                                 ]
                                 Element.none
-                            , Element.el [ widthFill ]
-                                Element.none
+                            , navDivider [ Background.color Color.dividerLine ]
+                            , Element.el
+                                [ Element.width (Element.fill |> Element.minimum navWidth)
+                                , heightFill
+                                , Element.htmlAttribute (Html.Attributes.style "pointer-events" "auto")
+                                ]
+                                (Element.el [ Element.alignLeft, heightFill ]
+                                    (viewNav model displayedPage)
+                                )
                             ]
 
                     documentElement =
@@ -559,9 +576,7 @@ view model =
                     mainLayer =
                         Element.row [ widthFill, heightFill ]
                             [ Element.el
-                                [ Element.width (Element.fill |> Element.minimum navWidth)
-                                , heightFill
-                                ]
+                                [ widthFill ]
                                 Element.none
                             , Element.el
                                 [ Element.width (Element.px maxDocumentWidth)
@@ -569,7 +584,12 @@ view model =
                                 , Element.paddingXY 24 12
                                 ]
                                 documentElement
-                            , Element.el [ widthFill ] Element.none
+                            , navDivider []
+                            , Element.el
+                                [ Element.width (Element.fill |> Element.minimum navWidth)
+                                , heightFill
+                                ]
+                                Element.none
                             ]
                 in
                 Element.layout [ widthFill, heightFill, Element.inFront navLayer ] mainLayer

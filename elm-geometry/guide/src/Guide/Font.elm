@@ -67,7 +67,7 @@ largeScreenSizes =
     , codeBlockCode = 14
     , codeBlockLineSpacing = 4
     , navText = 16
-    , navTitle = 32
+    , navTitle = 16
     , lastModified = 16
     }
 
@@ -89,7 +89,7 @@ smallScreenSizes =
     , codeBlockCode = 14
     , codeBlockLineSpacing = 4
     , navText = 19
-    , navTitle = 32
+    , navTitle = 19
     , lastModified = 16
     }
 
