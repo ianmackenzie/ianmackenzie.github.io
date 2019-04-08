@@ -23,7 +23,22 @@ parse : String -> Result String (List (List Chunk))
 parse code =
     Parser.run parser (normalize code)
         |> Result.map splitLines
-        |> Result.mapError Debug.toString
+        |> Result.mapError toMessage
+
+
+toMessage : List Parser.DeadEnd -> String
+toMessage deadEnds =
+    case deadEnds of
+        first :: rest ->
+            String.concat
+                [ "Syntax parsing error at row "
+                , String.fromInt first.row
+                , ", column "
+                , String.fromInt first.col
+                ]
+
+        [] ->
+            "Syntax parsing error"
 
 
 parser : Parser (List Chunk)
