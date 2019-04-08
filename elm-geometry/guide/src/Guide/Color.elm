@@ -1,14 +1,20 @@
 module Guide.Color exposing
     ( black
     , codeBlockBackground
+    , comment
     , dividerLine
+    , identifier
     , inlineCodeBackground
+    , keyword
     , lastModified
     , linkText
     , navBackground
     , navBorder
     , navDividerLine
     , navTitle
+    , number
+    , string
+    , symbol
     , white
     )
 
@@ -84,3 +90,33 @@ lastModified =
 navTitle : Element.Color
 navTitle =
     grey
+
+
+comment : Element.Color
+comment =
+    grey
+
+
+identifier : Element.Color
+identifier =
+    linkText
+
+
+keyword : Element.Color
+keyword =
+    Element.rgb255 219 125 43
+
+
+number : Element.Color
+number =
+    Element.rgb 0 0 1
+
+
+string : Element.Color
+string =
+    Element.rgb 0 0.5 1
+
+
+symbol : Element.Color
+symbol =
+    black
