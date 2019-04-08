@@ -11,6 +11,7 @@ import Geometry.Svg as Svg
 import Guide.Color as Color
 import Guide.Font as Font
 import Guide.Screen as Screen
+import Guide.Syntax as Syntax
 import Guide.Widget as Widget exposing (Widget)
 import Html
 import Html.Attributes
@@ -56,7 +57,7 @@ type Chunk
     | Subsection (List Text)
     | Paragraph (List Text)
     | CustomBlock Widget
-    | CodeBlock String
+    | CodeBlock { contents : String, syntaxHighlight : Bool }
     | Bullets (List (List Chunk))
 
 
@@ -303,8 +304,8 @@ compileHelp screenClass chunks widgetId accumulated =
                         (widgetId + 1)
                         (Interactive widgetId widget :: accumulated)
 
-                CodeBlock code ->
-                    prepend (Static CodeBlockContext (viewCodeBlock screenClass code))
+                CodeBlock { contents, syntaxHighlight } ->
+                    prepend (Static CodeBlockContext (viewCodeBlock screenClass contents syntaxHighlight))
 
                 Bullets bullets ->
                     let
@@ -454,17 +455,8 @@ viewParagraph screenClass textFragments =
         (renderText screenClass ParagraphContext textFragments)
 
 
-viewCodeBlockLine : String -> Element msg
-viewCodeBlockLine line =
-    if String.isEmpty line then
-        Element.text "\n"
-
-    else
-        Element.text line
-
-
-viewCodeBlock : Screen.Class -> String -> Element msg
-viewCodeBlock screenClass code =
+viewCodeBlock : Screen.Class -> String -> Bool -> Element msg
+viewCodeBlock screenClass code syntaxHighlight =
     Element.column
         [ Border.rounded 5
         , Element.paddingXY 12 10
@@ -474,7 +466,67 @@ viewCodeBlock screenClass code =
         , Element.spacing (Font.sizes screenClass).codeBlockLineSpacing
         , Element.scrollbarX
         ]
-        (List.map viewCodeBlockLine (String.lines (String.trim code)))
+        (if syntaxHighlight then
+            case Syntax.parse code of
+                Ok lines ->
+                    List.map viewCodeBlockLine lines
+
+                Err message ->
+                    [ Element.text code
+                    , Element.el
+                        [ widthFill
+                        , Background.color Color.dividerLine
+                        , Element.height (Element.px 1)
+                        ]
+                        Element.none
+                    , Element.text message
+                    ]
+
+         else
+            [ Element.text code ]
+        )
+
+
+viewCodeBlockLine : List Syntax.Chunk -> Element msg
+viewCodeBlockLine chunks =
+    if List.isEmpty chunks then
+        Element.el [] (Element.text "\n")
+
+    else
+        Element.row [] (List.map viewCodeChunk chunks)
+
+
+viewCodeChunk : Syntax.Chunk -> Element msg
+viewCodeChunk chunk =
+    case chunk of
+        Syntax.Chunk Syntax.Comment string ->
+            viewColoredChunk Color.comment string
+
+        Syntax.Chunk Syntax.String string ->
+            viewColoredChunk Color.string string
+
+        Syntax.Chunk Syntax.Number string ->
+            viewColoredChunk Color.number string
+
+        Syntax.Chunk Syntax.Character string ->
+            viewColoredChunk Color.string string
+
+        Syntax.Chunk Syntax.Keyword string ->
+            viewColoredChunk Color.keyword string
+
+        Syntax.Chunk Syntax.Identifier string ->
+            viewColoredChunk Color.identifier string
+
+        Syntax.Chunk Syntax.Symbol string ->
+            viewColoredChunk Color.symbol string
+
+        Syntax.Chunk Syntax.Whitespace string ->
+            viewColoredChunk Color.white string
+
+
+viewColoredChunk : Element.Color -> String -> Element msg
+viewColoredChunk color text =
+    Element.el [ Font.color color ] (Element.text text)
 
 
 renderText : Screen.Class -> TextContext -> List Text -> List (Element InternalMsg)
@@ -605,7 +657,7 @@ renderTextFragment screenClass context fragment =
                             -- Should never happen
                             ( [], Element.none )
             in
-            Element.link (Font.color Color.linkText :: attributes) { url = url, label = label }
+            Element.link (Font.color Color.linkText :: Font.underline :: attributes) { url = url, label = label }
 
         InlineCode chunks ->
             let
@@ -758,11 +810,15 @@ parseChunks config blocks accumulated =
                             Err ("Heading level " ++ String.fromInt level ++ " not yet supported")
 
                 Block.CodeBlock Block.Indented code ->
-                    prepend (CodeBlock code)
+                    prepend (CodeBlock { contents = code, syntaxHighlight = True })
 
-                Block.CodeBlock (Block.Fenced _ _) code ->
-                    -- TODO support different language types
-                    prepend (CodeBlock code)
+                Block.CodeBlock (Block.Fenced _ fence) code ->
+                    prepend
+                        (CodeBlock
+                            { contents = code
+                            , syntaxHighlight = fence.language == Just "elm"
+                            }
+                        )
 
                 Block.Paragraph _ inlines ->
                     Result.andThen (Paragraph >> prepend) (parseText inlines [])
