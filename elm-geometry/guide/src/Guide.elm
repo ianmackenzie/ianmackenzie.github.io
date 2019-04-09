@@ -14,6 +14,7 @@ import Element exposing (Element)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
+import Elm.Docs
 import Guide.Color as Color
 import Guide.Document as Document exposing (Document)
 import Guide.Font as Font
@@ -22,6 +23,7 @@ import Guide.Screen as Screen
 import Guide.Widget exposing (Widget)
 import Html.Attributes
 import Http
+import Json.Decode as Decode
 import Parser exposing ((|.), (|=), Parser)
 import Set exposing (Set)
 import Task
@@ -232,6 +234,7 @@ type alias Model =
     , readmePage : Page
     , allPages : List Page
     , state : State
+    , moduleNames : Set String
     }
 
 
@@ -246,6 +249,7 @@ type Msg
         , imagesToLoad : Set String
         }
     | DocumentMsg Document.Msg
+    | DocsJsonResponse (Result Http.Error (List String))
     | NoOp
 
 
@@ -351,8 +355,17 @@ init author packageName readmePage allPages flags url navigationKey =
         rootPath =
             url.path |> String.split "/" |> List.filter (not << String.isEmpty)
 
-        ( state, command ) =
+        ( state, pageCommand ) =
             handleNewUrl Loading rootPath readmePage allPages screenClass url
+
+        moduleNamesDecoder =
+            Decode.list (Elm.Docs.decoder |> Decode.map .name)
+
+        loadDocs =
+            Http.get
+                { url = "docs.json"
+                , expect = Http.expectJson DocsJsonResponse moduleNamesDecoder
+                }
     in
     ( { author = author
       , packageName = packageName
@@ -362,8 +375,9 @@ init author packageName readmePage allPages flags url navigationKey =
       , screenClass = screenClass
       , navigationKey = navigationKey
       , rootPath = rootPath
+      , moduleNames = Set.empty
       }
-    , command
+    , Cmd.batch [ pageCommand, loadDocs ]
     )
 
 
@@ -679,6 +693,12 @@ update message model =
 
                 _ ->
                     ( model, Cmd.none )
+
+        DocsJsonResponse (Ok moduleNames) ->
+            ( { model | moduleNames = Set.fromList moduleNames }, Cmd.none )
+
+        DocsJsonResponse (Err error) ->
+            ( model, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
