@@ -688,10 +688,11 @@ program :
     { author : String
     , packageName : String
     , branch : String
-    , pages : List { title : String, widgets : List ( String, Widget ) }
+    , pages : List String
+    , widgets : List ( String, Widget )
     }
     -> Program
-program { author, packageName, branch, pages } =
+program { author, packageName, branch, pages, widgets } =
     let
         readmeUrl =
             Url.Builder.crossOrigin "https://cdn.jsdelivr.net"
@@ -705,8 +706,11 @@ program { author, packageName, branch, pages } =
         readmePage =
             Page.readme { url = readmeUrl }
 
+        toPage title =
+            Page.with { title = title, widgets = widgets }
+
         allPages =
-            readmePage :: List.map Page.with pages
+            readmePage :: List.map toPage pages
     in
     Browser.application
         { init = init author packageName readmePage allPages

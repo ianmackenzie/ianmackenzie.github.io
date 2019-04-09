@@ -9,5 +9,6 @@ main =
         { author = "ianmackenzie"
         , packageName = "elm-geometry"
         , branch = "coordinate-systems"
-        , pages = [ { title = "Units and coordinate systems", widgets = [] } ]
+        , pages = [ "Units and coordinate systems" ]
+        , widgets = []
         }
