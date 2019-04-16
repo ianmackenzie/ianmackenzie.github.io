@@ -134,7 +134,7 @@ type Error
 matching : { url : Url, rootPath : List String } -> List Page -> Result Error Match
 matching { url, rootPath } pages =
     case Url.Parser.parse (urlParser rootPath) url of
-        Just { query, fragment } ->
+        Just { query } ->
             case query of
                 Just pageTitle ->
                     case List.filter (matchesQuery pageTitle) pages of

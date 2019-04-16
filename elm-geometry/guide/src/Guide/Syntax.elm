@@ -29,7 +29,7 @@ parse code =
 toMessage : List Parser.DeadEnd -> String
 toMessage deadEnds =
     case deadEnds of
-        first :: rest ->
+        first :: _ ->
             String.concat
                 [ "Syntax parsing error at row "
                 , String.fromInt first.row

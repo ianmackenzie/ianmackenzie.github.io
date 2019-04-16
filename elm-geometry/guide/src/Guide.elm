@@ -84,7 +84,7 @@ monthName month =
 
 
 toDateString : Int -> Time.Month -> Int -> Int -> Int -> Int -> String
-toDateString day month year hour minute second =
+toDateString day month year _ _ _ =
     monthName month ++ " " ++ String.fromInt day ++ ", " ++ String.fromInt year
 
 
@@ -157,7 +157,7 @@ handleResponse response =
                                     Ok parsed ->
                                         parsed
 
-                                    Err err ->
+                                    Err _ ->
                                         lastModified
                             )
             in
@@ -697,7 +697,7 @@ update message model =
         DocsJsonResponse (Ok moduleNames) ->
             ( { model | moduleNames = Set.fromList moduleNames }, Cmd.none )
 
-        DocsJsonResponse (Err error) ->
+        DocsJsonResponse (Err _) ->
             ( model, Cmd.none )
 
         NoOp ->
