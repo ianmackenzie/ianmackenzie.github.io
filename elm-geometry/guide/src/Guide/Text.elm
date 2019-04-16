@@ -45,7 +45,7 @@ lineSpacing screenClass location =
                         8
 
                     CodeBlock ->
-                        4
+                        6
 
             Screen.Small ->
                 case location of
@@ -59,15 +59,15 @@ lineSpacing screenClass location =
                         4
 
                     Body ->
-                        6
-
-                    CodeBlock ->
-                        4
+                        8
 
                     NavTitle ->
                         4
 
                     NavBody ->
+                        8
+
+                    CodeBlock ->
                         6
 
 
@@ -143,10 +143,10 @@ fontSize screenClass location kind =
                     32
 
                 ( Section, Prose ) ->
-                    22
+                    24
 
                 ( Section, Code ) ->
-                    22
+                    24
 
                 ( Subsection, Prose ) ->
                     19
@@ -164,7 +164,7 @@ fontSize screenClass location kind =
                     14
 
                 ( NavTitle, _ ) ->
-                    19
+                    24
 
                 ( NavBody, _ ) ->
                     19

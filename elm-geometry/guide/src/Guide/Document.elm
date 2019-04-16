@@ -91,12 +91,12 @@ widthFill =
 
 topLevelSpacing : Int
 topLevelSpacing =
-    12
+    16
 
 
 bulletSpacing : Int
 bulletSpacing =
-    8
+    10
 
 
 view : Config -> List (Element.Attribute Msg) -> Document -> Element Msg
@@ -386,7 +386,7 @@ viewSection config textFragments =
         , Text.fontFamily Text.Section
         , Font.size (Text.fontSize config.screenClass Text.Section Text.Prose)
         , Text.lineSpacing config.screenClass Text.Section
-        , Element.paddingEach { top = 18, bottom = 8, left = 0, right = 0 }
+        , Element.paddingEach { top = 16, bottom = 8, left = 0, right = 0 }
         , Element.htmlAttribute (Html.Attributes.id (toId textFragments))
         ]
         (renderText config Text.Section textFragments)
@@ -414,7 +414,7 @@ viewParagraph config textFragments =
 codeBlockAttributes : Config -> List (Element.Attribute msg)
 codeBlockAttributes { screenClass } =
     [ Border.rounded 5
-    , Element.paddingXY 12 10
+    , Element.paddingXY 16 12
     , Text.codeFontFamily
     , Background.color Color.codeBlockBackground
     , Font.size (Text.fontSize screenClass Text.CodeBlock Text.Code)

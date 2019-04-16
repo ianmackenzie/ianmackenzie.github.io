@@ -18828,11 +18828,11 @@ var author$project$Guide$Text$fontSize = F3(
 					if (!_n21.b) {
 						var _n26 = _n21.a;
 						var _n27 = _n21.b;
-						return 22;
+						return 24;
 					} else {
 						var _n28 = _n21.a;
 						var _n29 = _n21.b;
-						return 22;
+						return 24;
 					}
 				case 2:
 					if (!_n21.b) {
@@ -18859,7 +18859,7 @@ var author$project$Guide$Text$fontSize = F3(
 					return 14;
 				case 5:
 					var _n39 = _n21.a;
-					return 19;
+					return 24;
 				default:
 					var _n40 = _n21.a;
 					return 19;
@@ -18981,8 +18981,8 @@ var author$project$Guide$Document$bulletIcon = F2(
 							])));
 			}());
 	});
-var author$project$Guide$Document$bulletSpacing = 8;
-var author$project$Guide$Document$topLevelSpacing = 12;
+var author$project$Guide$Document$bulletSpacing = 10;
+var author$project$Guide$Document$topLevelSpacing = 16;
 var mdgriffith$elm_ui$Internal$Model$Rgba = F4(
 	function (a, b, c, d) {
 		return {$: 0, a: a, b: b, c: c, d: d};
@@ -18991,7 +18991,7 @@ var mdgriffith$elm_ui$Element$rgb255 = F3(
 	function (red, green, blue) {
 		return A4(mdgriffith$elm_ui$Internal$Model$Rgba, red / 255, green / 255, blue / 255, 1);
 	});
-var author$project$Guide$Color$codeBlockBackground = A3(mdgriffith$elm_ui$Element$rgb255, 245, 245, 245);
+var author$project$Guide$Color$codeBlockBackground = A3(mdgriffith$elm_ui$Element$rgb255, 248, 248, 248);
 var author$project$Guide$Text$Code = 1;
 var author$project$Guide$Text$CodeBlock = 4;
 var mdgriffith$elm_ui$Internal$Flag$fontFamily = mdgriffith$elm_ui$Internal$Flag$flag(5);
@@ -19095,7 +19095,7 @@ var author$project$Guide$Text$lineSpacing = F2(
 						case 6:
 							return 8;
 						default:
-							return 4;
+							return 6;
 					}
 				} else {
 					switch (location) {
@@ -19106,11 +19106,11 @@ var author$project$Guide$Text$lineSpacing = F2(
 						case 2:
 							return 4;
 						case 3:
-							return 6;
-						case 4:
-							return 4;
+							return 8;
 						case 5:
 							return 4;
+						case 6:
+							return 8;
 						default:
 							return 6;
 					}
@@ -19171,7 +19171,7 @@ var author$project$Guide$Document$codeBlockAttributes = function (_n0) {
 	return _List_fromArray(
 		[
 			mdgriffith$elm_ui$Element$Border$rounded(5),
-			A2(mdgriffith$elm_ui$Element$paddingXY, 12, 10),
+			A2(mdgriffith$elm_ui$Element$paddingXY, 16, 12),
 			author$project$Guide$Text$codeFontFamily,
 			mdgriffith$elm_ui$Element$Background$color(author$project$Guide$Color$codeBlockBackground),
 			mdgriffith$elm_ui$Element$Font$size(
@@ -19765,7 +19765,7 @@ var author$project$Guide$Document$viewSection = F2(
 					A3(author$project$Guide$Text$fontSize, config.K, 1, 0)),
 					A2(author$project$Guide$Text$lineSpacing, config.K, 1),
 					mdgriffith$elm_ui$Element$paddingEach(
-					{ao: 8, ay: 0, aE: 0, aG: 18}),
+					{ao: 8, ay: 0, aE: 0, aG: 16}),
 					mdgriffith$elm_ui$Element$htmlAttribute(
 					elm$html$Html$Attributes$id(
 						author$project$Guide$Document$toId(textFragments)))
