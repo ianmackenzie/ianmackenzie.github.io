@@ -33,7 +33,7 @@ lightGrey =
 
 inlineCodeBackground : Element.Color
 inlineCodeBackground =
-    lightGrey
+    codeBlockBackground
 
 
 dividerLine : Element.Color
