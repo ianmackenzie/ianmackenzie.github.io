@@ -23,7 +23,7 @@ import Element
 
 codeBlockBackground : Element.Color
 codeBlockBackground =
-    Element.rgb255 245 245 245
+    Element.rgb255 248 248 248
 
 
 lightGrey : Element.Color
