@@ -109,7 +109,7 @@ keyword =
 
 number : Element.Color
 number =
-    Element.rgb 0 0 1
+    Element.rgb 0 0 0.9
 
 
 string : Element.Color
