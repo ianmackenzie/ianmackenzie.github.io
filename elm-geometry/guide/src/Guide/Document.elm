@@ -1,4 +1,4 @@
-module Guide.Document exposing (Document, Msg(..), parse, title, view)
+module Guide.Document exposing (Config, Document, Msg(..), parse, view)
 
 import BoundingBox2d
 import Dict exposing (Dict)
@@ -9,9 +9,9 @@ import Element.Font as Font
 import Element.Region as Region
 import Geometry.Svg as Svg
 import Guide.Color as Color
-import Guide.Font as Font
 import Guide.Screen as Screen
 import Guide.Syntax as Syntax
+import Guide.Text as Text
 import Guide.Widget as Widget exposing (Widget)
 import Html
 import Html.Attributes
@@ -25,13 +25,13 @@ import Result.Extra as Result
 import Set exposing (Set)
 import Svg
 import Svg.Attributes
+import Url.Builder
 
 
 type Document
     = Document
-        { title : String
-        , chunks : List CompiledChunk
-        , screenClass : Screen.Class
+        { titleFragments : List Text
+        , chunks : List (Chunk Int)
         }
 
 
@@ -45,20 +45,14 @@ type Msg
     | ImageLoaded String
 
 
-type CompiledChunk
-    = Static TextContext (Element InternalMsg)
-    | Interactive Int Widget
-    | CompiledBullets (List (List CompiledChunk))
-
-
-type Chunk
-    = Title { textFragments : List Text, rootUrl : String, lastModified : Maybe String }
-    | Section (List Text)
+type Chunk widgetId
+    = Section (List Text)
     | Subsection (List Text)
     | Paragraph (List Text)
-    | CustomBlock Widget
-    | CodeBlock { contents : String, syntaxHighlight : Bool }
-    | Bullets (List (List Chunk))
+    | CustomBlock widgetId Widget
+    | PlainCodeBlock String
+    | ElmCodeBlock (List (List Syntax.Chunk))
+    | Bullets (List (List (Chunk widgetId)))
 
 
 type InlineCodeChunk
@@ -75,24 +69,19 @@ type Text
     | Image { url : String, description : String }
 
 
-type TextContext
-    = TitleContext
-    | SectionContext
-    | SubsectionContext
-    | ParagraphContext
-    | CodeBlockContext
-
-
-type alias ParseConfig =
-    { widgets : Dict String Widget
-    , screenClass : Screen.Class
-    }
-
-
-type alias ViewConfig =
+type alias Config =
     { screenClass : Screen.Class
-    , topLevel : Bool
+    , moduleNames : Set String
+    , rootUrl : String
+    , lastModified : Maybe String
+    , author : String
+    , packageName : String
     }
+
+
+type Level
+    = TopLevel
+    | WithinBulletedList
 
 
 widthFill : Element.Attribute msg
@@ -110,68 +99,80 @@ bulletSpacing =
     8
 
 
-title : Document -> String
-title (Document document) =
-    document.title
-
-
-view : List (Element.Attribute Msg) -> Document -> Element Msg
-view attributes (Document document) =
+view : Config -> List (Element.Attribute Msg) -> Document -> Element Msg
+view config givenAttributes (Document document) =
     let
+        fontFamily =
+            Text.fontFamily Text.Body
+
         fontSize =
-            Font.size (Font.sizes document.screenClass).body
+            Font.size (Text.fontSize config.screenClass Text.Body Text.Prose)
 
         mainContent =
             Region.mainContent
+
+        bottomSpacer =
+            Element.el [ Element.height (Element.px 16) ] Element.none
+
+        toMsg internalMessage =
+            case internalMessage of
+                InternalWidgetUpdated id widget ->
+                    Updated <|
+                        Document { document | chunks = updateWidget id widget document.chunks }
+
+                InternalImageLoaded url ->
+                    ImageLoaded url
     in
-    Element.el
-        (Font.body :: fontSize :: mainContent :: attributes)
-        (viewChunks { topLevel = True, screenClass = document.screenClass } document.chunks
-            |> Element.map
-                (\message ->
-                    case message of
-                        InternalWidgetUpdated id widget ->
-                            Updated <|
-                                Document
-                                    { document
-                                        | chunks = updateWidget id widget document.chunks
-                                    }
-
-                        InternalImageLoaded url ->
-                            ImageLoaded url
-                )
-        )
+    Element.column
+        (fontFamily :: fontSize :: mainContent :: givenAttributes)
+        [ viewTitle config document.titleFragments |> Element.map toMsg
+        , viewChunks config TopLevel document.chunks |> Element.map toMsg
+        , bottomSpacer
+        ]
 
 
-viewChunk : ViewConfig -> CompiledChunk -> Element InternalMsg
-viewChunk config chunk =
+viewChunk : Config -> Level -> Chunk Int -> Element InternalMsg
+viewChunk config level chunk =
     case chunk of
-        Static _ element ->
-            element
+        Section textFragments ->
+            viewSection config textFragments
 
-        Interactive id widget ->
+        Subsection textFragments ->
+            viewSubsection config textFragments
+
+        Paragraph textFragments ->
+            viewParagraph config textFragments
+
+        CustomBlock id widget ->
             Widget.view (\newWidget -> InternalWidgetUpdated id newWidget) widget
 
-        CompiledBullets bullets ->
-            viewBullets config bullets
+        PlainCodeBlock contents ->
+            viewPlainCodeBlock config contents
+
+        ElmCodeBlock lines ->
+            viewElmCodeBlock config lines
+
+        Bullets bullets ->
+            viewBullets config level bullets
 
 
-viewChunks : ViewConfig -> List CompiledChunk -> Element InternalMsg
-viewChunks config chunks =
+viewChunks : Config -> Level -> List (Chunk Int) -> Element InternalMsg
+viewChunks config level chunks =
     let
         spacing =
-            if config.topLevel then
-                topLevelSpacing
+            case level of
+                TopLevel ->
+                    topLevelSpacing
 
-            else
-                bulletSpacing
+                WithinBulletedList ->
+                    bulletSpacing
     in
     Element.textColumn [ Element.spacing spacing, widthFill ]
-        (List.map (viewChunk config) chunks)
+        (List.map (viewChunk config level) chunks)
 
 
-bulletIcon : ViewConfig -> Element msg
-bulletIcon { screenClass, topLevel } =
+bulletIcon : Config -> Level -> Element msg
+bulletIcon { screenClass } level =
     let
         radius =
             case screenClass of
@@ -201,16 +202,17 @@ bulletIcon { screenClass, topLevel } =
                     6
 
         leftPadding =
-            if topLevel then
-                case screenClass of
-                    Screen.Large ->
-                        20
+            case level of
+                TopLevel ->
+                    case screenClass of
+                        Screen.Large ->
+                            20
 
-                    Screen.Small ->
-                        12
+                        Screen.Small ->
+                            12
 
-            else
-                rightPadding
+                WithinBulletedList ->
+                    rightPadding
     in
     Element.el
         [ Element.paddingEach
@@ -220,14 +222,18 @@ bulletIcon { screenClass, topLevel } =
             , right = rightPadding
             }
         ]
-        (Element.html <|
+        (let
+            bodyFontSize =
+                Text.fontSize screenClass Text.Body Text.Prose
+         in
+         Element.html <|
             Svg.svg
                 [ Svg.Attributes.width (String.fromInt (2 * halfWidth))
-                , Svg.Attributes.height (String.fromInt (Font.sizes screenClass).body)
+                , Svg.Attributes.height (String.fromInt bodyFontSize)
                 ]
                 [ Svg.circle
                     [ Svg.Attributes.cx (String.fromInt halfWidth)
-                    , Svg.Attributes.cy (String.fromFloat (toFloat (Font.sizes screenClass).body - height))
+                    , Svg.Attributes.cy (String.fromFloat (toFloat bodyFontSize - height))
                     , Svg.Attributes.r (String.fromFloat radius)
                     , Svg.Attributes.fill "black"
                     , Svg.Attributes.stroke "none"
@@ -237,102 +243,51 @@ bulletIcon { screenClass, topLevel } =
         )
 
 
-bulletedItem : ViewConfig -> List CompiledChunk -> Element InternalMsg
-bulletedItem config chunks =
+bulletedItem : Config -> Level -> List (Chunk Int) -> Element InternalMsg
+bulletedItem config level chunks =
     Element.row [ widthFill ]
-        [ Element.el [ Element.alignTop ] (bulletIcon config)
-        , viewChunks { config | topLevel = False } chunks
+        [ Element.el [ Element.alignTop ] (bulletIcon config level)
+        , viewChunks config WithinBulletedList chunks
         ]
 
 
-viewBullets : ViewConfig -> List (List CompiledChunk) -> Element InternalMsg
-viewBullets config bullets =
+viewBullets : Config -> Level -> List (List (Chunk Int)) -> Element InternalMsg
+viewBullets config level bullets =
     Element.column [ Element.spacing bulletSpacing, widthFill ]
-        (List.map (bulletedItem config) bullets)
+        (List.map (bulletedItem config level) bullets)
 
 
-updateWidget : Int -> Widget -> List CompiledChunk -> List CompiledChunk
+updateWidget : Int -> Widget -> List (Chunk Int) -> List (Chunk Int)
 updateWidget givenId newWidget chunks =
     List.map
         (\chunk ->
             case chunk of
-                Static _ _ ->
+                Section _ ->
                     chunk
 
-                Interactive widgetId _ ->
-                    if widgetId == givenId then
-                        Interactive widgetId newWidget
+                Subsection _ ->
+                    chunk
+
+                Paragraph _ ->
+                    chunk
+
+                CustomBlock id _ ->
+                    if id == givenId then
+                        CustomBlock id newWidget
 
                     else
                         chunk
 
-                CompiledBullets bullets ->
-                    CompiledBullets (List.map (updateWidget givenId newWidget) bullets)
-        )
-        chunks
+                PlainCodeBlock _ ->
+                    chunk
 
-
-compile : Screen.Class -> List Chunk -> List CompiledChunk
-compile screenClass chunks =
-    Tuple.first (compileHelp screenClass chunks 0 [])
-
-
-compileHelp : Screen.Class -> List Chunk -> Int -> List CompiledChunk -> ( List CompiledChunk, Int )
-compileHelp screenClass chunks widgetId accumulated =
-    case chunks of
-        first :: rest ->
-            let
-                prepend compiledChunk =
-                    compileHelp screenClass rest widgetId (compiledChunk :: accumulated)
-            in
-            case first of
-                Title { textFragments, rootUrl, lastModified } ->
-                    prepend (Static TitleContext (viewTitle screenClass textFragments rootUrl lastModified))
-
-                Section textFragments ->
-                    prepend (Static SectionContext (viewSection screenClass textFragments))
-
-                Subsection textFragments ->
-                    prepend (Static SubsectionContext (viewSubsection screenClass textFragments))
-
-                Paragraph textFragments ->
-                    prepend (Static ParagraphContext (viewParagraph screenClass textFragments))
-
-                CustomBlock widget ->
-                    compileHelp screenClass
-                        rest
-                        (widgetId + 1)
-                        (Interactive widgetId widget :: accumulated)
-
-                CodeBlock { contents, syntaxHighlight } ->
-                    prepend (Static CodeBlockContext (viewCodeBlock screenClass contents syntaxHighlight))
+                ElmCodeBlock _ ->
+                    chunk
 
                 Bullets bullets ->
-                    let
-                        ( compiledBullets, updatedId ) =
-                            compileBullets screenClass bullets widgetId []
-                    in
-                    compileHelp screenClass
-                        rest
-                        updatedId
-                        (CompiledBullets compiledBullets :: accumulated)
-
-        [] ->
-            ( List.reverse accumulated, widgetId )
-
-
-compileBullets : Screen.Class -> List (List Chunk) -> Int -> List (List CompiledChunk) -> ( List (List CompiledChunk), Int )
-compileBullets screenClass bullets widgetId accumulated =
-    case bullets of
-        chunks :: rest ->
-            let
-                ( compiledChunks, updatedId ) =
-                    compileHelp screenClass chunks widgetId []
-            in
-            compileBullets screenClass rest updatedId (compiledChunks :: accumulated)
-
-        [] ->
-            ( List.reverse accumulated, widgetId )
+                    Bullets (List.map (updateWidget givenId newWidget) bullets)
+        )
+        chunks
 
 
 hamburgerIcon : Element msg
@@ -342,7 +297,7 @@ hamburgerIcon =
             20
 
         height =
-            toFloat (Font.sizes Screen.Small).title
+            toFloat (Text.fontSize Screen.Small Text.Title Text.Prose)
 
         rectangle bottomY topY =
             Svg.boundingBox2d [] <|
@@ -366,8 +321,8 @@ hamburgerIcon =
             ]
 
 
-viewTitle : Screen.Class -> List Text -> String -> Maybe String -> Element InternalMsg
-viewTitle screenClass textFragments rootUrl lastModified =
+viewTitle : Config -> List Text -> Element InternalMsg
+viewTitle config textFragments =
     let
         titleElement =
             Element.el
@@ -377,20 +332,20 @@ viewTitle screenClass textFragments rootUrl lastModified =
                 (Element.row [ Element.width Element.fill ]
                     [ Element.paragraph
                         [ Region.heading 1
-                        , Font.heading
-                        , Font.size (Font.sizes screenClass).title
-                        , Element.spacing (Font.sizes screenClass).titleLineSpacing
+                        , Text.fontFamily Text.Title
+                        , Font.size (Text.fontSize config.screenClass Text.Title Text.Prose)
+                        , Text.lineSpacing config.screenClass Text.Title
                         , Element.width Element.fill
                         ]
-                        (renderText screenClass TitleContext textFragments)
-                    , case screenClass of
+                        (renderText config Text.Title textFragments)
+                    , case config.screenClass of
                         Screen.Small ->
                             Element.link
                                 [ Element.alignTop
                                 , Font.size 32
                                 , Element.paddingEach { left = 8, top = 0, bottom = 0, right = 0 }
                                 ]
-                                { url = rootUrl
+                                { url = config.rootUrl
                                 , label = hamburgerIcon
                                 }
 
@@ -399,21 +354,22 @@ viewTitle screenClass textFragments rootUrl lastModified =
                     ]
                 )
     in
-    case lastModified of
-        Just date ->
-            Element.column [ Element.width Element.fill ]
-                [ titleElement
-                , Element.paragraph
-                    [ Font.color Color.lastModified
-                    , Font.italic
-                    , Font.size (Font.sizes screenClass).lastModified
-                    , Element.paddingEach { top = 0, bottom = 12, left = 0, right = 0 }
+    Element.el [ widthFill, Element.paddingEach { bottom = 10, top = 0, left = 0, right = 0 } ] <|
+        case config.lastModified of
+            Just date ->
+                Element.column [ Element.width Element.fill ]
+                    [ titleElement
+                    , Element.paragraph
+                        [ Font.color Color.lastModified
+                        , Font.italic
+                        , Font.size (Text.fontSize config.screenClass Text.Body Text.Prose)
+                        , Element.paddingEach { top = 0, bottom = 12, left = 0, right = 0 }
+                        ]
+                        [ Element.text "Last updated on ", Element.text date ]
                     ]
-                    [ Element.text "Last updated on ", Element.text date ]
-                ]
 
-        Nothing ->
-            titleElement
+            Nothing ->
+                titleElement
 
 
 toId : List Text -> String
@@ -423,81 +379,75 @@ toId textFragments =
         |> String.replace " " "-"
 
 
-viewSection : Screen.Class -> List Text -> Element InternalMsg
-viewSection screenClass textFragments =
+viewSection : Config -> List Text -> Element InternalMsg
+viewSection config textFragments =
     Element.paragraph
         [ Region.heading 2
-        , Font.heading
-        , Font.size (Font.sizes screenClass).section
-        , Element.spacing (Font.sizes screenClass).sectionLineSpacing
+        , Text.fontFamily Text.Section
+        , Font.size (Text.fontSize config.screenClass Text.Section Text.Prose)
+        , Text.lineSpacing config.screenClass Text.Section
         , Element.paddingEach { top = 18, bottom = 8, left = 0, right = 0 }
         , Element.htmlAttribute (Html.Attributes.id (toId textFragments))
         ]
-        (renderText screenClass SectionContext textFragments)
+        (renderText config Text.Section textFragments)
 
 
-viewSubsection : Screen.Class -> List Text -> Element InternalMsg
-viewSubsection screenClass textFragments =
+viewSubsection : Config -> List Text -> Element InternalMsg
+viewSubsection config textFragments =
     Element.paragraph
         [ Region.heading 3
-        , Font.heading
-        , Font.size (Font.sizes screenClass).subsection
-        , Element.spacing (Font.sizes screenClass).subsectionLineSpacing
+        , Text.fontFamily Text.Subsection
+        , Font.size (Text.fontSize config.screenClass Text.Subsection Text.Prose)
+        , Text.lineSpacing config.screenClass Text.Subsection
         , Element.paddingEach { top = 14, bottom = 6, left = 0, right = 0 }
         , Element.htmlAttribute (Html.Attributes.id (toId textFragments))
         ]
-        (renderText screenClass SubsectionContext textFragments)
+        (renderText config Text.Subsection textFragments)
 
 
-viewParagraph : Screen.Class -> List Text -> Element InternalMsg
-viewParagraph screenClass textFragments =
-    Element.paragraph [ Element.spacing (Font.sizes screenClass).bodyLineSpacing ]
-        (renderText screenClass ParagraphContext textFragments)
+viewParagraph : Config -> List Text -> Element InternalMsg
+viewParagraph config textFragments =
+    Element.paragraph [ Text.lineSpacing config.screenClass Text.Body ]
+        (renderText config Text.Body textFragments)
 
 
-viewCodeBlock : Screen.Class -> String -> Bool -> Element msg
-viewCodeBlock screenClass code syntaxHighlight =
-    Element.column
-        [ Border.rounded 5
-        , Element.paddingXY 12 10
-        , Font.code
-        , Background.color Color.codeBlockBackground
-        , Font.size (Font.sizes screenClass).codeBlockCode
-        , Element.spacing (Font.sizes screenClass).codeBlockLineSpacing
-        , Element.scrollbarX
-        ]
-        (if syntaxHighlight then
-            case Syntax.parse code of
-                Ok lines ->
-                    List.map viewCodeBlockLine lines
-
-                Err message ->
-                    [ Element.text code
-                    , Element.el
-                        [ widthFill
-                        , Background.color Color.dividerLine
-                        , Element.height (Element.px 1)
-                        ]
-                        Element.none
-                    , Element.text message
-                    ]
-
-         else
-            [ Element.text code ]
-        )
+codeBlockAttributes : Config -> List (Element.Attribute msg)
+codeBlockAttributes { screenClass } =
+    [ Border.rounded 5
+    , Element.paddingXY 12 10
+    , Text.codeFontFamily
+    , Background.color Color.codeBlockBackground
+    , Font.size (Text.fontSize screenClass Text.CodeBlock Text.Code)
+    , Text.lineSpacing screenClass Text.CodeBlock
+    , Element.scrollbarX
+    ]
 
 
-viewCodeBlockLine : List Syntax.Chunk -> Element msg
-viewCodeBlockLine chunks =
-    if List.isEmpty chunks then
-        Element.el [] (Element.text "\n")
-
-    else
-        Element.row [] (List.map viewCodeChunk chunks)
+viewElmCodeBlock : Config -> List (List Syntax.Chunk) -> Element msg
+viewElmCodeBlock config syntaxChunks =
+    Element.column (codeBlockAttributes config) (List.map (viewCodeBlockLine config) syntaxChunks)
 
 
-viewCodeChunk : Syntax.Chunk -> Element msg
-viewCodeChunk chunk =
+viewPlainCodeBlock : Config -> String -> Element msg
+viewPlainCodeBlock config code =
+    Element.column (codeBlockAttributes config) [ Element.text code ]
+
+
+viewCodeBlockLine : Config -> List Syntax.Chunk -> Element msg
+viewCodeBlockLine config chunks =
+    case chunks of
+        [] ->
+            Element.el [] (Element.text "\n")
+
+        [ Syntax.Chunk Syntax.Whitespace _ ] ->
+            Element.el [] (Element.text "\n")
+
+        _ ->
+            Element.row [] (List.map (viewCodeChunk config) chunks)
+
+
+viewCodeChunk : Config -> Syntax.Chunk -> Element msg
+viewCodeChunk config chunk =
     case chunk of
         Syntax.Chunk Syntax.Comment string ->
             viewColoredChunk Color.comment string
@@ -514,8 +464,14 @@ viewCodeChunk chunk =
         Syntax.Chunk Syntax.Keyword string ->
             viewColoredChunk Color.keyword string
 
-        Syntax.Chunk Syntax.Identifier string ->
-            viewColoredChunk Color.identifier string
+        Syntax.Chunk Syntax.TypeOrModule name ->
+            viewModule config name
+
+        Syntax.Chunk (Syntax.ModuleMember moduleMember) string ->
+            viewModuleMember config moduleMember string
+
+        Syntax.Chunk Syntax.LocalIdentifier string ->
+            viewColoredChunk Color.black string
 
         Syntax.Chunk Syntax.Symbol string ->
             viewColoredChunk Color.symbol string
@@ -529,9 +485,45 @@ viewColoredChunk color text =
     Element.el [ Font.color color ] (Element.text text)
 
 
-renderText : Screen.Class -> TextContext -> List Text -> List (Element InternalMsg)
-renderText screenClass context fragments =
-    List.map (renderTextFragment screenClass context) fragments
+documentationLink : Config -> String -> Maybe String -> String -> Element msg
+documentationLink config moduleName memberName fullString =
+    Element.link [ Font.color Color.linkText ]
+        { url =
+            Url.Builder.custom
+                (Url.Builder.CrossOrigin "https://package.elm-lang.org")
+                [ "packages"
+                , config.author
+                , config.packageName
+                , "latest"
+                , String.replace "." "-" moduleName
+                ]
+                []
+                memberName
+        , label = Element.text fullString
+        }
+
+
+viewModule : Config -> String -> Element msg
+viewModule config name =
+    if Set.member name config.moduleNames then
+        documentationLink config name Nothing name
+
+    else
+        viewColoredChunk Color.black name
+
+
+viewModuleMember : Config -> { moduleName : String, memberName : String } -> String -> Element msg
+viewModuleMember config { moduleName, memberName } fullString =
+    if Set.member moduleName config.moduleNames then
+        documentationLink config moduleName (Just memberName) fullString
+
+    else
+        viewColoredChunk Color.black fullString
+
+
+renderText : Config -> Text.Location -> List Text -> List (Element InternalMsg)
+renderText config textLocation fragments =
+    List.map (renderTextFragment config textLocation) fragments
 
 
 inlineCodeElement : Int -> InlineCodeChunk -> Element msg
@@ -576,29 +568,6 @@ toPlainText textFragment =
             description
 
 
-codeFontSize : Screen.Class -> TextContext -> Int
-codeFontSize screenClass context =
-    let
-        fontSizes =
-            Font.sizes screenClass
-    in
-    case context of
-        TitleContext ->
-            fontSizes.titleCode
-
-        SectionContext ->
-            fontSizes.sectionCode
-
-        SubsectionContext ->
-            fontSizes.subsectionCode
-
-        ParagraphContext ->
-            fontSizes.bodyCode
-
-        CodeBlockContext ->
-            fontSizes.codeBlockCode
-
-
 inlineCodeBackgroundAttributes : List (Element.Attribute msg)
 inlineCodeBackgroundAttributes =
     [ Element.paddingXY 6 4, Border.rounded 3, Background.color Color.inlineCodeBackground ]
@@ -617,8 +586,8 @@ renderImage { url, description } =
             []
 
 
-renderTextFragment : Screen.Class -> TextContext -> Text -> Element InternalMsg
-renderTextFragment screenClass context fragment =
+renderTextFragment : Config -> Text.Location -> Text -> Element InternalMsg
+renderTextFragment config textLocation fragment =
     case fragment of
         Plain string ->
             Element.text string
@@ -643,8 +612,8 @@ renderTextFragment screenClass context fragment =
                             ( [ Font.bold ], Element.text string )
 
                         InlineCode chunks ->
-                            ( Font.code
-                                :: Font.size (codeFontSize screenClass context)
+                            ( Text.codeFontFamily
+                                :: Font.size (Text.fontSize config.screenClass textLocation Text.Code)
                                 :: inlineCodeBackgroundAttributes
                             , Element.text <|
                                 String.concat (List.map inlineCodeChunkToString chunks)
@@ -657,23 +626,16 @@ renderTextFragment screenClass context fragment =
                             -- Should never happen
                             ( [], Element.none )
             in
-            Element.link (Font.color Color.linkText :: Font.underline :: attributes) { url = url, label = label }
+            Element.link (Font.color Color.linkText :: attributes) { url = url, label = label }
 
         InlineCode chunks ->
             let
-                fontSize =
-                    codeFontSize screenClass context
-
-                backgroundAttributes =
-                    if context == ParagraphContext then
-                        inlineCodeBackgroundAttributes
-
-                    else
-                        []
+                codeFontSize =
+                    Text.fontSize config.screenClass textLocation Text.Code
             in
             Element.row
-                (Font.code :: Font.size fontSize :: backgroundAttributes)
-                (List.map (inlineCodeElement fontSize) chunks)
+                (Text.codeFontFamily :: Font.size codeFontSize :: inlineCodeBackgroundAttributes)
+                (List.map (inlineCodeElement codeFontSize) chunks)
 
         Image properties ->
             renderImage properties
@@ -780,17 +742,25 @@ parseText inlines accumulated =
             Ok (List.reverse accumulated)
 
 
-parseChunks : ParseConfig -> List (Block Never Never) -> List Chunk -> Result String (List Chunk)
-parseChunks config blocks accumulated =
+parseChunks : Dict String Widget -> List (Block Never Never) -> List (Chunk ()) -> Result String (List (Chunk ()))
+parseChunks widgets blocks accumulated =
     case blocks of
         first :: rest ->
             let
                 prepend chunk =
-                    parseChunks config rest (chunk :: accumulated)
+                    parseChunks widgets rest (chunk :: accumulated)
+
+                parseCode code =
+                    case Syntax.parse code of
+                        Ok lines ->
+                            prepend (ElmCodeBlock lines)
+
+                        Err message ->
+                            Err message
             in
             case first of
                 Block.BlankLine _ ->
-                    parseChunks config rest accumulated
+                    parseChunks widgets rest accumulated
 
                 Block.ThematicBreak ->
                     Err "ThematicBreak not yet supported"
@@ -810,15 +780,21 @@ parseChunks config blocks accumulated =
                             Err ("Heading level " ++ String.fromInt level ++ " not yet supported")
 
                 Block.CodeBlock Block.Indented code ->
-                    prepend (CodeBlock { contents = code, syntaxHighlight = True })
+                    parseCode code
 
                 Block.CodeBlock (Block.Fenced _ fence) code ->
-                    prepend
-                        (CodeBlock
-                            { contents = code
-                            , syntaxHighlight = fence.language == Just "elm"
-                            }
-                        )
+                    case fence.language of
+                        Just "elm" ->
+                            parseCode code
+
+                        Just "text" ->
+                            prepend (PlainCodeBlock code)
+
+                        Just language ->
+                            Err ("Language " ++ language ++ " not recognized")
+
+                        Nothing ->
+                            prepend (PlainCodeBlock code)
 
                 Block.Paragraph _ inlines ->
                     Result.andThen (Paragraph >> prepend) (parseText inlines [])
@@ -832,7 +808,7 @@ parseChunks config blocks accumulated =
                             Result.andThen (Bullets >> prepend)
                                 (Result.combine
                                     (List.map
-                                        (\itemBlocks -> parseChunks config itemBlocks [])
+                                        (\itemBlocks -> parseChunks widgets itemBlocks [])
                                         items
                                     )
                                 )
@@ -843,9 +819,9 @@ parseChunks config blocks accumulated =
                 Block.PlainInlines inlines ->
                     case inlines of
                         [ Inline.HtmlInline tag [] [] ] ->
-                            case Dict.get tag config.widgets of
+                            case Dict.get tag widgets of
                                 Just registeredWidget ->
-                                    prepend (CustomBlock registeredWidget)
+                                    prepend (CustomBlock () registeredWidget)
 
                                 Nothing ->
                                     Err ("No widget found with name " ++ tag)
@@ -863,8 +839,71 @@ parseChunks config blocks accumulated =
             Ok (List.reverse accumulated)
 
 
-parse : { screenClass : Screen.Class, widgets : List ( String, Widget ), rootUrl : String, lastModified : Maybe String } -> String -> Result String ( Document, Set String )
-parse { screenClass, widgets, rootUrl, lastModified } markdown =
+tagChunk : Chunk () -> Int -> ( Chunk Int, Int )
+tagChunk chunk nextId =
+    case chunk of
+        Section textFragments ->
+            ( Section textFragments, nextId )
+
+        Subsection textFragments ->
+            ( Subsection textFragments, nextId )
+
+        Paragraph textFragments ->
+            ( Paragraph textFragments, nextId )
+
+        CustomBlock () widget ->
+            ( CustomBlock nextId widget, nextId + 1 )
+
+        PlainCodeBlock code ->
+            ( PlainCodeBlock code, nextId )
+
+        ElmCodeBlock syntaxChunks ->
+            ( ElmCodeBlock syntaxChunks, nextId )
+
+        Bullets bullets ->
+            let
+                ( taggedBullets, updatedId ) =
+                    tagBullets bullets nextId
+            in
+            ( Bullets taggedBullets, updatedId )
+
+
+tagChunks : List (Chunk ()) -> Int -> ( List (Chunk Int), Int )
+tagChunks chunks nextId =
+    case chunks of
+        first :: rest ->
+            let
+                ( taggedRest, updatedId ) =
+                    tagChunks rest nextId
+
+                ( taggedFirst, finalId ) =
+                    tagChunk first updatedId
+            in
+            ( taggedFirst :: taggedRest, finalId )
+
+        [] ->
+            ( [], nextId )
+
+
+tagBullets : List (List (Chunk ())) -> Int -> ( List (List (Chunk Int)), Int )
+tagBullets bullets nextId =
+    case bullets of
+        first :: rest ->
+            let
+                ( taggedRest, updatedId ) =
+                    tagBullets rest nextId
+
+                ( taggedFirst, finalId ) =
+                    tagChunks first updatedId
+            in
+            ( taggedFirst :: taggedRest, finalId )
+
+        [] ->
+            ( [], nextId )
+
+
+parse : Dict String Widget -> String -> Result String ( Document, Set String )
+parse widgets markdown =
     let
         options =
             { softAsHardLineBreak = False
@@ -878,27 +917,15 @@ parse { screenClass, widgets, rootUrl, lastModified } markdown =
         (Block.Heading _ 1 inlines) :: rest ->
             Result.map2
                 (\titleText bodyChunks ->
-                    let
-                        titleChunk =
-                            Title
-                                { textFragments = titleText
-                                , rootUrl = rootUrl
-                                , lastModified = lastModified
-                                }
-
-                        compiledChunks =
-                            compile screenClass (titleChunk :: bodyChunks)
-                    in
                     ( Document
-                        { title = Inline.extractText inlines
-                        , chunks = compiledChunks
-                        , screenClass = screenClass
+                        { titleFragments = titleText
+                        , chunks = Tuple.first (tagChunks bodyChunks 1)
                         }
                     , collectImageUrls blocks
                     )
                 )
                 (parseText inlines [])
-                (parseChunks { screenClass = screenClass, widgets = Dict.fromList widgets } rest [])
+                (parseChunks widgets rest [])
 
         _ ->
             Err "Markdown document must start with a level 1 header"

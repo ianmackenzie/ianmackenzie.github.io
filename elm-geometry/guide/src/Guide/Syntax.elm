@@ -1,5 +1,6 @@
 module Guide.Syntax exposing (Chunk(..), ChunkType(..), parse)
 
+import List.Extra
 import Parser exposing ((|.), (|=), Parser)
 import Set
 
@@ -10,9 +11,11 @@ type ChunkType
     | Number
     | Character
     | Keyword
-    | Identifier
     | Symbol
     | Whitespace
+    | LocalIdentifier
+    | TypeOrModule
+    | ModuleMember { moduleName : String, memberName : String }
 
 
 type Chunk
@@ -84,9 +87,50 @@ chunk =
         , Parser.map (Chunk Character) character
         , Parser.map (Chunk Keyword) keyword
         , Parser.map (Chunk Symbol) symbol
-        , Parser.map (Chunk Identifier) identifier
+        , Parser.map classifyIdentifier identifier
         , Parser.map (Chunk Number) number
         ]
+
+
+classifyIdentifier : String -> Chunk
+classifyIdentifier fullString =
+    Chunk (identifierType fullString) fullString
+
+
+identifierType : String -> ChunkType
+identifierType fullString =
+    let
+        parts =
+            String.split "." fullString |> List.filter (not << String.isEmpty)
+    in
+    case List.Extra.splitWhen isNotCapitalized parts of
+        Nothing ->
+            -- No parts start with a lower-case letter
+            TypeOrModule
+
+        Just ( [], _ ) ->
+            -- All parts start with a lower-case letter
+            LocalIdentifier
+
+        Just ( _, [] ) ->
+            -- Should never happen (should get Nothing instead), but logically would correspond to a
+            -- module
+            TypeOrModule
+
+        Just ( moduleParts, memberName :: _ ) ->
+            -- Some parts start with an upper-case letter (module name parts), then further parts
+            -- start with a lower-case letter (member name parts - usually just one but might be
+            -- more if the module member is a record)
+            ModuleMember { moduleName = String.join "." moduleParts, memberName = memberName }
+
+
+isNotCapitalized : String -> Bool
+isNotCapitalized str =
+    let
+        firstCharacter =
+            String.left 1 str
+    in
+    String.toLower firstCharacter == firstCharacter
 
 
 isWhitespace : Char -> Bool

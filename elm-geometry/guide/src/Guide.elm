@@ -9,17 +9,16 @@ module Guide exposing (Program, program)
 import Browser exposing (UrlRequest)
 import Browser.Dom
 import Browser.Navigation as Navigation
-import Dict
+import Dict exposing (Dict)
 import Element exposing (Element)
 import Element.Background as Background
-import Element.Border as Border
 import Element.Font as Font
 import Elm.Docs
 import Guide.Color as Color
 import Guide.Document as Document exposing (Document)
-import Guide.Font as Font
 import Guide.Page as Page exposing (Page)
 import Guide.Screen as Screen
+import Guide.Text as Text
 import Guide.Widget exposing (Widget)
 import Html.Attributes
 import Http
@@ -164,24 +163,17 @@ handleResponse response =
             Ok { markdown = content, lastModified = parsedDate }
 
 
-handleMarkdown : Screen.Class -> Page -> Maybe String -> String -> Result String { markdown : String, lastModified : Maybe String } -> Msg
-handleMarkdown screenClass page fragment rootUrl result =
+handleMarkdown : Page -> Maybe String -> Dict String Widget -> Result String { markdown : String, lastModified : Maybe String } -> Msg
+handleMarkdown page fragment widgets result =
     case result of
         Ok { markdown, lastModified } ->
-            let
-                documentConfig =
-                    { screenClass = screenClass
-                    , widgets = []
-                    , rootUrl = rootUrl
-                    , lastModified = lastModified
-                    }
-            in
-            case Document.parse documentConfig markdown of
+            case Document.parse widgets markdown of
                 Ok ( document, imagesToLoad ) ->
                     DocumentLoaded
                         { page = page
                         , fragment = fragment
                         , document = document
+                        , lastModified = lastModified
                         , imagesToLoad = imagesToLoad
                         }
 
@@ -201,15 +193,11 @@ appendSlash url =
         url ++ "/"
 
 
-loadPage : Screen.Class -> List String -> Page -> Maybe String -> Cmd Msg
-loadPage screenClass rootPath page fragment =
-    let
-        rootUrl =
-            Url.Builder.absolute rootPath [] |> appendSlash
-    in
+loadPage : List String -> Page -> Maybe String -> Dict String Widget -> Cmd Msg
+loadPage rootPath page fragment widgets =
     Http.get
         { url = Page.sourceUrl rootPath page
-        , expect = Http.expectStringResponse (handleMarkdown screenClass page fragment rootUrl) handleResponse
+        , expect = Http.expectStringResponse (handleMarkdown page fragment widgets) handleResponse
         }
 
 
@@ -221,6 +209,7 @@ type State
         { page : Page
         , fragment : Maybe String
         , document : Document
+        , lastModified : Maybe String
         , imagesToLoad : Set String
         }
 
@@ -235,6 +224,7 @@ type alias Model =
     , allPages : List Page
     , state : State
     , moduleNames : Set String
+    , widgets : Dict String Widget
     }
 
 
@@ -246,6 +236,7 @@ type Msg
         { page : Page
         , fragment : Maybe String
         , document : Document
+        , lastModified : Maybe String
         , imagesToLoad : Set String
         }
     | DocumentMsg Document.Msg
@@ -257,18 +248,13 @@ type alias Program =
     Platform.Program Flags Model Msg
 
 
-topLevelDocumentId : String
-topLevelDocumentId =
-    "top-level-document-e41c28257f09"
-
-
-handleNewUrl : State -> List String -> Page -> List Page -> Screen.Class -> Url -> ( State, Cmd Msg )
-handleNewUrl currentState rootPath readmePage allPages screenClass url =
+handleNewUrl : State -> List String -> Page -> List Page -> Screen.Class -> Url -> Dict String Widget -> ( State, Cmd Msg )
+handleNewUrl currentState rootPath readmePage allPages screenClass url widgets =
     case Page.matching { url = url, rootPath = rootPath } allPages of
         Ok (Page.Match page) ->
             let
                 loadNewPage =
-                    loadPage screenClass rootPath page url.fragment
+                    loadPage rootPath page url.fragment widgets
 
                 command =
                     case currentState of
@@ -289,7 +275,7 @@ handleNewUrl currentState rootPath readmePage allPages screenClass url =
                 Screen.Large ->
                     let
                         loadReadme =
-                            loadPage screenClass rootPath readmePage url.fragment
+                            loadPage rootPath readmePage url.fragment widgets
                     in
                     ( currentState
                     , case currentState of
@@ -324,30 +310,26 @@ handleNewUrl currentState rootPath readmePage allPages screenClass url =
 
 scrollTo : Maybe String -> Cmd Msg
 scrollTo fragment =
-    let
-        scrollTask =
-            case fragment of
-                Just id ->
-                    Browser.Dom.getElement id
-                        |> Task.andThen (\{ element } -> Browser.Dom.setViewport 0 element.y)
+    case fragment of
+        Just id ->
+            Browser.Dom.getElement id
+                |> Task.andThen (\{ element } -> Browser.Dom.setViewport 0 element.y)
+                |> Task.attempt
+                    (\result ->
+                        case result of
+                            Ok () ->
+                                NoOp
 
-                Nothing ->
-                    Browser.Dom.setViewport 0 0
-    in
-    scrollTask
-        |> Task.attempt
-            (\result ->
-                case result of
-                    Ok () ->
-                        NoOp
+                            Err (Browser.Dom.NotFound _) ->
+                                LoadError ("Could not find element on page with id '" ++ id ++ "'")
+                    )
 
-                    Err (Browser.Dom.NotFound id) ->
-                        LoadError ("Could not find element on page with id '" ++ id ++ "'")
-            )
+        Nothing ->
+            Cmd.none
 
 
-init : String -> String -> Page -> List Page -> Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
-init author packageName readmePage allPages flags url navigationKey =
+init : String -> String -> List ( String, Widget ) -> Page -> List Page -> Flags -> Url -> Navigation.Key -> ( Model, Cmd Msg )
+init author packageName givenWidgets readmePage allPages flags url navigationKey =
     let
         screenClass =
             Screen.classify flags.width
@@ -355,8 +337,11 @@ init author packageName readmePage allPages flags url navigationKey =
         rootPath =
             url.path |> String.split "/" |> List.filter (not << String.isEmpty)
 
+        widgets =
+            Dict.fromList givenWidgets
+
         ( state, pageCommand ) =
-            handleNewUrl Loading rootPath readmePage allPages screenClass url
+            handleNewUrl Loading rootPath readmePage allPages screenClass url widgets
 
         moduleNamesDecoder =
             Decode.list (Elm.Docs.decoder |> Decode.map .name)
@@ -376,6 +361,7 @@ init author packageName readmePage allPages flags url navigationKey =
       , navigationKey = navigationKey
       , rootPath = rootPath
       , moduleNames = Set.empty
+      , widgets = widgets
       }
     , Cmd.batch [ pageCommand, loadDocs ]
     )
@@ -427,7 +413,7 @@ gitHubLink model =
 
 navIcon : Model -> { src : String, description : String } -> Element msg
 navIcon model properties =
-    Element.image [ Element.height (Element.px (Font.sizes model.screenClass).navText) ] properties
+    Element.image [ Element.height (Element.px (Text.fontSize model.screenClass Text.NavBody Text.Prose)) ] properties
 
 
 horizontalDivider : Element msg
@@ -446,10 +432,10 @@ viewNav model currentPage =
         titleElement =
             Element.paragraph
                 [ Font.color Color.navTitle
-                , Font.size (Font.sizes model.screenClass).navTitle
+                , Font.size (Text.fontSize model.screenClass Text.NavTitle Text.Prose)
                 ]
                 [ Element.text "The "
-                , Element.el [ Font.code ] (Element.text model.packageName)
+                , Element.el [ Text.codeFontFamily ] (Element.text model.packageName)
                 , Element.text " guide"
                 ]
 
@@ -466,9 +452,9 @@ viewNav model currentPage =
                 [ heightFill
                 , widthFill
                 , Background.color Color.white
-                , Font.heading
+                , Text.fontFamily Text.Body
                 , Font.color Color.linkText
-                , Font.size (Font.sizes model.screenClass).navText
+                , Font.size (Text.fontSize model.screenClass Text.NavBody Text.Prose)
                 , Font.regular
                 , Element.spacing 12
                 , Element.padding navPadding
@@ -505,9 +491,19 @@ maxDocumentWidth =
     640
 
 
-viewDocument : List (Element.Attribute Never) -> Document -> Element Msg
-viewDocument attributes loadedDocument =
-    Document.view (List.map (Element.mapAttribute never) attributes) loadedDocument
+viewDocument : Model -> List (Element.Attribute Never) -> Document -> Maybe String -> Element Msg
+viewDocument model attributes loadedDocument lastModified =
+    let
+        documentConfig =
+            { screenClass = model.screenClass
+            , lastModified = lastModified
+            , rootUrl = Url.Builder.absolute model.rootPath [] |> appendSlash
+            , moduleNames = model.moduleNames
+            , author = model.author
+            , packageName = model.packageName
+            }
+    in
+    Document.view documentConfig (List.map (Element.mapAttribute never) attributes) loadedDocument
         |> Element.map DocumentMsg
 
 
@@ -581,8 +577,8 @@ view model =
                             Loading ->
                                 Element.none
 
-                            Loaded { document } ->
-                                viewDocument [ widthFill, heightFill ] document
+                            Loaded { document, lastModified } ->
+                                viewDocument model [ widthFill, heightFill ] document lastModified
 
                             Error message ->
                                 Element.el [ Element.centerX ] (Element.text message)
@@ -617,12 +613,14 @@ view model =
                         Loading ->
                             Element.none
 
-                        Loaded { document } ->
+                        Loaded { document, lastModified } ->
                             viewDocument
+                                model
                                 [ Element.padding 12
                                 , Element.width (Element.fill |> Element.maximum 10000)
                                 ]
                                 document
+                                lastModified
 
                         Error message ->
                             Element.text message
@@ -636,7 +634,7 @@ update message model =
         UrlRequested urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model, Navigation.pushUrl model.navigationKey (Url.toString url) )
+                    ( model, Navigation.load (Url.toString url) )
 
                 Browser.External url ->
                     ( model, Navigation.load url )
@@ -651,6 +649,7 @@ update message model =
                         model.allPages
                         model.screenClass
                         url
+                        model.widgets
             in
             ( { model | state = newState }, command )
 
@@ -664,6 +663,7 @@ update message model =
                 scrollTo loaded.fragment
 
               else
+                -- Wait for images to load
                 Cmd.none
             )
 
@@ -733,7 +733,7 @@ program { author, packageName, branch, pages, widgets } =
             readmePage :: List.map toPage pages
     in
     Browser.application
-        { init = init author packageName readmePage allPages
+        { init = init author packageName widgets readmePage allPages
         , view = view
         , update = update
         , subscriptions = always Sub.none
