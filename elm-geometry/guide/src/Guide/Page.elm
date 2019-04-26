@@ -1,9 +1,8 @@
 module Guide.Page exposing
     ( Page
     , readme, with
-    , sourceUrl, displayedUrl, title, widgets
+    , sourceUrl, displayedUrl, title, widgets, isReadme
     , Match(..), Error(..), matching
-    , isReadme
     )
 
 {-|
@@ -12,7 +11,7 @@ module Guide.Page exposing
 
 @docs readme, with
 
-@docs sourceUrl, displayedUrl, title, widgets
+@docs sourceUrl, displayedUrl, title, widgets, isReadme
 
 @docs Match, Error, matching
 
