@@ -12271,11 +12271,19 @@ var author$project$Guide$Page$title = function (page) {
 		return properties.dM;
 	}
 };
+var author$project$Guide$Page$dasherizedTitle = function (page) {
+	return A3(
+		elm$core$String$replace,
+		' ',
+		'-',
+		elm$core$String$toLower(
+			author$project$Guide$Page$title(page)));
+};
 var author$project$Guide$Page$matchesQuery = F2(
 	function (query, page) {
 		return _Utils_eq(
 			query,
-			author$project$Guide$Page$title(page));
+			author$project$Guide$Page$dasherizedTitle(page));
 	});
 var author$project$Guide$Page$Route = F2(
 	function (query, fragment) {
@@ -20398,28 +20406,18 @@ var elm$url$Url$Builder$string = F2(
 	});
 var author$project$Guide$Page$displayedUrl = F3(
 	function (rootPath, page, maybeFragment) {
-		if (!page.$) {
-			return A4(
-				elm$url$Url$Builder$custom,
-				elm$url$Url$Builder$Absolute,
-				rootPath,
-				_List_fromArray(
-					[
-						A2(elm$url$Url$Builder$string, 'page', 'README')
-					]),
-				maybeFragment);
-		} else {
-			var properties = page.a;
-			return A4(
-				elm$url$Url$Builder$custom,
-				elm$url$Url$Builder$Absolute,
-				rootPath,
-				_List_fromArray(
-					[
-						A2(elm$url$Url$Builder$string, 'page', properties.dM)
-					]),
-				maybeFragment);
-		}
+		return A4(
+			elm$url$Url$Builder$custom,
+			elm$url$Url$Builder$Absolute,
+			rootPath,
+			_List_fromArray(
+				[
+					A2(
+					elm$url$Url$Builder$string,
+					'page',
+					author$project$Guide$Page$dasherizedTitle(page))
+				]),
+			maybeFragment);
 	});
 var author$project$Guide$toPageLink = F3(
 	function (rootPath, currentPage, page) {

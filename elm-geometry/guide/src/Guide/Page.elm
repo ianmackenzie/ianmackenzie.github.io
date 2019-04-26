@@ -1,7 +1,7 @@
 module Guide.Page exposing
     ( Page
     , readme, with
-    , sourceUrl, displayedUrl, title, widgets, isReadme
+    , sourceUrl, displayedUrl, title, dasherizedTitle, widgets, isReadme
     , Match(..), Error(..), matching
     )
 
@@ -11,7 +11,7 @@ module Guide.Page exposing
 
 @docs readme, with
 
-@docs sourceUrl, displayedUrl, title, widgets, isReadme
+@docs sourceUrl, displayedUrl, title, dasherizedTitle, widgets, isReadme
 
 @docs Match, Error, matching
 
@@ -52,18 +52,10 @@ sourceUrl rootPath page =
 
 displayedUrl : List String -> Page -> Maybe String -> String
 displayedUrl rootPath page maybeFragment =
-    case page of
-        Readme _ ->
-            Url.Builder.custom Url.Builder.Absolute
-                rootPath
-                [ Url.Builder.string "page" "README" ]
-                maybeFragment
-
-        Page properties ->
-            Url.Builder.custom Url.Builder.Absolute
-                rootPath
-                [ Url.Builder.string "page" properties.title ]
-                maybeFragment
+    Url.Builder.custom Url.Builder.Absolute
+        rootPath
+        [ Url.Builder.string "page" (dasherizedTitle page) ]
+        maybeFragment
 
 
 title : Page -> String
@@ -74,6 +66,11 @@ title page =
 
         Page properties ->
             properties.title
+
+
+dasherizedTitle : Page -> String
+dasherizedTitle page =
+    title page |> String.toLower |> String.replace " " "-"
 
 
 widgets : Page -> Dict String Widget
@@ -117,7 +114,7 @@ urlParser rootPath =
 
 matchesQuery : String -> Page -> Bool
 matchesQuery query page =
-    query == title page
+    query == dasherizedTitle page
 
 
 type Match
