@@ -114,10 +114,10 @@ fontSize screenClass location kind =
                     24
 
                 ( Subsection, Prose ) ->
-                    19
+                    20
 
                 ( Subsection, Code ) ->
-                    19
+                    20
 
                 ( Body, Prose ) ->
                     16
@@ -149,10 +149,10 @@ fontSize screenClass location kind =
                     24
 
                 ( Subsection, Prose ) ->
-                    19
+                    20
 
                 ( Subsection, Code ) ->
-                    19
+                    20
 
                 ( Body, Prose ) ->
                     16
@@ -167,7 +167,7 @@ fontSize screenClass location kind =
                     24
 
                 ( NavBody, _ ) ->
-                    19
+                    20
 
 
 codeFontFamily : Element.Attribute msg
