@@ -126,6 +126,7 @@ view config givenAttributes (Document document) =
     Element.column
         (fontFamily :: fontSize :: mainContent :: givenAttributes)
         [ viewTitle config document.titleFragments |> Element.map toMsg
+        , spacer 20
         , viewChunks config TopLevel document.chunks |> Element.map toMsg
         , bottomSpacer
         ]
@@ -158,17 +159,87 @@ viewChunk config level chunk =
 
 viewChunks : Config -> Level -> List (Chunk Int) -> Element InternalMsg
 viewChunks config level chunks =
-    let
-        spacing =
-            case level of
-                TopLevel ->
-                    topLevelSpacing
+    Element.textColumn [ widthFill ] (viewChunksHelp config level chunks [])
 
-                WithinBulletedList ->
-                    bulletSpacing
-    in
-    Element.textColumn [ Element.spacing spacing, widthFill ]
-        (List.map (viewChunk config level) chunks)
+
+viewChunksHelp : Config -> Level -> List (Chunk Int) -> List (Element InternalMsg) -> List (Element InternalMsg)
+viewChunksHelp config level chunks accumulated =
+    case chunks of
+        [] ->
+            List.reverse accumulated
+
+        [ last ] ->
+            List.reverse (viewChunk config level last :: accumulated)
+
+        chunk :: next :: remaining ->
+            viewChunksHelp
+                config
+                level
+                (next :: remaining)
+                (spacer (interChunkSpacing level chunk next)
+                    :: viewChunk config level chunk
+                    :: accumulated
+                )
+
+
+minSpacingAbove : Chunk a -> Int
+minSpacingAbove chunk =
+    case chunk of
+        Section _ ->
+            24
+
+        Subsection _ ->
+            20
+
+        Paragraph _ ->
+            8
+
+        CustomBlock _ _ ->
+            8
+
+        PlainCodeBlock _ ->
+            12
+
+        ElmCodeBlock _ ->
+            12
+
+        Bullets _ ->
+            16
+
+
+minSpacingBelow : Chunk a -> Int
+minSpacingBelow chunk =
+    case chunk of
+        Section _ ->
+            16
+
+        Subsection _ ->
+            12
+
+        Paragraph _ ->
+            8
+
+        CustomBlock _ _ ->
+            8
+
+        PlainCodeBlock _ ->
+            12
+
+        ElmCodeBlock _ ->
+            12
+
+        Bullets _ ->
+            16
+
+
+interChunkSpacing : Level -> Chunk a -> Chunk a -> Int
+interChunkSpacing level first second =
+    case level of
+        WithinBulletedList ->
+            bulletSpacing
+
+        TopLevel ->
+            max (minSpacingBelow first) (minSpacingAbove second)
 
 
 bulletIcon : Config -> Level -> Element msg
@@ -290,6 +361,11 @@ updateWidget givenId newWidget chunks =
         chunks
 
 
+spacer : Int -> Element msg
+spacer height =
+    Element.el [ Element.height (Element.px height) ] Element.none
+
+
 hamburgerIcon : Element msg
 hamburgerIcon =
     let
@@ -325,10 +401,7 @@ viewTitle : Config -> List Text -> Element InternalMsg
 viewTitle config textFragments =
     let
         titleElement =
-            Element.el
-                [ Element.width Element.fill
-                , Element.paddingEach { bottom = 8, top = 0, left = 0, right = 0 }
-                ]
+            Element.el [ Element.width Element.fill ]
                 (Element.row [ Element.width Element.fill ]
                     [ Element.paragraph
                         [ Region.heading 1
@@ -354,16 +427,16 @@ viewTitle config textFragments =
                     ]
                 )
     in
-    Element.el [ widthFill, Element.paddingEach { bottom = 10, top = 0, left = 0, right = 0 } ] <|
+    Element.el [ widthFill ] <|
         case config.lastModified of
             Just date ->
                 Element.column [ Element.width Element.fill ]
                     [ titleElement
+                    , spacer 8
                     , Element.paragraph
                         [ Font.color Color.lastModified
                         , Font.italic
                         , Font.size (Text.fontSize config.screenClass Text.Body Text.Prose)
-                        , Element.paddingEach { top = 0, bottom = 12, left = 0, right = 0 }
                         ]
                         [ Element.text "Last updated on ", Element.text date ]
                     ]
@@ -386,7 +459,6 @@ viewSection config textFragments =
         , Text.fontFamily Text.Section
         , Font.size (Text.fontSize config.screenClass Text.Section Text.Prose)
         , Text.lineSpacing config.screenClass Text.Section
-        , Element.paddingEach { top = 16, bottom = 8, left = 0, right = 0 }
         , Element.htmlAttribute (Html.Attributes.id (toId textFragments))
         ]
         (renderText config Text.Section textFragments)
@@ -399,7 +471,6 @@ viewSubsection config textFragments =
         , Text.fontFamily Text.Subsection
         , Font.size (Text.fontSize config.screenClass Text.Subsection Text.Prose)
         , Text.lineSpacing config.screenClass Text.Subsection
-        , Element.paddingEach { top = 14, bottom = 6, left = 0, right = 0 }
         , Element.htmlAttribute (Html.Attributes.id (toId textFragments))
         ]
         (renderText config Text.Subsection textFragments)
