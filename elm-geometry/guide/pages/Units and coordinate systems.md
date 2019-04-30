@@ -68,3 +68,38 @@ Note that the `TopLeft` type we declared gives us a convenient place to document
 exactly how that coordinate system is defined. This combination now gives us
 some nice type safety - the compiler will tell us if we try to mix two points
 that have different units or are defined in different coordinate systems.
+
+## Unit conversion
+
+It is often necessary to convert between different units. For example, we might have some 2D
+geometry in real-world dimensions (`Meters`) and want to draw that on the screen (in `Pixels`). To
+do that, we need to define a conversion factor between `Meters` and `Pixels`; for example, perhaps
+we want 1 meter in the real world to take up 20 pixels on screen. Conversion factors like this are
+defined using an `elm-units` [`Rate`][rate] quantity value:
+
+```elm
+pixelsPerMeter =
+    Pixels.pixels 20 |> Quantity.per (Length.meters 1)
+```
+
+Then we can convert back and forth using functions such as `Point2d.at` and `Point2d.at_` (following
+the same pattern as [`Quantity.at`][at] and [`Quantity.at_`][at_]):
+
+```elm
+worldPoint =
+    Point2d.fromCoordinates
+        ( Length.meters 2
+        , Length.meters 3
+        )
+
+screenPoint =
+    worldPoint |> Point2d.at pixelsPerMeter
+--> Point2d.fromCoordinates
+-->     ( Pixels.pixels 20
+-->     , Pixels.pixels 60
+-->     )
+```
+
+[rate]: https://package.elm-lang.org/packages/ianmackenzie/elm-units/latest/Quantity#Rate
+[at]: https://package.elm-lang.org/packages/ianmackenzie/elm-units/latest/Quantity#at
+[at_]: https://package.elm-lang.org/packages/ianmackenzie/elm-units/latest/Quantity#at_
