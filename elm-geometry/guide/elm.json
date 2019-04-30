@@ -1,7 +1,14 @@
 {
     "type": "application",
     "source-directories": [
-        "src"
+        "src",
+        "../../../elm-float-extra/src",
+        "../../../elm-interval/src",
+        "../../../elm-units/src",
+        "../../../elm-units-interval/src",
+        "../../../elm-triangular-mesh/src",
+        "../../../elm-geometry/src",
+        "../../../elm-geometry-svg/src"
     ],
     "elm-version": "0.19.0",
     "dependencies": {
@@ -19,18 +26,13 @@
             "elm/url": "1.0.0",
             "elm-community/list-extra": "8.2.0",
             "elm-community/result-extra": "2.2.1",
-            "ianmackenzie/elm-geometry": "1.2.1",
-            "ianmackenzie/elm-geometry-svg": "1.0.2",
             "mdgriffith/elm-ui": "1.1.0",
             "pablohirafuji/elm-markdown": "2.0.5"
         },
         "indirect": {
             "elm/bytes": "1.0.8",
             "elm/file": "1.0.4",
-            "elm/virtual-dom": "1.0.2",
-            "ianmackenzie/elm-float-extra": "1.0.1",
-            "ianmackenzie/elm-interval": "1.0.1",
-            "ianmackenzie/elm-triangular-mesh": "1.0.2"
+            "elm/virtual-dom": "1.0.2"
         }
     },
     "test-dependencies": {

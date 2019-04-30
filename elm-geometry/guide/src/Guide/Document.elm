@@ -20,6 +20,7 @@ import Json.Decode as Decode
 import Markdown.Block as Block exposing (Block)
 import Markdown.Config
 import Markdown.Inline as Inline exposing (Inline)
+import Pixels exposing (Pixels)
 import Regex exposing (Regex)
 import Result.Extra as Result
 import Set exposing (Set)
@@ -378,10 +379,10 @@ hamburgerIcon =
         rectangle bottomY topY =
             Svg.boundingBox2d [] <|
                 BoundingBox2d.fromExtrema
-                    { minX = 2
-                    , maxX = 18
-                    , minY = height - topY
-                    , maxY = height - bottomY
+                    { minX = Pixels.pixels 2
+                    , maxX = Pixels.pixels 18
+                    , minY = Pixels.pixels (height - topY)
+                    , maxY = Pixels.pixels (height - bottomY)
                     }
     in
     Element.html <|
