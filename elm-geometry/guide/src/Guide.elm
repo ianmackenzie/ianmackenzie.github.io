@@ -392,7 +392,7 @@ packageDocLink model =
                 Url.Builder.crossOrigin "https://package.elm-lang.org"
                     [ "packages", model.author, model.packageName, "latest" ]
                     []
-            , label = Element.text "Package documentation"
+            , label = Element.text "API documentation"
             }
         ]
 
