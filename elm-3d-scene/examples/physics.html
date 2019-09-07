@@ -8754,6 +8754,90 @@ var $w0rm$elm_physics$Physics$Body$setMass = F2(
 				body,
 				{aC: mass}));
 	});
+var $author$project$Scene3d$Types$Group = function (a) {
+	return {$: 3, a: a};
+};
+var $author$project$Scene3d$Drawable$collectNodes = F2(
+	function (drawables, accumulated) {
+		collectNodes:
+		while (true) {
+			if (!drawables.b) {
+				return accumulated;
+			} else {
+				var node = drawables.a;
+				var rest = drawables.b;
+				var $temp$drawables = rest,
+					$temp$accumulated = A2($elm$core$List$cons, node, accumulated);
+				drawables = $temp$drawables;
+				accumulated = $temp$accumulated;
+				continue collectNodes;
+			}
+		}
+	});
+var $author$project$Scene3d$Drawable$group = function (drawables) {
+	return $author$project$Scene3d$Types$Group(
+		A2($author$project$Scene3d$Drawable$collectNodes, drawables, _List_Nil));
+};
+var $author$project$Scene3d$Types$ShadowNode = function (a) {
+	return {$: 2, a: a};
+};
+var $author$project$Scene3d$Shader$shadowFragment = {
+	src: '\n        precision mediump float;\n        \n        void main () {\n            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);\n        }\n    ',
+	attributes: {},
+	uniforms: {}
+};
+var $author$project$Scene3d$Shader$shadowVertex = {
+	src: '\n        precision mediump float;\n\n        attribute vec3 position;\n        attribute vec3 normal;\n\n        uniform float modelScale;\n        uniform mat4 modelMatrix;\n        uniform mat4 viewMatrix;\n        uniform mat4 sceneProperties;\n        uniform mat4 lights;\n\n        vec4 project(vec4 position) {\n            float n = sceneProperties[0][0];\n            float a = sceneProperties[0][1];\n            float kc = sceneProperties[0][2];\n            float kz = sceneProperties[0][3];\n            return vec4(\n                (kc + kz * position.z) * (position.x / a),\n                (kc + kz * position.z) * position.y,\n                (-position.z - 2.0 * n),\n                -position.z\n            );\n        }\n        \n        vec3 getDirectionToLight(vec4 xyz_type, vec4 rgb_radius) {\n            float lightType = xyz_type.w;\n            if (lightType == 1.0) {\n                return xyz_type.xyz;\n            } else if (lightType == 2.0) {\n                vec3 lightPosition = xyz_type.xyz;\n                return normalize(lightPosition - position);\n            }\n        }\n\n        void main () {\n            vec4 scaledPosition = vec4(modelScale * position, 1.0);\n            vec4 transformedPosition = modelMatrix * scaledPosition;\n            vec3 transformedNormal = (modelMatrix * vec4(normal, 0.0)).xyz;\n            vec4 xyz_type = lights[0];\n            vec4 rgb_radius = lights[1];\n            vec3 directionToLight = getDirectionToLight(xyz_type, rgb_radius);\n            vec3 offset = vec3(0.0, 0.0, 0.0);\n            if (dot(directionToLight, transformedNormal) <= 0.0) {\n                offset = -1.0e9 * directionToLight;\n            }\n            vec4 offsetPosition = transformedPosition + vec4(offset, 0.0);\n            gl_Position = project(viewMatrix * offsetPosition);\n        }\n    ',
+	attributes: {normal: 'X', position: 'fX'},
+	uniforms: {lights: 'fr', modelMatrix: 'aR', modelScale: 'aS', sceneProperties: 'aY', viewMatrix: 'a_'}
+};
+var $author$project$Scene3d$Drawable$shadowDrawFunction = function (maybeShadow) {
+	if (maybeShadow.$ === 1) {
+		return $elm$core$Maybe$Nothing;
+	} else {
+		var givenShadow = maybeShadow.a;
+		if (!givenShadow.$) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var webGLMesh = givenShadow.b;
+			return $elm$core$Maybe$Just(
+				F8(
+					function (sceneProperties, modelScale, modelMatrix, isRightHanded, viewMatrix, ambientLighting, lights, settings) {
+						return A5(
+							$elm_explorations$webgl$WebGL$entityWith,
+							settings,
+							$author$project$Scene3d$Shader$shadowVertex,
+							$author$project$Scene3d$Shader$shadowFragment,
+							webGLMesh,
+							{fr: lights.bs, aR: modelMatrix, aS: modelScale, aY: sceneProperties, a_: viewMatrix});
+					}));
+		}
+	}
+};
+var $author$project$Scene3d$Drawable$shadow = function (givenMesh) {
+	if (!givenMesh.$) {
+		return $author$project$Scene3d$Drawable$empty;
+	} else {
+		var meshData = givenMesh.a;
+		var maybeShadow = givenMesh.b;
+		var _v1 = $author$project$Scene3d$Drawable$shadowDrawFunction(maybeShadow);
+		if (!_v1.$) {
+			var drawFunction = _v1.a;
+			return $author$project$Scene3d$Types$ShadowNode(drawFunction);
+		} else {
+			return $author$project$Scene3d$Drawable$empty;
+		}
+	}
+};
+var $author$project$Scene3d$Drawable$withShadow = F2(
+	function (shadowMesh, drawable) {
+		return $author$project$Scene3d$Drawable$group(
+			_List_fromArray(
+				[
+					drawable,
+					$author$project$Scene3d$Drawable$shadow(shadowMesh)
+				]));
+	});
 var $author$project$Physics$box = function (material) {
 	var bodySize = $ianmackenzie$elm_units$Length$inMeters($author$project$Physics$boxSize);
 	return A2(
@@ -8762,7 +8846,10 @@ var $author$project$Physics$box = function (material) {
 		A2(
 			$w0rm$elm_physics$Physics$Body$box,
 			{cc: bodySize, cd: bodySize, ce: bodySize},
-			A2($author$project$Scene3d$Drawable$physical, material, $author$project$Physics$boxMesh)));
+			A2(
+				$author$project$Scene3d$Drawable$withShadow,
+				$author$project$Physics$boxMesh,
+				A2($author$project$Scene3d$Drawable$physical, material, $author$project$Physics$boxMesh))));
 };
 var $avh4$elm_color$Color$blue = A4($avh4$elm_color$Color$RgbaSpace, 52 / 255, 101 / 255, 164 / 255, 1.0);
 var $author$project$Materials$copper = {
@@ -9213,7 +9300,10 @@ var $author$project$Physics$sphere = function (material) {
 		A2(
 			$w0rm$elm_physics$Physics$Body$sphere,
 			$ianmackenzie$elm_units$Length$inMeters($author$project$Physics$sphereRadius),
-			A2($author$project$Scene3d$Drawable$physical, material, $author$project$Physics$sphereMesh)));
+			A2(
+				$author$project$Scene3d$Drawable$withShadow,
+				$author$project$Physics$sphereMesh,
+				A2($author$project$Scene3d$Drawable$physical, material, $author$project$Physics$sphereMesh))));
 };
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
@@ -12484,30 +12574,6 @@ var $author$project$Scene3d$getPointSize = function (options) {
 var $elm_explorations$linear_algebra$Math$Vector4$getW = _MJS_v4getW;
 var $elm_explorations$linear_algebra$Math$Vector4$getX = _MJS_v4getX;
 var $elm_explorations$linear_algebra$Math$Vector4$getZ = _MJS_v4getZ;
-var $author$project$Scene3d$Types$Group = function (a) {
-	return {$: 3, a: a};
-};
-var $author$project$Scene3d$Drawable$collectNodes = F2(
-	function (drawables, accumulated) {
-		collectNodes:
-		while (true) {
-			if (!drawables.b) {
-				return accumulated;
-			} else {
-				var node = drawables.a;
-				var rest = drawables.b;
-				var $temp$drawables = rest,
-					$temp$accumulated = A2($elm$core$List$cons, node, accumulated);
-				drawables = $temp$drawables;
-				accumulated = $temp$accumulated;
-				continue collectNodes;
-			}
-		}
-	});
-var $author$project$Scene3d$Drawable$group = function (drawables) {
-	return $author$project$Scene3d$Types$Group(
-		A2($author$project$Scene3d$Drawable$collectNodes, drawables, _List_Nil));
-};
 var $author$project$Scene3d$Transformation$identity = {fp: true, s: 1, t: 0, u: 0, v: 0, w: 1, x: 0, y: 0, z: 0, A: 1, I: 0, J: 0, K: 0, f0: 1};
 var $elm_explorations$webgl$WebGL$Settings$DepthTest$lessOrEqual = function (_v0) {
 	var write = _v0.cP;
