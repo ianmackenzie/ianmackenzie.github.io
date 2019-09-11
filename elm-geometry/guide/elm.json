@@ -10,7 +10,7 @@
         "../../../elm-geometry/src",
         "../../../elm-geometry-svg/src"
     ],
-    "elm-version": "0.19.0",
+    "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
             "elm/browser": "1.0.1",
@@ -26,6 +26,7 @@
             "elm/url": "1.0.0",
             "elm-community/list-extra": "8.2.0",
             "elm-community/result-extra": "2.2.1",
+            "ianmackenzie/elm-1d-parameter": "1.0.1",
             "mdgriffith/elm-ui": "1.1.0",
             "pablohirafuji/elm-markdown": "2.0.5"
         },
