@@ -1,0 +1,6 @@
+
+This site contains a collection of articles discussing different aspects of the
+[elm-geometry](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/)
+package. It is primarily intended to be linked to from [the package
+documentation](https://package.elm-lang.org/packages/ianmackenzie/elm-geometry/latest/)
+but you are welcome to browse around if you wish!
