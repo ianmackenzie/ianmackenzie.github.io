@@ -14014,8 +14014,8 @@ var $author$project$FingerPainting$view = function (model) {
 								_List_Nil,
 								_List_fromArray(
 									[
+										$author$project$FingerPainting$bullet('Doesn\'t work on Internet Explorer - layout is messed up, but IE doesn\'t seem to send touch events at all anyways =('),
 										$author$project$FingerPainting$bullet('Microsoft Edge does not seem to send touch events by default - should be able to enable them by navingating to about:flags and setting \"Enable touch events\" to \"Only on when touchscreen is detected\"'),
-										$author$project$FingerPainting$bullet('Internet Explorer does not seem to send touch events at all =('),
 										$author$project$FingerPainting$bullet('Performance is not great, especially if you draw a bunch of long lines - this isn\'t really the right way to use SVG =)'),
 										$author$project$FingerPainting$bullet('On iOS only up to 3 fingers are supported since there seems to be no way to disable the built-in 4- and 5-finger app switching gestures')
 									])),
