@@ -12324,13 +12324,14 @@ var $author$project$Drawing2d$addTouchendHandler = F2(
 				var _v6 = _v0.b.a;
 				var touchChangeDecoder = _v6.a;
 				var touchInteraction = _v6.b;
+				var decoder = A2($author$project$Drawing2d$decodeTouchChange, touchChangeDecoder, touchInteraction);
 				return A2(
 					$elm$core$List$cons,
+					A2($author$project$Drawing2d$on, 'touchend', decoder),
 					A2(
-						$author$project$Drawing2d$on,
-						'touchend',
-						A2($author$project$Drawing2d$decodeTouchChange, touchChangeDecoder, touchInteraction)),
-					svgAttributes);
+						$elm$core$List$cons,
+						A2($author$project$Drawing2d$on, 'touchcancel', decoder),
+						svgAttributes));
 			}
 		} else {
 			if (_v0.b.$ === 1) {
@@ -12338,13 +12339,14 @@ var $author$project$Drawing2d$addTouchendHandler = F2(
 				var touchEndDecoder = _v3.a;
 				var touchInteraction = _v3.b;
 				var _v4 = _v0.b;
+				var decoder = A2($author$project$Drawing2d$decodeTouchEnd, touchEndDecoder, touchInteraction);
 				return A2(
 					$elm$core$List$cons,
+					A2($author$project$Drawing2d$on, 'touchend', decoder),
 					A2(
-						$author$project$Drawing2d$on,
-						'touchend',
-						A2($author$project$Drawing2d$decodeTouchEnd, touchEndDecoder, touchInteraction)),
-					svgAttributes);
+						$elm$core$List$cons,
+						A2($author$project$Drawing2d$on, 'touchcancel', decoder),
+						svgAttributes));
 			} else {
 				var _v7 = _v0.a.a;
 				var touchEndDecoder = _v7.a;
@@ -12361,7 +12363,10 @@ var $author$project$Drawing2d$addTouchendHandler = F2(
 				return A2(
 					$elm$core$List$cons,
 					A2($author$project$Drawing2d$on, 'touchend', combinedDecoder),
-					svgAttributes);
+					A2(
+						$elm$core$List$cons,
+						A2($author$project$Drawing2d$on, 'touchcancel', combinedDecoder),
+						svgAttributes));
 			}
 		}
 	});
@@ -14010,7 +14015,8 @@ var $author$project$FingerPainting$view = function (model) {
 								_List_fromArray(
 									[
 										$author$project$FingerPainting$bullet('Microsoft Edge does not seem to send touch events by default - should be able to enable them by navingating to about:flags and setting \"Enable touch events\" to \"Only on when touchscreen is detected\"'),
-										$author$project$FingerPainting$bullet('Performance is not great, especially if you draw a bunch of long lines - this isn\'t really the right way to use SVG =)')
+										$author$project$FingerPainting$bullet('Performance is not great, especially if you draw a bunch of long lines - this isn\'t really the right way to use SVG =)'),
+										$author$project$FingerPainting$bullet('On iOS only up to 3 fingers are supported since there seems to be no way to disable the 4-finger app switching gesture')
 									])),
 								$elm$html$Html$text('Please report any issues to @ianmackenzie on the Elm Slack!')
 							])))
