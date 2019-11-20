@@ -11,7 +11,7 @@
     <div id="elm"></div>
     <script>
         Object.defineProperty(Element.prototype, 'boundingClientRect', {
-            get() { return this.getBoundingClientRect(); }
+            "get": function () { return this.getBoundingClientRect(); }
         });
         var app = Elm.FingerPainting.init({ node: document.getElementById('elm') });
     </script>
