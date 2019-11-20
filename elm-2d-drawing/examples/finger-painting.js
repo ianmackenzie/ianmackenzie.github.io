@@ -13996,7 +13996,7 @@ var $author$project$FingerPainting$view = function (model) {
 								_List_fromArray(
 									[
 										$author$project$FingerPainting$bullet('Lines not appearing at all'),
-										$author$project$FingerPainting$bullet('Lines not following the center of your finger/tip of the mouse'),
+										$author$project$FingerPainting$bullet('Lines not following the center of your finger/tip of the mouse (try vertical and horizontal lines)'),
 										$author$project$FingerPainting$bullet('Page panning/moving instead of lines being drawn (as long as fingers start inside the drawing)'),
 										$author$project$FingerPainting$bullet('Breaks in lines (although could be a physical touchscreen issue - if possible, try to see if it\'s browser-specific or hardware-specific)'),
 										$author$project$FingerPainting$bullet('Weird behavior if a finger moves out of the drawing and then back in (should continue drawing in the same color, unless you lift your finger while outside the drawing)'),
