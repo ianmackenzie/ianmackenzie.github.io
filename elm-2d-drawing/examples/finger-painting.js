@@ -14016,7 +14016,7 @@ var $author$project$FingerPainting$view = function (model) {
 									[
 										$author$project$FingerPainting$bullet('Microsoft Edge does not seem to send touch events by default - should be able to enable them by navingating to about:flags and setting \"Enable touch events\" to \"Only on when touchscreen is detected\"'),
 										$author$project$FingerPainting$bullet('Performance is not great, especially if you draw a bunch of long lines - this isn\'t really the right way to use SVG =)'),
-										$author$project$FingerPainting$bullet('On iOS only up to 3 fingers are supported since there seems to be no way to disable the 4-finger app switching gesture')
+										$author$project$FingerPainting$bullet('On iOS only up to 3 fingers are supported since there seems to be no way to disable the built-in 4- and 5-finger app switching gestures')
 									])),
 								$elm$html$Html$text('Please report any issues to @ianmackenzie on the Elm Slack!')
 							])))
