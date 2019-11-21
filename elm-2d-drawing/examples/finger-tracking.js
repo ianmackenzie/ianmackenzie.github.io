@@ -11665,10 +11665,10 @@ var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Drawing2d$Attributes$Protected$suppressTouchActions = F2(
 	function (attributeValues, svgAttributes) {
-		return (A2($elm$core$Dict$member, 'touchstart', attributeValues.X) || (A2($elm$core$Dict$member, 'touchmove', attributeValues.X) || A2($elm$core$Dict$member, 'touchend', attributeValues.X))) ? svgAttributes : A2(
+		return (A2($elm$core$Dict$member, 'touchstart', attributeValues.X) || (A2($elm$core$Dict$member, 'touchmove', attributeValues.X) || A2($elm$core$Dict$member, 'touchend', attributeValues.X))) ? A2(
 			$elm$core$List$cons,
 			A2($elm$html$Html$Attributes$style, 'touch-action', 'none'),
-			svgAttributes);
+			svgAttributes) : svgAttributes;
 	});
 var $author$project$Drawing2d$Attributes$Protected$addEventHandlers = F2(
 	function (attributeValues, svgAttributes) {
