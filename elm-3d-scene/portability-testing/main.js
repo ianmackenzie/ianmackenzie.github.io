@@ -22139,8 +22139,8 @@ var $mdgriffith$elm_ui$Element$table = F2(
 			});
 	});
 var $elm$core$Debug$toString = _Debug_toString;
-var $author$project$TestApp$viewTestCaseProperties = F2(
-	function (testCaseIndex, testCase) {
+var $author$project$TestApp$viewTestCaseProperties = F3(
+	function (testCaseIndex, numTestCases, testCase) {
 		return A2(
 			$mdgriffith$elm_ui$Element$table,
 			_List_fromArray(
@@ -22182,7 +22182,7 @@ var $author$project$TestApp$viewTestCaseProperties = F2(
 					[
 						_Utils_Tuple3(
 						'Test case:',
-						$elm$core$String$fromInt(testCaseIndex + 1),
+						$elm$core$String$fromInt(testCaseIndex + 1) + (' of ' + $elm$core$String$fromInt(numTestCases)),
 						$elm$core$Maybe$Nothing),
 						_Utils_Tuple3(
 						'Mesh:',
@@ -22304,7 +22304,11 @@ var $author$project$TestApp$viewTestCase = F2(
 									]),
 								$mdgriffith$elm_ui$Element$text('(or use arrow keys)'))
 							])),
-						A2($author$project$TestApp$viewTestCaseProperties, model.testCaseIndex, testCase)
+						A3(
+						$author$project$TestApp$viewTestCaseProperties,
+						model.testCaseIndex,
+						$elm$core$Array$length(model.testCases),
+						testCase)
 					]));
 		} else {
 			return $mdgriffith$elm_ui$Element$text('ERROR: Invalid test case');
