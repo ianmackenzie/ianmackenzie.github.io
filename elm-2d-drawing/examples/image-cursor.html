@@ -4423,6 +4423,17 @@ var $author$project$Drawing2d$Attributes$TextAnchor = function (a) {
 };
 var $author$project$Drawing2d$anchorAtCenter = $author$project$Drawing2d$Attributes$TextAnchor(
 	{A: 'middle', B: 'middle'});
+var $author$project$Drawing2d$Attributes$Cursor = function (a) {
+	return {$: 12, a: a};
+};
+var $author$project$Drawing2d$Attributes$ImageCursor = function (a) {
+	return {$: 36, a: a};
+};
+var $author$project$Drawing2d$imageCursor = function (url) {
+	return $author$project$Drawing2d$Attributes$Cursor(
+		$author$project$Drawing2d$Attributes$ImageCursor(url));
+};
+var $author$project$Drawing2d$bestCursorEver = $author$project$Drawing2d$imageCursor('https://ianmackenzie.github.io/elm-2d-drawing/cursors/cursor-dino.png');
 var $elm$core$Basics$identity = function (x) {
 	return x;
 };
@@ -4444,9 +4455,6 @@ var $ianmackenzie$elm_geometry$Rectangle2d$centerPoint = function (rectangle) {
 		$ianmackenzie$elm_geometry$Rectangle2d$axes(rectangle));
 };
 var $author$project$Drawing2d$Attributes$CrosshairCursor = {$: 9};
-var $author$project$Drawing2d$Attributes$Cursor = function (a) {
-	return {$: 12, a: a};
-};
 var $author$project$Drawing2d$crosshairCursor = $author$project$Drawing2d$Attributes$Cursor($author$project$Drawing2d$Attributes$CrosshairCursor);
 var $author$project$Drawing2d$anchorAtBottomLeft = $author$project$Drawing2d$Attributes$TextAnchor(
 	{A: 'start', B: 'alphabetic'});
@@ -7089,13 +7097,6 @@ var $avh4$elm_color$Color$RgbaSpace = F4(
 		return {$: 0, a: a, b: b, c: c, d: d};
 	});
 var $avh4$elm_color$Color$green = A4($avh4$elm_color$Color$RgbaSpace, 115 / 255, 210 / 255, 22 / 255, 1.0);
-var $author$project$Drawing2d$Attributes$ImageCursor = function (a) {
-	return {$: 36, a: a};
-};
-var $author$project$Drawing2d$imageCursor = function (url) {
-	return $author$project$Drawing2d$Attributes$Cursor(
-		$author$project$Drawing2d$Attributes$ImageCursor(url));
-};
 var $ianmackenzie$elm_geometry$Point2d$pixels = F2(
 	function (x, y) {
 		return {A: x, B: y};
@@ -7179,7 +7180,7 @@ var $author$project$ImageCursor$main = function () {
 					_List_fromArray(
 						[
 							$author$project$Drawing2d$fillColor($avh4$elm_color$Color$green),
-							$author$project$Drawing2d$imageCursor('https://www.cameronsworld.net/img/ui/cursor-dino.png')
+							$author$project$Drawing2d$bestCursorEver
 						]),
 					rect2),
 					A3(
