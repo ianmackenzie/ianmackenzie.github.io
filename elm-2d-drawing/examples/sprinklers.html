@@ -5160,7 +5160,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Sprinklers$init = function (_v0) {
 	return _Utils_Tuple2(
-		{eO: 6, T: _List_Nil, gx: 4},
+		{eO: 5, T: _List_Nil, gx: 5},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -7465,6 +7465,8 @@ var $ianmackenzie$elm_geometry$Frame2d$atPoint = function (point) {
 	return $ianmackenzie$elm_geometry$Frame2d$unsafe(
 		{M: point, d: $ianmackenzie$elm_geometry$Direction2d$x, a: $ianmackenzie$elm_geometry$Direction2d$y});
 };
+var $avh4$elm_color$Color$blue = A4($avh4$elm_color$Color$RgbaSpace, 52 / 255, 101 / 255, 164 / 255, 1.0);
+var $avh4$elm_color$Color$brown = A4($avh4$elm_color$Color$RgbaSpace, 193 / 255, 125 / 255, 17 / 255, 1.0);
 var $ianmackenzie$elm_geometry$Rectangle2d$centeredOn = F2(
 	function (givenAxes, _v0) {
 		var givenWidth = _v0.a;
@@ -7554,9 +7556,9 @@ var $author$project$Sprinklers$classify = F2(
 		var groundType = A2($elm$core$List$member, position, model.T) ? 1 : (((i < 0) || ((j < 0) || ((_Utils_cmp(i, model.gx) > -1) || (_Utils_cmp(j, model.eO) > -1)))) ? 1 : 0);
 		return (!waterings) ? $author$project$Sprinklers$Unwatered(groundType) : ((waterings === 1) ? $author$project$Sprinklers$Watered(groundType) : $author$project$Sprinklers$Overwatered(groundType));
 	});
+var $avh4$elm_color$Color$darkBlue = A4($avh4$elm_color$Color$RgbaSpace, 32 / 255, 74 / 255, 135 / 255, 1.0);
 var $avh4$elm_color$Color$darkGreen = A4($avh4$elm_color$Color$RgbaSpace, 78 / 255, 154 / 255, 6 / 255, 1.0);
 var $avh4$elm_color$Color$darkGrey = A4($avh4$elm_color$Color$RgbaSpace, 186 / 255, 189 / 255, 182 / 255, 1.0);
-var $avh4$elm_color$Color$darkYellow = A4($avh4$elm_color$Color$RgbaSpace, 196 / 255, 160 / 255, 0 / 255, 1.0);
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Drawing2d$empty = F6(
@@ -7861,7 +7863,6 @@ var $author$project$Drawing2d$onLeftClick = function (callback) {
 	return $author$project$Drawing2d$decodeLeftClick(
 		$elm$json$Json$Decode$succeed(callback));
 };
-var $avh4$elm_color$Color$orange = A4($avh4$elm_color$Color$RgbaSpace, 245 / 255, 121 / 255, 0 / 255, 1.0);
 var $author$project$Drawing2d$Attributes$noStroke = $elm$svg$Svg$Attributes$stroke('none');
 var $author$project$Drawing2d$Attributes$regionAttributes = F2(
 	function (bordersVisible, attributeValues) {
@@ -8120,7 +8121,6 @@ var $ianmackenzie$elm_geometry$Point2d$xy = F2(
 		var y = _v1;
 		return {A: x, B: y};
 	});
-var $avh4$elm_color$Color$yellow = A4($avh4$elm_color$Color$RgbaSpace, 237 / 255, 212 / 255, 0 / 255, 1.0);
 var $author$project$Sprinklers$drawCell = F2(
 	function (model, position) {
 		var sprinklerRadius = $author$project$Sprinklers$cells(0.28);
@@ -8133,7 +8133,7 @@ var $author$project$Sprinklers$drawCell = F2(
 						return $avh4$elm_color$Color$green;
 					} else {
 						var _v5 = _v1.a;
-						return $avh4$elm_color$Color$yellow;
+						return $avh4$elm_color$Color$blue;
 					}
 				case 1:
 					if (!_v1.a) {
@@ -8141,12 +8141,12 @@ var $author$project$Sprinklers$drawCell = F2(
 						return $avh4$elm_color$Color$darkGreen;
 					} else {
 						var _v6 = _v1.a;
-						return $avh4$elm_color$Color$darkYellow;
+						return $avh4$elm_color$Color$darkBlue;
 					}
 				default:
 					if (!_v1.a) {
 						var _v4 = _v1.a;
-						return $avh4$elm_color$Color$orange;
+						return $avh4$elm_color$Color$brown;
 					} else {
 						var _v7 = _v1.a;
 						return A4($avh4$elm_color$Color$rgba, 0, 0, 0, 0);
@@ -8607,15 +8607,15 @@ var $author$project$Sprinklers$view = function (model) {
 		_List_Nil,
 		_List_fromArray(
 			[
-				A5($author$project$Sprinklers$slider, 'Width', $author$project$Sprinklers$WidthChanged, 1, 10, model.gx),
-				A5($author$project$Sprinklers$slider, 'Height', $author$project$Sprinklers$HeightChanged, 1, 10, model.eO),
+				A5($author$project$Sprinklers$slider, 'Width', $author$project$Sprinklers$WidthChanged, 1, 20, model.gx),
+				A5($author$project$Sprinklers$slider, 'Height', $author$project$Sprinklers$HeightChanged, 1, 20, model.eO),
 				$author$project$Sprinklers$drawing(model),
 				$elm$core$List$isEmpty(model.T) ? A2(
 				$elm$html$Html$div,
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('Click to place sprinklers!')
+						$elm$html$Html$text('Click to add or remove sprinklers!')
 					])) : A2(
 				$elm$html$Html$button,
 				_List_fromArray(
